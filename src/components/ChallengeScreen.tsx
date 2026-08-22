@@ -12,6 +12,7 @@ import AttentionChallenge from "../challenge/challenges/AttentionChallenge";
 import { Pause, Play, Volume2, VolumeX, Smartphone, RefreshCw, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import FloatingBackgroundShapes from "./FloatingBackgroundShapes";
+import FloatingCard from "./ui/FloatingCard";
 import { ShapeGradients } from "./GeometricShapes";
 import { GameTheme, GameColors } from "../core/GameTheme";
 import { gameFeel } from "../core/gameFeel";
@@ -300,7 +301,7 @@ export default function ChallengeScreen({
             <div className="max-w-xs w-full mx-auto flex flex-col shrink-0 pause-panel">
 
               {/* Settings Card */}
-              <div className={`bg-white border ${GameTheme.colors.borders.light} ${GameTheme.shapes.card} flex flex-col pause-card ${GameTheme.shadows.premium}`}>
+              <div className={`flex flex-col pause-card bg-white/85 backdrop-blur-md border border-white/70 rounded-3xl shadow-premium overflow-hidden`}>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">Efeitos de Som</span>
                   <button

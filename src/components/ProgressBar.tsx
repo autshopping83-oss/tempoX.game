@@ -12,7 +12,7 @@ interface Props {
 
 /**
  * Thick arcade progress bar: lilac track + purple->pink gradient fill
- * with a soft glow. Height adapts between 8px and 12px per viewport.
+ * with a soft glow. Fixed 10-12dp height, highly visible.
  */
 export default function ProgressBar({ pct, className = "" }: Props) {
   const clamped = Math.max(0, Math.min(100, pct));
@@ -21,7 +21,7 @@ export default function ProgressBar({ pct, className = "" }: Props) {
     <div
       data-progress-track
       className={`w-full rounded-full bg-[#EDE9FE]/90 border border-white/70 overflow-hidden ${className}`}
-      style={{ height: "clamp(8px, 1.8vh, 12px)" }}
+      style={{ height: "clamp(10px, 1.6vh, 12px)" }}
     >
       <div
         data-progress-fill

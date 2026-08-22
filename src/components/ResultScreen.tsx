@@ -10,6 +10,10 @@ import { sound } from "../core/sound";
 import { GameStats } from "../core/gameEngine";
 import FloatingBackgroundShapes from "./FloatingBackgroundShapes";
 import { GameTheme, GameColors } from "../core/GameTheme";
+import FloatingCard from "./ui/FloatingCard";
+import PrimaryButton from "./ui/PrimaryButton";
+import SecondaryButton from "./ui/SecondaryButton";
+import StatCard from "./ui/StatCard";
 
 interface Props {
   score: number;
@@ -155,33 +159,28 @@ export default function ResultScreen({
 
         {/* 3 Grid Stats */}
         <div className="grid grid-cols-3 gap-3.5 my-4">
-          <div className={`bg-white border ${GameTheme.colors.borders.light}/80 rounded-2xl p-3 text-center ${GameTheme.shadows.soft}`}>
-            <div className="mx-auto w-7 h-7 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-1.5">
-              <Zap className="w-4 h-4 fill-amber-500/10" />
-            </div>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Desafios</span>
-            <p className="text-sm font-black text-slate-800 font-mono mt-0.5">{challengesCompletedSession}</p>
-          </div>
-
-          <div className={`bg-white border ${GameTheme.colors.borders.light}/80 rounded-2xl p-3 text-center ${GameTheme.shadows.soft}`}>
-            <div className={`mx-auto w-7 h-7 rounded-full ${GameTheme.colors.success.lightBg} ${GameTheme.colors.success.text} flex items-center justify-center mb-1.5`}>
-              <Crosshair className="w-4 h-4" />
-            </div>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Precisão</span>
-            <p className={`text-sm font-black ${GameTheme.colors.success.text} font-mono mt-0.5`}>{accuracy}%</p>
-          </div>
-
-          <div className={`bg-white border ${GameTheme.colors.borders.light}/80 rounded-2xl p-3 text-center ${GameTheme.shadows.soft}`}>
-            <div className="mx-auto w-7 h-7 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mb-1.5">
-              <span className="text-xs font-bold">🔥</span>
-            </div>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Combo Máx</span>
-            <p className="text-sm font-black text-rose-500 font-mono mt-0.5">x{maxComboSession}</p>
-          </div>
+          <StatCard
+            label="Desafios"
+            value={challengesCompletedSession}
+            icon={<Zap className="w-4 h-4 fill-amber-500/10" />}
+            valueClassName="text-amber-500"
+          />
+          <StatCard
+            label="Precisão"
+            value={`${accuracy}%`}
+            icon={<Crosshair className="w-4 h-4" />}
+            valueClassName={GameTheme.colors.success.text}
+          />
+          <StatCard
+            label="Combo Máx"
+            value={`x${maxComboSession}`}
+            icon={<span className="text-xs font-bold">🔥</span>}
+            valueClassName="text-rose-500"
+          />
         </div>
 
         {/* Rewarded Ad Card */}
-        <div className={`relative bg-white border ${GameTheme.colors.borders.light} ${GameTheme.shapes.card} p-5 mb-5 text-center ${GameTheme.shadows.premium} overflow-hidden`}>
+        <FloatingCard className="p-5 mb-5 text-center">
           {/* Graphic gold coins vector-ish indicator */}
           <div className="flex justify-center gap-1.5 mb-2.5">
             <div className="w-5 h-5 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800">XP</div>
@@ -247,7 +246,7 @@ export default function ResultScreen({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </FloatingCard>
 
         {/* New Unlocked Achievements Announcement */}
         {newAchievementsUnlocked.length > 0 && (
@@ -271,33 +270,21 @@ export default function ResultScreen({
         )}
 
         {/* Footer Navigation Actions */}
-        <div className="flex flex-col gap-3 mt-auto">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onPlayAgain(seed)}
-            className={`w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white ${GameTheme.shapes.button} font-black text-base flex items-center justify-center gap-2 ${GameTheme.shadows.btnSuccess} cursor-pointer transition-all duration-150`}
-          >
-            <RotateCcw className="w-5 h-5" />
-            <span>JOGAR NOVAMENTE</span>
-          </motion.button>
+        <div className="flex flex-col gap-3 mt-auto pb-safe">
+          <PrimaryButton onClick={() => onPlayAgain(seed)} icon={<RotateCcw className="w-5 h-5" />}>
+            JOGAR NOVAMENTE
+          </PrimaryButton>
 
           <div className="grid grid-cols-2 gap-3.5">
-            <button
-              onClick={handleShareClick}
-              className={`py-3 bg-white hover:bg-slate-50 border ${GameTheme.colors.borders.medium} text-slate-600 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all`}
-            >
-              <Share2 className="w-3.5 h-3.5" />
+            <SecondaryButton onClick={handleShareClick}>
+              <Share2 className="w-4 h-4" />
               <span>COMPARTILHAR</span>
-            </button>
+            </SecondaryButton>
 
-            <button
-              onClick={onGoHome}
-              className={`py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all`}
-            >
-              <Home className="w-3.5 h-3.5" />
+            <SecondaryButton onClick={onGoHome}>
+              <Home className="w-4 h-4" />
               <span>MENU PRINCIPAL</span>
-            </button>
+            </SecondaryButton>
           </div>
         </div>
 

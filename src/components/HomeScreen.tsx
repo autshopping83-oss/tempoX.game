@@ -5,11 +5,16 @@
 
 import React, { useState } from "react";
 import { GameStats, GAME_ACHIEVEMENTS, getXPForLevel } from "../core/gameEngine";
-import { Play, Volume2, VolumeX, Smartphone, Trophy, BarChart2, Sparkles, Sliders } from "lucide-react";
+import { Volume2, VolumeX, Smartphone, Trophy, BarChart2, Sparkles, Sliders } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import FloatingBackgroundShapes from "./FloatingBackgroundShapes";
 import { ShapeGradients } from "./GeometricShapes";
 import { GameTheme, GameColors } from "../core/GameTheme";
+import FloatingCard from "./ui/FloatingCard";
+import PrimaryButton from "./ui/PrimaryButton";
+import StatCard from "./ui/StatCard";
+import TrophyCard from "./ui/TrophyCard";
+import BottomNavigation from "./ui/BottomNavigation";
 
 interface Props {
   stats: GameStats;
@@ -47,7 +52,7 @@ export default function HomeScreen({
   };
 
   return (
-    <div className={`relative flex flex-col flex-grow justify-between ${GameTheme.spacing.outerPadding} max-w-md mx-auto w-full h-full text-slate-800 ${GameTheme.colors.background} overflow-y-auto select-none`}>
+    <div className={`relative flex flex-col flex-grow justify-between ${GameTheme.spacing.outerPadding} w-full h-full text-slate-800 ${GameTheme.colors.background} overflow-y-auto select-none overflow-x-hidden`}>
       {/* Visual gradients & shapes in the background */}
       <FloatingBackgroundShapes />
       <ShapeGradients />
@@ -123,7 +128,7 @@ export default function HomeScreen({
                 className={`flex flex-col ${GameTheme.spacing.outerPadding} ${GameTheme.spacing.containerGap}`}
               >
                 {/* Clean, high-contrast premium card showing Level & HighScore */}
-                <div className={`bg-white border ${GameTheme.colors.borders.light} ${GameTheme.shapes.card} p-5 ${GameTheme.shadows.premium} relative overflow-hidden`}>
+                <FloatingCard className="p-5">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#6D3DF5]/5 to-transparent rounded-full -mr-10 -mt-10" />
                   
                   <div className="flex justify-between items-center mb-4 relative z-10">
@@ -158,26 +163,15 @@ export default function HomeScreen({
                     <span>{stats.totalXP} XP acumulados</span>
                     <span>{progressPercent}% para Nível {stats.level + 1}</span>
                   </div>
-                </div>
+                </FloatingCard>
 
                 {/* Big Visual JOGAR Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handlePlayClick}
-                  className={`w-full py-4 px-6 ${GameTheme.colors.primary.bgGradient} text-white ${GameTheme.shapes.button} font-black flex items-center justify-between ${GameTheme.shadows.btnPrimary} cursor-pointer text-lg tracking-wider transition-all duration-150`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-1 bg-white/20 rounded-lg">
-                      <Play className="fill-white stroke-none w-4 h-4" />
-                    </div>
-                    <span>JOGAR AGORA</span>
-                  </div>
-                  <span className="text-white/60 font-mono text-sm">▶</span>
-                </motion.button>
+                <PrimaryButton onClick={handlePlayClick}>
+                  JOGAR AGORA
+                </PrimaryButton>
 
                 {/* Compact, elegant Seed Input */}
-                <div className={`bg-white border ${GameTheme.colors.borders.light} ${GameTheme.shapes.button} p-3 ${GameTheme.shadows.soft} flex items-center justify-between gap-4`}>
+                <FloatingCard className="p-3 flex items-center justify-between gap-4 shadow-soft">
                   <div className="flex items-center gap-2">
                     <Sliders className="w-4 h-4 text-slate-400" />
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Seed da Partida</span>
@@ -188,9 +182,9 @@ export default function HomeScreen({
                     placeholder="Opcional"
                     value={customSeedInput}
                     onChange={(e) => setCustomSeedInput(e.target.value.replace(/\D/g, ""))}
-                    className={`w-32 bg-slate-50 border ${GameTheme.colors.borders.light} rounded-xl py-1 px-3 text-xs font-bold font-mono tracking-widest ${GameTheme.colors.primary.text} text-right placeholder-slate-300 focus:outline-none focus:border-[#6D3DF5]/30 focus:bg-white`}
+                    className={`w-32 bg-slate-50 border ${GameTheme.colors.borders.light} rounded-xl py-2 px-3 text-xs font-bold font-mono tracking-widest ${GameTheme.colors.primary.text} text-right placeholder-slate-300 focus:outline-none focus:border-[#6D3DF5]/30 focus:bg-white`}
                   />
-                </div>
+                </FloatingCard>
               </motion.div>
             )}
 
@@ -211,22 +205,10 @@ export default function HomeScreen({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3.5">
-                  <div className={`bg-slate-50/50 p-3 rounded-2xl border ${GameTheme.colors.borders.light}`}>
-                    <span className={GameTheme.typography.pillLabel}>Partidas</span>
-                    <p className="text-xl font-black text-slate-900 font-mono mt-0.5">{stats.gamesPlayed}</p>
-                  </div>
-                  <div className={`bg-slate-50/50 p-3 rounded-2xl border ${GameTheme.colors.borders.light}`}>
-                    <span className={GameTheme.typography.pillLabel}>Recorde</span>
-                    <p className="text-xl font-black text-amber-500 font-mono mt-0.5">{stats.highScore}</p>
-                  </div>
-                  <div className={`bg-slate-50/50 p-3 rounded-2xl border ${GameTheme.colors.borders.light}`}>
-                    <span className={GameTheme.typography.pillLabel}>Total XP</span>
-                    <p className="text-xl font-black text-[#6D3DF5] font-mono mt-0.5">{stats.totalXP}</p>
-                  </div>
-                  <div className={`bg-slate-50/50 p-3 rounded-2xl border ${GameTheme.colors.borders.light}`}>
-                    <span className={GameTheme.typography.pillLabel}>Combo Máximo</span>
-                    <p className="text-xl font-black text-[#EF4444] font-mono mt-0.5">🔥 x{stats.maxCombo}</p>
-                  </div>
+                  <StatCard label="Partidas" value={stats.gamesPlayed} />
+                  <StatCard label="Recorde" value={stats.highScore} valueClassName="text-amber-500" />
+                  <StatCard label="Total XP" value={stats.totalXP} valueClassName="text-[#6D3DF5]" />
+                  <StatCard label="Combo Máximo" value={`🔥 x${stats.maxCombo}`} valueClassName="text-[#EF4444]" />
                 </div>
 
                 <div className={`bg-slate-50/40 p-3 rounded-2xl border ${GameTheme.colors.borders.light} flex justify-between items-center text-sm`}>
@@ -271,31 +253,13 @@ export default function HomeScreen({
                   {GAME_ACHIEVEMENTS.map((ach) => {
                     const unlocked = stats.achievements.includes(ach.id);
                     return (
-                      <div
+                      <TrophyCard
                         key={ach.id}
-                        className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
-                          unlocked
-                            ? `bg-white border-purple-200 ${GameTheme.shadows.soft}`
-                            : `bg-white/40 ${GameTheme.colors.borders.light} opacity-60`
-                        }`}
-                      >
-                        <span className="text-2xl select-none">{ach.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <h4 className={`${GameTheme.typography.cardTitle} truncate`}>{ach.title}</h4>
-                          <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{ach.description}</p>
-                        </div>
-                        <div>
-                          {unlocked ? (
-                            <span className="text-[9px] bg-emerald-50 text-emerald-600 font-extrabold uppercase px-2 py-0.5 rounded-full border border-emerald-100">
-                              ✓ LIBERADO
-                            </span>
-                          ) : (
-                            <span className={`text-[9px] bg-slate-50 text-slate-400 font-bold uppercase px-2 py-0.5 rounded-full border ${GameTheme.colors.borders.light}`}>
-                              BLOQUEADO
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                        icon={ach.icon}
+                        title={ach.title}
+                        description={ach.description}
+                        unlocked={unlocked}
+                      />
                     );
                   })}
                 </div>
@@ -304,40 +268,17 @@ export default function HomeScreen({
           </AnimatePresence>
         </div>
 
-        {/* Elegant Bottom Segmented Bar */}
-        <div className={`mt-4 pt-3 border-t ${GameTheme.colors.borders.light}`}>
-          <div className="flex bg-slate-100/80 p-1 rounded-2xl border border-slate-200/40">
-            <button
-              onClick={() => setActiveTab("MAIN")}
-              className={`flex-grow py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
-                activeTab === "MAIN"
-                  ? `bg-white ${GameTheme.colors.primary.text} shadow-sm font-extrabold`
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Jogar
-            </button>
-            <button
-              onClick={() => setActiveTab("STATS")}
-              className={`flex-grow py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
-                activeTab === "STATS"
-                  ? `bg-white ${GameTheme.colors.primary.text} shadow-sm font-extrabold`
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Estatísticas
-            </button>
-            <button
-              onClick={() => setActiveTab("ACHIEVEMENTS")}
-              className={`flex-grow py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
-                activeTab === "ACHIEVEMENTS"
-                  ? `bg-white ${GameTheme.colors.primary.text} shadow-sm font-extrabold`
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Troféus
-            </button>
-          </div>
+        {/* Bottom Navigation — docked, respects gesture bar */}
+        <div className="mt-4 -mx-5 -mb-[clamp(1rem,3vh,1.5rem)]">
+          <BottomNavigation
+            tabs={[
+              { id: "MAIN", label: "Jogar" },
+              { id: "STATS", label: "Estatísticas" },
+              { id: "ACHIEVEMENTS", label: "Troféus" },
+            ]}
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as typeof activeTab)}
+          />
         </div>
 
       </div>

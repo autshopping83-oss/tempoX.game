@@ -134,7 +134,7 @@
   --pause-title-size: 2.25rem; /* PAUSADO              (was text-4xl)*/
   --pause-btn-primary-min: 56px;
   --pause-btn-primary-pad: 1rem;
-  --pause-btn-secondary-min: 52px;
+  --pause-btn-secondary-min: 56px;
   --pause-btn-secondary-pad: 0.875rem;
 
   padding-top: var(--pause-pt);
@@ -188,7 +188,7 @@
     --pause-title-size: 2rem;
     --pause-btn-primary-min: 54px;
     --pause-btn-primary-pad: 0.875rem;
-    --pause-btn-secondary-min: 50px;
+    --pause-btn-secondary-min: 52px;
     --pause-btn-secondary-pad: 0.75rem;
   }
 }

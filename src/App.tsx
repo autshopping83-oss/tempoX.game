@@ -11,6 +11,8 @@ import ResultScreen from "./components/ResultScreen";
 import SplashScreen from "./components/SplashScreen";
 import { Smartphone, RotateCcw, Flame, Info, Sparkles, X, HelpCircle, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import AppHeader from "./components/ui/AppHeader";
+import FloatingCard from "./components/ui/FloatingCard";
 
 export default function App() {
   const {
@@ -64,11 +66,11 @@ export default function App() {
   const isPlayingMode = gameState === "PLAYING" || gameState === "PAUSED";
 
   return (
-    <div className="min-h-app bg-slate-50 flex flex-col items-center justify-center text-slate-800 font-sans antialiased p-0 sm:p-4 selection:bg-[#6D3DF5]/10">
+    <div className="min-h-app w-full bg-slate-50 flex flex-col text-slate-800 font-sans antialiased selection:bg-[#6D3DF5]/10 overflow-x-hidden">
 
-      {/* 1. TOP BAR CONTRACT HEADER (Only visible outside of active playing to maximize gaming space) */}
+      {/* 1. TOP APP BAR (Only visible outside of active playing to maximize gaming space) */}
       {!isPlayingMode && (
-        <header className="w-full max-w-md h-14 border-b border-slate-100 px-5 flex items-center justify-between shrink-0 bg-white/90 backdrop-blur z-30 select-none shadow-sm rounded-t-3xl">
+        <AppHeader>
           {/* Brand Zone */}
           <div className="flex items-center gap-1.5">
             <img
@@ -80,13 +82,13 @@ export default function App() {
           </div>
 
           {/* Navigation Links Zone */}
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-1.5">
             <button
               onClick={() => {
                 setGameState("HOME");
                 setAboutOpen(false);
               }}
-              className={`text-xs font-extrabold px-3 py-1.5 rounded-full transition-all cursor-pointer ${
+              className={`text-xs font-extrabold px-3 py-2 rounded-full transition-all cursor-pointer ${
                 gameState === "HOME" ? "text-[#6D3DF5] bg-[#6D3DF5]/5" : "text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -94,27 +96,23 @@ export default function App() {
             </button>
             <button
               onClick={() => setAboutOpen(true)}
-              className="text-xs font-extrabold px-3 py-1.5 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer flex items-center gap-1"
+              className="text-xs font-extrabold px-3 py-2 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer flex items-center gap-1"
             >
-              <HelpCircle className="w-3.5 h-3.5" />
+              <HelpCircle className="w-4 h-4" />
               <span>Regras</span>
             </button>
-          </nav>
-
-          {/* Actions Zone */}
-          <div className="flex items-center">
             <button
               onClick={() => startGame()}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-[#6D3DF5] to-[#5124D6] hover:from-[#5124D6] hover:to-[#6D3DF5] text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-soft"
+              className="px-4 py-2.5 ml-1 bg-gradient-to-r from-[#6D3DF5] to-[#5124D6] hover:from-[#5124D6] hover:to-[#6D3DF5] text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-soft"
             >
               START
             </button>
-          </div>
-        </header>
+          </nav>
+        </AppHeader>
       )}
 
-      {/* 2. THE CHROME SIMULATOR DEVICE WRAPPER */}
-      <main className="w-full max-w-md flex-1 flex flex-col bg-[#F8FAFC] relative overflow-hidden sm:rounded-b-3xl sm:border-x sm:border-b border-slate-200/80 shadow-2xl max-h-app">
+      {/* 2. FULL-BLEED SCREEN CONTAINER — edge-to-edge mobile */}
+      <main className="w-full flex-1 flex flex-col bg-[#F8FAFC] relative overflow-hidden">
         <AnimatePresence mode="wait">
           {gameState === "HOME" && (
             <motion.div
@@ -211,7 +209,7 @@ export default function App() {
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-4 text-xs text-slate-600 leading-relaxed bg-white p-5 rounded-3xl border border-slate-100 shadow-premium">
+                <FloatingCard className="flex flex-col gap-4 text-xs text-slate-600 leading-relaxed p-5">
                   <p>
                     <strong className="text-slate-800">TEMPOX</strong> é um jogo rápido de agilidade mental extrema. Você tem exatamente um minuto para resolver uma sequência sem fim de testes rápidos:
                   </p>
@@ -253,7 +251,7 @@ export default function App() {
                   <p className="border-t border-slate-100 pt-3 text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">
                     🔥 Acertos consecutivos geram COMBOS de pontos e aceleram os desafios! Erros quebram o combo.
                   </p>
-                </div>
+                </FloatingCard>
               </div>
 
               <button
