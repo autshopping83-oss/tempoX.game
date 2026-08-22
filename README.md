@@ -1,21 +1,23 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://res.cloudinary.com/dtwss4s6/image/upload/f_auto,q_auto/1000736821" />
+  <img width="1200" height="475" alt="GHBanner" src="https://res.cloudinary.com/dtwss4s6/image/upload/f_auto,q_auto/1000736821" />
 </div>
 
-# Run and deploy your AI Studio app
+# Run and Deploy TempoX Game
 
-This contains everything you need to run your app locally.
+Everything you need to run the project locally.
 
-View your app in AI Studio: https://www.biz-flow.cloud
+**Official website:** https://www.biz-flow.cloud
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Configure your environment variables in `.env.local`
 3. Run the app:
    `npm run dev`
+
 # tempoX.game
+
+**The initial MVP of the TempoX Game.**
