@@ -1,0 +1,393 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Mobile viewport utilities: dynamic viewport + safe area support     */
+/* ------------------------------------------------------------------ */
+@layer utilities {
+  /* Dynamic viewport height (falls back to 100vh on older browsers)  */
+  .min-h-app {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .max-h-app {
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+
+  /* Keep UI clear of notches and Android/iOS navigation bars         */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer utilities {
+  .bg-grid-light {
+    background-size: 32px 32px;
+    background-image:
+      linear-gradient(to right, rgba(109, 61, 245, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(109, 61, 245, 0.03) 1px, transparent 1px);
+  }
+  
+  .shadow-premium {
+    box-shadow: 0 10px 30px -5px rgba(109, 61, 245, 0.08), 0 4px 12px -2px rgba(109, 61, 245, 0.03);
+  }
+  
+  .shadow-btn {
+    box-shadow: 0 8px 24px -4px rgba(109, 61, 245, 0.35);
+  }
+
+  .shadow-btn-green {
+    box-shadow: 0 8px 24px -4px rgba(34, 197, 94, 0.35);
+  }
+
+  .shadow-btn-yellow {
+    box-shadow: 0 8px 24px -4px rgba(250, 204, 21, 0.35);
+  }
+
+  .shadow-card-hover {
+    box-shadow: 0 20px 40px -10px rgba(109, 61, 245, 0.15), 0 4px 16px -2px rgba(109, 61, 245, 0.05);
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* Float animations for background geometric elements */
+@keyframes float-slow-1 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(15deg); }
+}
+
+@keyframes float-slow-2 {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(12px) rotate(-10deg) scale(1.05); }
+}
+
+@keyframes float-slow-3 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(8deg); }
+}
+
+.animate-float-1 {
+  animation: float-slow-1 8s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-slow-2 10s ease-in-out infinite;
+}
+
+.animate-float-3 {
+  animation: float-slow-3 7s ease-in-out infinite;
+}
+
+/* Pulse animation for high pressure alerts */
+@keyframes soft-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.03); opacity: 0.9; }
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 1.5s ease-in-out infinite;
+}
+
+/* Custom minimal scrollbar styling for light premium theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pause overlay responsive system                                     */
+/* Base tier reproduces the original desktop/tablet metrics exactly.   */
+/* Compact tiers progressively tighten vertical rhythm on small phones */
+/* without changing colors, typography, icons or hierarchy.            */
+/* ------------------------------------------------------------------ */
+
+.pause-overlay {
+  /* Vertical breathing room + system safe areas (notch / nav bar) */
+  --pause-pt: calc(2.5rem + env(safe-area-inset-top));
+  --pause-pb: calc(2.5rem + env(safe-area-inset-bottom));
+  --pause-head-mt: 1.5rem;   /* header offset          (was mt-6)    */
+  --pause-title-mt: 1rem;    /* badge -> title         (was mt-4)    */
+  --pause-sub-mt: 0.5rem;    /* title -> subtitle      (was mt-2)    */
+  --pause-panel-gap: 1.25rem;/* card <-> buttons       (was gap-5)   */
+  --pause-card-pad: 1.25rem; /* settings card padding  (was p-5)     */
+  --pause-card-gap: 1rem;    /* settings card rows     (was gap-4)   */
+  --pause-title-size: 2.25rem; /* PAUSADO              (was text-4xl)*/
+  --pause-btn-primary-min: 56px;
+  --pause-btn-primary-pad: 1rem;
+  --pause-btn-secondary-min: 52px;
+  --pause-btn-secondary-pad: 0.875rem;
+
+  padding-top: var(--pause-pt);
+  padding-bottom: var(--pause-pb);
+  padding-left: clamp(1.25rem, 6vw, 1.5rem);
+  padding-right: clamp(1.25rem, 6vw, 1.5rem);
+  overflow-y: auto;             /* discreet fallback scroll instead of clipping */
+  overscroll-behavior: contain; /* never chain-scroll to the page behind        */
+}
+
+.pause-header { margin-top: var(--pause-head-mt); }
+
+.pause-title {
+  margin-top: var(--pause-title-mt);
+  font-size: var(--pause-title-size);
+}
+
+.pause-subtitle { margin-top: var(--pause-sub-mt); }
+
+.pause-panel { gap: var(--pause-panel-gap); }
+
+.pause-card {
+  padding: var(--pause-card-pad);
+  row-gap: var(--pause-card-gap);
+}
+
+/* Primary CTA: always the biggest touch target on screen */
+.pause-btn-primary {
+  min-height: var(--pause-btn-primary-min);
+  padding-top: var(--pause-btn-primary-pad);
+  padding-bottom: var(--pause-btn-primary-pad);
+}
+
+.pause-btn-secondary {
+  min-height: var(--pause-btn-secondary-min);
+  padding-top: var(--pause-btn-secondary-pad);
+  padding-bottom: var(--pause-btn-secondary-pad);
+}
+
+/* --- Tier 1: small phones ----------------------------------------- */
+@media (max-width: 360px), (max-height: 700px) {
+  .pause-overlay {
+    --pause-pt: calc(clamp(0.875rem, 2.5vh, 1.25rem) + env(safe-area-inset-top));
+    --pause-pb: calc(clamp(0.75rem, 2vh, 1rem) + env(safe-area-inset-bottom));
+    --pause-head-mt: 0.75rem;
+    --pause-title-mt: 0.625rem;
+    --pause-sub-mt: 0.375rem;
+    --pause-panel-gap: 0.875rem;
+    --pause-card-pad: 1rem;
+    --pause-card-gap: 0.75rem;
+    --pause-title-size: 2rem;
+    --pause-btn-primary-min: 54px;
+    --pause-btn-primary-pad: 0.875rem;
+    --pause-btn-secondary-min: 50px;
+    --pause-btn-secondary-pad: 0.75rem;
+  }
+}
+
+/* --- Tier 2: extra small (e.g. 360x640 with browser chrome) -------- */
+@media (max-width: 360px) and (max-height: 640px) {
+  .pause-overlay {
+    --pause-pt: calc(0.625rem + env(safe-area-inset-top));
+    --pause-pb: calc(0.625rem + env(safe-area-inset-bottom));
+    --pause-head-mt: 0.375rem;
+    --pause-title-mt: 0.5rem;
+    --pause-panel-gap: 0.75rem;
+    --pause-card-pad: 0.875rem;
+    --pause-card-gap: 0.625rem;
+    --pause-title-size: 1.875rem;
+  }
+}
+
+/* --- Tall phones (>=800px): let the layout breathe more ------------ */
+@media (min-height: 800px) {
+  .pause-overlay {
+    --pause-pt: calc(3rem + env(safe-area-inset-top));
+    --pause-pb: calc(3rem + env(safe-area-inset-bottom));
+    --pause-head-mt: 2rem;
+    --pause-panel-gap: 1.5rem;
+  }
+}
+
+/* In-game HUD: fluid height, identical to h-24 on normal/tall screens */
+.play-hud {
+  height: clamp(5rem, 15vh, 6rem);
+}
+
+/* ================================================================== */
+/* GAME FEEL — arcade premium micro-interaction system                */
+/* ================================================================== */
+
+/* Light glassmorphism floating surfaces */
+.glass-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+}
+
+.hud-chip {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+}
+
+/* Idle float of the main challenge card (transform only) */
+@keyframes card-idle-float {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-3px); }
+}
+.challenge-float {
+  animation: card-idle-float 6s ease-in-out infinite alternate;
+}
+
+/* --- Touch feedback ----------------------------------------------- */
+@keyframes gf-punch-kf {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(0.96); }
+  70%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.gf-punch {
+  animation: gf-punch-kf 0.28s ease-out;
+}
+
+@keyframes gf-shake-kf {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.gf-shake {
+  animation: gf-shake-kf 0.42s ease-in-out;
+}
+
+.glass-card.gf-flash-red::after,
+.glass-card.gf-flash-green::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: gf-fade-out 0.45s ease-out forwards;
+}
+.glass-card.gf-flash-red::after   { background: rgba(239, 68, 68, 0.22); }
+.glass-card.gf-flash-green::after { background: rgba(34, 197, 94, 0.18); }
+
+@keyframes gf-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* --- Particles & floating points (FX layer) ------------------------ */
+.gf-particle {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: gf-particle-kf 0.65s ease-out forwards;
+}
+@keyframes gf-particle-kf {
+  from {
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.25) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+.gf-float-points {
+  position: absolute;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+  font-size: 20px;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: gf-rise-kf 0.8s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+}
+@keyframes gf-rise-kf {
+  0%   { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  18%  { opacity: 1; }
+  100% { transform: translate(-50%, calc(-50% - 52px)) scale(1.05); opacity: 0; }
+}
+
+/* --- Timer urgency tiers ------------------------------------------ */
+.timer-warn svg {
+  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.35));
+}
+@keyframes timer-pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+@keyframes timer-pulse-strong {
+  0%, 100% { transform: scale(1); box-shadow: 0 12px 28px -10px rgba(239,68,68,0.35) !important; }
+  50%      { transform: scale(1.05); box-shadow: 0 14px 34px -8px rgba(239,68,68,0.55) !important; }
+}
+@keyframes timer-pulse-final {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.timer-urgent {
+  animation: timer-pulse-soft 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.35));
+}
+.timer-critical {
+  animation: timer-pulse-strong 1s ease-in-out infinite;
+}
+.timer-final {
+  animation: timer-pulse-final 0.55s ease-in-out infinite;
+}
+
+/* --- Background decoration variants -------------------------------- */
+@keyframes float-slow-4 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50%      { transform: translate(5px, -8px) rotate(6deg); }
+}
+@keyframes float-slow-5 {
+  0%, 100% { transform: translateY(0) scale(0.97); }
+  50%      { transform: translateY(6px) scale(1.05); }
+}
+@keyframes float-slow-6 {
+  0%, 100% { transform: translateX(-4px) rotate(-4deg); }
+  50%      { transform: translateX(4px) rotate(4deg); }
+}
+@keyframes float-x-soft {
+  0%, 100% { transform: translateX(-5px) rotate(var(--line-rot, 20deg)); }
+  50%      { transform: translateX(5px) rotate(calc(var(--line-rot, 20deg) * -1)); }
+}
+.animate-float-4 { animation: float-slow-4 11s ease-in-out infinite alternate; }
+.animate-float-5 { animation: float-slow-5 13s ease-in-out infinite alternate; }
+.animate-float-6 { animation: float-slow-6 9s  ease-in-out infinite alternate; }
+.animate-float-x-soft { animation: float-x-soft 10s ease-in-out infinite alternate; }
+
+/* On small phones reduce decorations first — never gameplay elements */
+@media (max-width: 360px), (max-height: 700px) {
+  .deco-extra { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .challenge-float,
+  .animate-float-1,
+  .animate-float-2,
+  .animate-float-3,
+  .animate-float-4,
+  .animate-float-5,
+  .animate-float-6,
+  .timer-urgent,
+  .timer-critical,
+  .timer-final {
+    animation: none !important;
+  }
+}

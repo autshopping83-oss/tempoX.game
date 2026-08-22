@@ -1,0 +1,6 @@
+{
+  "name": "TEMPOX",
+  "description": "Desafie seu cérebro em testes rápidos de reflexo, memória, matemática e atenção em apenas 60 segundos!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

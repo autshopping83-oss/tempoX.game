@@ -1,0 +1,24 @@
+{
+  "name": "TEMPOX",
+  "short_name": "TEMPOX",
+  "description": "Jogo mobile casual de agilidade cognitiva. Enfrente uma sequência dinâmica de micro-desafios em apenas 60 segundos!",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#F8FAFC",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
