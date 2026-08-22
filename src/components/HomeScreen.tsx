@@ -268,18 +268,16 @@ export default function HomeScreen({
           </AnimatePresence>
         </div>
 
-        {/* Bottom Navigation — docked, respects gesture bar */}
-        <div className="mt-4 -mx-5 -mb-[clamp(1rem,3vh,1.5rem)]">
-          <BottomNavigation
-            tabs={[
-              { id: "MAIN", label: "Jogar" },
-              { id: "STATS", label: "Estatísticas" },
-              { id: "ACHIEVEMENTS", label: "Troféus" },
-            ]}
-            activeTab={activeTab}
-            onChange={(id) => setActiveTab(id as typeof activeTab)}
-          />
-        </div>
+        {/* Bottom Navigation — floating bar, lifted above system nav */}
+        <BottomNavigation
+          tabs={[
+            { id: "MAIN", label: "Jogar" },
+            { id: "STATS", label: "Estatísticas" },
+            { id: "ACHIEVEMENTS", label: "Troféus" },
+          ]}
+          activeTab={activeTab}
+          onChange={(id) => setActiveTab(id as typeof activeTab)}
+        />
 
       </div>
     </div>

@@ -17,27 +17,40 @@ interface Props {
 }
 
 /**
- * BottomNavigation — segmented tab bar docked to the bottom edge.
- * Respects gesture navigation area via safe-area inset.
+ * BottomNavigation — floating docked tab bar (Android pattern).
+ *
+ *  - Floats 12–20dp above the system navigation bar
+ *    (env(safe-area-inset-bottom) => adapts to gesture / 3-button nav)
+ *  - 28dp corners, glassmorphism surface, soft premium shadow
+ *  - Minimum bar height 64dp, minimum touch target 48dp per button
  */
 export default function BottomNavigation({ tabs, activeTab, onChange }: Props) {
   return (
-    <div className="shrink-0 pt-safe pb-safe bg-white/80 backdrop-blur-md border-t border-slate-100 px-4 pt-2 pb-2">
-      <div className="flex bg-slate-100/80 p-1 rounded-2xl border border-slate-200/40">
+    <div
+      className="shrink-0 w-full px-4"
+      style={{
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + clamp(12px, 1.8dvh, 20px))",
+      }}
+    >
+      <nav
+        className="min-h-[64px] flex items-stretch gap-1 p-1.5 bg-white/85 backdrop-blur-md border border-white/70 rounded-[28px] shadow-premium"
+        aria-label="Navegação principal"
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            className={`flex-grow py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+            aria-current={activeTab === tab.id ? "page" : undefined}
+            className={`flex-1 min-h-[48px] px-2 my-auto rounded-[22px] text-[11px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer flex items-center justify-center active:scale-[0.97] ${
               activeTab === tab.id
-                ? "bg-white text-[#6D3DF5] shadow-sm"
-                : "text-slate-400 hover:text-slate-600"
+                ? "bg-gradient-to-r from-[#6D3DF5] to-[#5124D6] text-white shadow-btn"
+                : "bg-transparent text-slate-400 hover:text-slate-600"
             }`}
           >
             {tab.label}
           </button>
         ))}
-      </div>
+      </nav>
     </div>
   );
 }

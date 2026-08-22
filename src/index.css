@@ -23,6 +23,42 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+/* ====================================================================
+   GLOBAL FLUID SCALE SYSTEM (mobile-first)
+   Tokens scale with device height so every screen fits the viewport.
+   dp == css px inside the WebView; dvh tracks dynamic browser chrome.
+   ==================================================================== */
+:root {
+  --sp-xs: clamp(4px, 0.9dvh, 8px);    /* tight gaps          */
+  --sp-sm: clamp(8px, 1.7dvh, 14px);   /* card gaps           */
+  --sp-md: clamp(12px, 2.4dvh, 20px);  /* card padding        */
+  --sp-lg: clamp(16px, 3dvh, 26px);    /* section spacing     */
+  --fs-score: clamp(38px, 10dvh, 74px);
+  --fs-title-lg: clamp(22px, 4.4dvh, 32px);
+}
+
+.h-app { height: 100dvh; }
+
+/* Short phones: 320x568 / 360x640 */
+@media (max-height: 640px) {
+  :root {
+    --sp-xs: 3px;
+    --sp-sm: 6px;
+    --sp-md: 9px;
+    --sp-lg: 12px;
+    --fs-score: 38px;
+    --fs-title-lg: 24px;
+  }
+}
+
+/* Large phones: 480x960+ */
+@media (min-height: 900px) {
+  :root {
+    --fs-score: clamp(48px, 9dvh, 74px);
+  }
+}
+
 }
 
 @layer utilities {
