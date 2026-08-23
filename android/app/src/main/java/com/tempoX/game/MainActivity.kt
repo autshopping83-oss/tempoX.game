@@ -77,7 +77,7 @@ fun AppRoot(
 
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        delay(1900)
+        delay(2400)
         showSplash = false
     }
 
