@@ -20,7 +20,7 @@
     <string name="rules_attention_title">Attention</string>
     <string name="rules_attention_desc">Instantly spot the symbol that differs from the others.</string>
     <string name="rules_combo_tip">🔥 Consecutive hits build COMBOS for extra points and speed challenges up! Misses break the combo.</string>
-    <string name="rules_cta">GOT IT, LET'S GO</string>
+    <string name="rules_cta">GOT IT, LET\'S GO</string>
 
     <string name="home_premium_badge">PREMIUM ARCADE</string>
     <string name="home_seed_label">Match Seed</string>
@@ -82,7 +82,7 @@
     <string name="pause_restart">RESTART MATCH</string>
     <string name="pause_quit">Abandon Match</string>
 
-    <string name="result_time_up">TIME'S UP!</string>
+    <string name="result_time_up">TIME\'S UP!</string>
     <string name="result_final_score">Final Score</string>
     <string name="result_new_record">🏆 NEW RECORD SET!</string>
     <string name="stat_challenges">Challenges</string>
