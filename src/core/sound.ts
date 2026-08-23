@@ -3,18 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-interface ToneOpts {
-  freq: number;
-  type?: OscillatorType;
-  start?: number;
-  dur?: number;
-  gain?: number;
-  attack?: number;
-  glideTo?: number;
-  glideType?: "exp" | "lin";
-  filterFreq?: number;
-}
-
 interface NoiseOpts {
   start?: number;
   dur?: number;
@@ -81,47 +69,6 @@ class SoundEngine {
     return this.masterGain;
   }
 
-  /** Synthesized tone with envelope, optional glide and lowpass. */
-  private tone(dest: AudioNode, o: ToneOpts) {
-    if (!this.ctx) return;
-    const now = this.ctx.currentTime;
-    const t0 = now + (o.start ?? 0);
-    const dur = o.dur ?? 0.15;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = o.type ?? "triangle";
-    osc.frequency.setValueAtTime(o.freq, t0);
-    if (o.glideTo !== undefined) {
-      if ((o.glideType ?? "exp") === "exp" && o.glideTo > 0) {
-        osc.frequency.exponentialRampToValueAtTime(o.glideTo, t0 + dur);
-      } else {
-        osc.frequency.linearRampToValueAtTime(o.glideTo, t0 + dur);
-      }
-    }
-
-    const peak = o.gain ?? 0.08;
-    const atk = o.attack ?? 0.004;
-    gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.linearRampToValueAtTime(peak, t0 + atk);
-    gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-
-    let node: AudioNode = gain;
-    if (o.filterFreq) {
-      const lp = this.ctx.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = o.filterFreq;
-      gain.connect(lp);
-      node = lp;
-    }
-
-    osc.connect(gain);
-    node.connect(dest);
-
-    osc.start(t0);
-    osc.stop(t0 + dur + 0.02);
-  }
-
   /** Filtered noise burst — whooshes, sparkles, thud tails. */
   private noise(dest: AudioNode, o: NoiseOpts) {
     if (!this.ctx || !this.noiseBuffer) return;
@@ -157,12 +104,38 @@ class SoundEngine {
     src.stop(t0 + dur + 0.02);
   }
 
-  /** Soft percussive impact — sine drop + dark noise tail. */
-  private impact(dest: AudioNode, opts: { start?: number; freq?: number; dur?: number; gain?: number }) {
-    const f = opts.freq ?? 120;
-    const dur = opts.dur ?? 0.22;
-    this.tone(dest, { freq: f * 1.6, glideTo: f * 0.55, start: opts.start, dur, gain: opts.gain ?? 0.14, type: "sine" });
-    this.noise(dest, { start: opts.start, dur: dur * 0.6, gain: (opts.gain ?? 0.14) * 0.35, filterType: "lowpass", freqFrom: 900, freqTo: 200 });
+  /** Synthesized marimba bar: fundamental + 4.05x signature partial + woody knock. */
+  private marimba(dest: AudioNode, freq: number, dur: number, gain: number, start = 0) {
+    if (!this.ctx) return;
+    const t0 = this.ctx.currentTime + start;
+    const detune = 1 + (Math.random() - 0.5) * 0.004; // organic micro-drift
+    this.partial(dest, freq * detune, dur, gain, t0);
+    this.partial(dest, freq * 4.05, dur * 0.32, gain * 0.34, t0);
+    this.partial(dest, freq * 9.2, dur * 0.1, gain * 0.1, t0);
+    this.noise(dest, { start, dur: 0.006, gain: gain * 0.22, filterType: "lowpass", freqFrom: 1500 });
+  }
+
+  /** Single decaying sine with fast attack. */
+  private partial(dest: AudioNode, freq: number, dur: number, gain: number, t0: number) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.0015);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(g);
+    g.connect(dest);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
+
+  /** Warm soft mallet for gentle negative feedback. */
+  private softMallet(dest: AudioNode, freq: number, dur: number, gain: number, start = 0) {
+    this.partial(dest, freq, dur, gain, this.ctx!.currentTime + start);
+    this.partial(dest, freq * 2.01, dur * 0.4, gain * 0.14, this.ctx!.currentTime + start);
+    this.noise(dest, { start, dur: 0.008, gain: gain * 0.15, filterType: "lowpass", freqFrom: 700 });
   }
 
   setSoundEnabled(enabled: boolean) {
@@ -196,132 +169,128 @@ class SoundEngine {
     return this.vibrationEnabled;
   }
 
-  /** Clean electronic UI click — tight blip + micro transient. */
+  /** Velvety wood-block pop <50ms, ±6% pitch drift vs fatigue. */
   playClick() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: 1900, glideTo: 950, dur: 0.045, gain: 0.05, type: "sine" });
-      this.noise(dest, { dur: 0.02, gain: 0.03, filterType: "highpass", freqFrom: 4000 });
+      const drift = 1 + (Math.random() - 0.5) * 0.12;
+      this.noise(dest, { dur: 0.02, gain: 0.13, filterType: "bandpass", freqFrom: 1750 * drift, q: 2.2 });
+      this.partial(dest, 880 * drift, 0.032, 0.06, this.ctx.currentTime);
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Crystalline two-note confirmation for primary actions. */
+  /** Two-note marimba affirmation for primary actions. */
   playConfirm() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: 1318.51, dur: 0.12, gain: 0.07, type: "triangle" }); // E6
-      this.tone(dest, { freq: 1567.98, start: 0.07, dur: 0.2, gain: 0.07, type: "triangle" }); // G6
-      this.tone(dest, { freq: 3135.96, start: 0.07, dur: 0.18, gain: 0.02, type: "sine" }); // shimmer
+      this.marimba(dest, 659.25, 0.16, 0.09); // E5
+      this.marimba(dest, 880, 0.24, 0.1, 0.07); // A5
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Bright satisfying ding for correct answers. */
+  /** Joyful ascending marimba arpeggio — instant dopamine. */
   playCorrect() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: 880, dur: 0.28, gain: 0.09, type: "triangle" }); // A5
-      this.tone(dest, { freq: 1760, dur: 0.2, gain: 0.04, type: "sine" }); // octave partial
-      this.noise(dest, { dur: 0.09, gain: 0.025, filterType: "highpass", freqFrom: 5200 }); // sparkle
+      const seq: [number, number, number][] = [
+        [523.25, 0, 0.09], [659.25, 0.07, 0.09], [783.99, 0.14, 0.1], [1046.5, 0.21, 0.12],
+      ];
+      seq.forEach(([f, t, g]) => this.marimba(dest, f, t === 0 ? 0.24 : t === 0.21 ? 0.34 : 0.26, g, t));
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Short elegant buzz — filtered saw fall + sub thump. */
+  /** Gentle muffled descend — kind, zero punishment. */
   playIncorrect() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: 170, glideTo: 95, dur: 0.19, gain: 0.07, type: "sawtooth", filterFreq: 850 });
-      this.impact(dest, { freq: 90, dur: 0.16, gain: 0.08 });
+      this.softMallet(dest, 392, 0.13, 0.09); // G4
+      this.softMallet(dest, 329.63, 0.16, 0.08, 0.085); // E4
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Rising whoosh with light impact — scales with combo level. */
+  /** Rising pentatonic wooden run + light knock. */
   playCombo(level: number) {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      const lift = Math.min(level - 1, 5); // cap the pitch climb
-      this.noise(dest, { dur: 0.24, gain: 0.06, filterType: "bandpass", freqFrom: 350, freqTo: 2400 + lift * 250, q: 1.4 });
-      this.tone(dest, { freq: 330 * Math.pow(2, lift / 12), glideTo: 660 * Math.pow(2, lift / 12), dur: 0.22, gain: 0.05, type: "triangle" });
-      this.impact(dest, { start: 0.2, freq: 150, dur: 0.16, gain: 0.09 });
+      const lift = Math.min(level - 1, 5);
+      const k = Math.pow(2, lift / 12);
+      [[392, 0], [493.88, 0.055], [587.33, 0.11], [783.99, 0.165]].forEach(([f, t]) =>
+        this.marimba(dest, f * k, 0.18, 0.09, t));
+      this.noise(dest, { start: 0.235, dur: 0.014, gain: 0.09, filterType: "bandpass", freqFrom: 1500, q: 2.4 });
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Clean digital tick for the final countdown. */
+  /** Rhythmic wood pulse for the final countdown. */
   playTick(high: boolean = false) {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: high ? 1500 : 1150, dur: 0.035, gain: high ? 0.06 : 0.045, type: "square", filterFreq: 3200 });
+      const drift = 1 + (Math.random() - 0.5) * 0.08;
+      this.noise(dest, { dur: 0.016, gain: high ? 0.13 : 0.11, filterType: "bandpass", freqFrom: 1250 * drift, q: 2.6 });
+      this.partial(dest, 1050 * drift, 0.03, high ? 0.06 : 0.05, this.ctx.currentTime);
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Short premium fanfare for a brand-new record. */
+  /** Bright marimba flourish for a brand-new record. */
   playRecord() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
-      notes.forEach((freq, idx) => {
-        this.tone(dest, { freq, start: idx * 0.07, dur: 0.16, gain: 0.075, type: "triangle" });
-        this.tone(dest, { freq: freq * 2, start: idx * 0.07, dur: 0.12, gain: 0.02, type: "sine" });
-      });
-      // Final bright chord + shimmer
-      [1046.5, 1318.51, 1567.98].forEach((freq) => {
-        this.tone(dest, { freq, start: 0.3, dur: 0.35, gain: 0.05, type: "triangle" });
-      });
-      this.noise(dest, { start: 0.3, dur: 0.25, gain: 0.02, filterType: "highpass", freqFrom: 6000 });
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.marimba(dest, f, i === 3 ? 0.34 : 0.2, 0.09, i * 0.07));
+      this.marimba(dest, 1318.51, 0.5, 0.1, 0.28); // E6 landing
+      [523.25, 659.25, 783.99].forEach(f => this.partial(dest, f, 0.42, 0.025, this.ctx!.currentTime + 0.36));
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Metallic shine for trophy unlocks — inharmonic partials. */
+  /** Warm chime sparkle for trophies. */
   playTrophy() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: 2093, dur: 0.4, gain: 0.06, type: "sine" });
-      this.tone(dest, { freq: 2637 * 1.007, dur: 0.34, gain: 0.035, type: "sine" });
-      this.tone(dest, { freq: 3520 * 0.996, dur: 0.28, gain: 0.02, type: "sine" });
-      this.noise(dest, { dur: 0.12, gain: 0.03, filterType: "highpass", freqFrom: 7000 });
+      [[1046.5, 0, 0.4], [1318.51, 0.06, 0.36], [783.99, 0.12, 0.3]].forEach(([f, t, d]) =>
+        this.marimba(dest, f, d, 0.08, t));
+      this.noise(dest, { start: 0.02, dur: 0.05, gain: 0.02, filterType: "highpass", freqFrom: 6500 });
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
   }
 
-  /** Smooth fall + elegant impact — composed, not sad or exaggerated. */
+  /** Smooth downward resolution — invites a quick retry. */
   playGameOver() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
-      this.tone(dest, { freq: 540, glideTo: 262, dur: 0.38, gain: 0.08, type: "triangle", filterFreq: 1600 });
-      this.tone(dest, { freq: 270, glideTo: 135, dur: 0.38, gain: 0.04, type: "sine" });
-      this.impact(dest, { start: 0.32, freq: 110, dur: 0.26, gain: 0.11 });
+      [[523.25, 0, 0.22, 0.09], [440, 0.14, 0.24, 0.085], [349.23, 0.28, 0.3, 0.08], [261.63, 0.46, 0.55, 0.09]].forEach(
+        ([f, t, d, g]) => this.marimba(dest, f as number, d as number, g as number, t as number));
+      this.noise(dest, { start: 0.46, dur: 0.01, gain: 0.05, filterType: "lowpass", freqFrom: 500 });
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
