@@ -76,7 +76,9 @@ object SoundManager {
         val id = sampleIds[sfx] ?: return
         if (!enabled || ringerSilent() || id !in loaded) return
         val v = volume.coerceIn(0f, 1f)
-        soundPool?.play(id, v, v, 1, 0, 1f)
+        // Subtle ±6% pitch drift on repeated clicks prevents auditory fatigue
+        val rate = if (sfx == Sfx.CLICK) 0.94f + Math.random().toFloat() * 0.12f else 1f
+        soundPool?.play(id, v, v, 1, 0, rate)
     }
 
     fun setEnabled(value: Boolean) {
