@@ -1,5 +1,7 @@
 package com.tempoX.game.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,12 +28,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,7 +55,6 @@ import com.tempoX.game.game.ChallengeType
 import com.tempoX.game.game.GameEngine
 import com.tempoX.game.game.MatchSummary
 import com.tempoX.game.game.Progression
-import com.tempoX.game.ui.components.CircularTimer
 import com.tempoX.game.ui.components.FloatingCard
 import com.tempoX.game.ui.components.PrimaryButton
 import com.tempoX.game.ui.components.SecondaryButton
@@ -128,15 +132,18 @@ fun GameScreen(
         }
     }
 
-    val secondsLeft = ceil(engine.timeLeftMillis / 1000f).toInt()
-
-    // Final-count digital ticks over the last 5 seconds.
+    // Final-count digital ticks over the last 5 seconds. The per-second
+    // read is isolated in snapshotFlow so it never recomposes this screen.
+    val pausedWhileTicking = rememberUpdatedState(paused)
     var lastTickedSecond by remember { mutableIntStateOf(-1) }
-    LaunchedEffect(secondsLeft, paused) {
-        if (!paused && secondsLeft in 1..5 && lastTickedSecond != secondsLeft) {
-            lastTickedSecond = secondsLeft
-            SoundManager.play(SoundManager.Sfx.TICK)
-        }
+    LaunchedEffect(Unit) {
+        snapshotFlow { ceil(engine.timeLeftMillis / 1000f).toInt() }
+            .collect { sec ->
+                if (!pausedWhileTicking.value && sec in 1..5 && lastTickedSecond != sec) {
+                    lastTickedSecond = sec
+                    SoundManager.play(SoundManager.Sfx.TICK)
+                }
+            }
     }
 
     Box(
@@ -165,20 +172,22 @@ fun GameScreen(
                 ) { Text("⏸", fontSize = 17.sp, color = TemproxColors.Ink) }
 
                 Spacer(Modifier.size(12.dp))
-                CircularTimer(
-                    remainingFraction = engine.timeLeftMillis.toFloat() / Progression.MATCH_MILLIS,
-                    secondsLeft = secondsLeft,
-                )
-                Spacer(Modifier.size(12.dp))
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)) {
+                Spacer(Modifier.weight(1f))
+                Column(horizontalAlignment = Alignment.End) {
                     Text(stringResource(R.string.hud_points), style = TemproxType.micro.copy(color = TemproxColors.Muted))
                     Text("${engine.score}", style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
                 }
             }
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(10.dp))
+            GlobalTimeBar(engine)
+
+            Spacer(Modifier.height(12.dp))
             ChallengeBanner(engine.challenge, combo = engine.combo)
-            Spacer(Modifier.height(16.dp))
+
+            Spacer(Modifier.height(10.dp))
+            QuestionTimeBar(engine)
+            Spacer(Modifier.height(14.dp))
 
             key(engine.challenge) {
                 when (val ch = engine.challenge) {
@@ -608,5 +617,60 @@ private fun SettingsRow(label: String, emoji: String, control: @Composable () ->
         Spacer(Modifier.size(8.dp))
         Text(label, style = TemproxType.bodyBold.copy(color = TemproxColors.Ink), modifier = Modifier.weight(1f))
         control()
+    }
+}
+
+// ---------------------------------------------------------------------
+// Linear time bars — state reads are isolated via derivedStateOf so each
+// tick recomposes only its own bar, never the challenge tree.
+// ---------------------------------------------------------------------
+
+/** Slim global 60s session bar — neutral track, brand gradient fill. */
+@Composable
+private fun GlobalTimeBar(engine: GameEngine) {
+    val frac by remember {
+        derivedStateOf { (engine.timeLeftMillis / Progression.MATCH_MILLIS.toFloat()).coerceIn(0f, 1f) }
+    }
+    val anim by animateFloatAsState(frac, tween(140), label = "globalTime")
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(6.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(TemproxColors.BorderSofter),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth(anim)
+                .height(6.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Brush.horizontalGradient(listOf(Color(0xFF8B5CF6), TemproxColors.Primary))),
+        )
+    }
+}
+
+/** Fast per-question urgency bar — challenge tint, red under 20%. */
+@Composable
+private fun QuestionTimeBar(engine: GameEngine) {
+    val limit = engine.challenge.limitMillis.coerceAtLeast(1L).toFloat()
+    val remain by remember(engine.challenge) {
+        derivedStateOf { (1f - engine.challengeElapsedMillis / limit).coerceIn(0f, 1f) }
+    }
+    val fill = if (remain < 0.2f) TemproxColors.Danger else TemproxColors.challengeColor(engine.challenge.type)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(7.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(999.dp)),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth(remain)
+                .height(7.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(fill),
+        )
     }
 }
