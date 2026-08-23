@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "motion/react";
 import AppHeader from "./components/ui/AppHeader";
 import FloatingCard from "./components/ui/FloatingCard";
 import { LangProvider, useI18n, LangMode } from "./core/i18n";
+import { sound } from "./core/sound";
 
 export default function App() {
   return (
@@ -287,7 +288,7 @@ function TempxAppRoot() {
               </div>
 
               <button
-                onClick={() => setAboutOpen(false)}
+                onClick={() => { sound.playConfirm(); setAboutOpen(false); }}
                 className="w-full max-w-xs mx-auto min-h-[56px] bg-[#6D3DF5] hover:bg-[#5124D6] text-white rounded-2xl font-black text-xs uppercase tracking-wider cursor-pointer shadow-btn transition-all flex items-center justify-center gap-1"
               >
                 <span>{t("rules_cta")}</span>

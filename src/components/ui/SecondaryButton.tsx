@@ -5,6 +5,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
+import { sound } from "../../core/sound";
 
 interface Props {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export default function SecondaryButton({ children, onClick, className = "" }: P
   return (
     <motion.button
       whileTap={{ scale: 0.96 }}
-      onClick={onClick}
+      onClick={() => { sound.playClick(); onClick?.(); }}
       className={`w-full min-h-[56px] px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2 cursor-pointer border border-slate-200/80 transition-colors ${className}`}
     >
       {children}

@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { sound } from "../../core/sound";
 
 export interface TabItem {
   id: string;
@@ -39,7 +40,7 @@ export default function BottomNavigation({ tabs, activeTab, onChange }: Props) {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => onChange(tab.id)}
+            onClick={() => { if (tab.id !== activeTab) sound.playClick(); onChange(tab.id); }}
             aria-current={activeTab === tab.id ? "page" : undefined}
             className={`flex-1 min-h-[48px] px-2 my-auto rounded-[22px] text-[11px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer flex items-center justify-center active:scale-[0.97] ${
               activeTab === tab.id

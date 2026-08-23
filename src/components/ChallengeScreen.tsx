@@ -356,7 +356,7 @@ export default function ChallengeScreen({
 
               {/* Quick Options */}
               <button
-                onClick={onResume}
+                onClick={() => { sound.playConfirm(); onResume(); }}
                 className={`w-full shrink-0 pause-btn-primary ${GameTheme.colors.primary.bgGradient} text-white ${GameTheme.shapes.button} font-black flex items-center justify-center gap-2 cursor-pointer ${GameTheme.shadows.btnPrimary} transition-all duration-150`}
               >
                 <Play className="w-4 h-4 fill-white" />

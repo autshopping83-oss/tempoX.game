@@ -176,10 +176,17 @@ export function useGame() {
     if (newlyUnlocked.length > 0) {
       updatedStats.achievements = [...updatedStats.achievements, ...newlyUnlocked];
       setNewAchievementsUnlocked(newlyUnlocked);
-      sound.playRecord(); // Triumph sound!
+      // Metallic shine layered just after the main sting (mirrors native).
+      window.setTimeout(() => sound.playTrophy(), 700);
     } else {
       setNewAchievementsUnlocked([]);
-      sound.playCorrect(); // Standard game over chime
+    }
+
+    const isRecord = finalScore > stats.highScore;
+    if (isRecord) {
+      sound.playRecord(); // Short premium fanfare
+    } else {
+      sound.playGameOver(); // Smooth fall + elegant impact
     }
 
     saveStats(updatedStats);
