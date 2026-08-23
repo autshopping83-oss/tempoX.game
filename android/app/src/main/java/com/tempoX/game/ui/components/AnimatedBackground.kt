@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
@@ -179,7 +180,7 @@ fun AnimatedBackground(modifier: Modifier = Modifier) {
                                 drawPath(
                                     paths.triangle,
                                     s.color.copy(alpha = s.alpha * 1.35f),
-                                    style = androidx.compose.ui.graphics.Stroke(width = 0.22f),
+                                    style = Stroke(width = 0.22f),
                                 )
                         }
                     }
