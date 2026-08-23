@@ -18,8 +18,7 @@ android {
     // KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
     signingConfigs {
         release {
-            def keystorePath = System.getenv('KEYSTORE_PATH') ?: 'release.keystore'
-            def keystoreFile = rootProject.file(keystorePath)
+            def keystoreFile = rootProject.file(System.getenv('KEYSTORE_PATH') ?: 'app/release.keystore')
             if (keystoreFile.exists()) {
                 storeFile keystoreFile
                 storePassword System.getenv('KEYSTORE_PASSWORD')
@@ -33,7 +32,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            def keystoreFile = rootProject.file(System.getenv('KEYSTORE_PATH') ?: 'release.keystore')
+            def keystoreFile = rootProject.file(System.getenv('KEYSTORE_PATH') ?: 'app/release.keystore')
             if (keystoreFile.exists()) {
                 signingConfig signingConfigs.release
             } else {
