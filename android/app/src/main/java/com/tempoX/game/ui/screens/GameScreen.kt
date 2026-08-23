@@ -45,10 +45,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tempoX.game.R
@@ -632,12 +634,12 @@ private fun SettingsRow(label: String, emoji: String, control: @Composable () ->
 // challenge tree. Only rare discrete flips (integer second, urgency) do.
 // ---------------------------------------------------------------------
 
-/** Fractional-width helper: reads [state] at LAYOUT phase, not composition. */
-private fun Modifier.fillFraction(state: androidx.compose.runtime.State<Float>): Modifier =
-    androidx.compose.ui.layout.layout { measurable, constraints ->
-        val w = (constraints.maxWidth * state.value.coerceIn(0f, 1f)).roundToInt()
+/** Fractional-width helper: reads [value] at LAYOUT phase, not composition. */
+private fun Modifier.fillFraction(value: () -> Float): Modifier =
+    layout { measurable, constraints ->
+        val w = (constraints.maxWidth * value().coerceIn(0f, 1f)).roundToInt()
         val placeable = measurable.measure(
-            androidx.compose.ui.unit.Constraints(minWidth = w, maxWidth = w),
+            Constraints(minWidth = w, maxWidth = w),
         )
         layout(w, placeable.height) { placeable.placeRelative(0, 0) }
     }
@@ -672,7 +674,7 @@ private fun GlobalTimeBar(engine: GameEngine) {
         Box(
             Modifier
                 .fillMaxHeight()
-                .fillFraction(anim)
+                .fillFraction { anim.value }
                 .clip(RoundedCornerShape(999.dp))
                 .background(
                     if (urgent) {
@@ -728,7 +730,7 @@ private fun QuestionTimeBar(engine: GameEngine) {
         Box(
             Modifier
                 .fillMaxHeight()
-                .fillFraction(remain)
+                .fillFraction { remain.value }
                 .clip(RoundedCornerShape(999.dp))
                 .background(Brush.horizontalGradient(listOf(fill.copy(alpha = 0.75f), fill))),
         )
