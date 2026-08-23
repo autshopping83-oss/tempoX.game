@@ -1,7 +1,10 @@
 package com.tempoX.game.ui.screens
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,12 +45,14 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
@@ -296,7 +301,12 @@ private fun ChallengeBanner(challenge: Challenge, combo: Int) {
 // MEMORY — flash sequence, then tap palette in order.
 // ---------------------------------------------------------------------
 
-private val MEMORY_SHAPES = listOf("🔺", "🟦", "⭐", "🟢", "🔶", "🟣")
+// Premium vector icon set (see res/drawable/ic_mem_*.xml) — one silhouette
+// per shape family, shared gradient language and optical padding.
+private val MEMORY_ICONS = listOf(
+    R.drawable.ic_mem_triangle, R.drawable.ic_mem_square, R.drawable.ic_mem_star,
+    R.drawable.ic_mem_circle, R.drawable.ic_mem_diamond, R.drawable.ic_mem_donut,
+)
 private val MEMORY_TINTS = listOf(
     Color(0xFFEF4444), Color(0xFF3B82F6), Color(0xFFF59E0B),
     Color(0xFF22C55E), Color(0xFFF97316), Color(0xFFA855F7),
@@ -312,6 +322,27 @@ private fun MemoryHost(
     var inputCursor by remember { mutableIntStateOf(0) }
     var wrongFlash by remember { mutableIntStateOf(0) }
     val watching = cursor < challenge.sequence.size
+
+    // Micro-interactions: scale pop on correct tap, horizontal shake on wrong.
+    var pulseIdx by remember { mutableIntStateOf(-1) }
+    var pulseKey by remember { mutableIntStateOf(0) }
+    val pulse = remember { Animatable(1f) }
+    LaunchedEffect(pulseKey) {
+        if (pulseKey > 0) {
+            pulse.snapTo(0.85f)
+            pulse.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+        }
+    }
+    val shakeX = remember { Animatable(0f) }
+    LaunchedEffect(wrongFlash) {
+        if (wrongFlash > 0) {
+            repeat(3) {
+                shakeX.animateTo(-6f, tween(45))
+                shakeX.animateTo(6f, tween(45))
+            }
+            shakeX.animateTo(0f, tween(45))
+        }
+    }
 
     LaunchedEffect(Unit) { onWatchingChange(true) }
     DisposableEffect(Unit) { onDispose { onWatchingChange(false) } }
@@ -337,14 +368,33 @@ private fun MemoryHost(
 
         if (watching) {
             val idx = challenge.sequence[cursor]
+            val flashScale = remember { Animatable(1f) }
+            LaunchedEffect(cursor) {
+                if (watching) {
+                    flashScale.snapTo(0.9f)
+                    flashScale.animateTo(1f, tween(200))
+                }
+            }
             Box(
                 Modifier
                     .size(150.dp)
+                    .shadow(6.dp, TemproxShapes.Card, spotColor = Color(0x33475569))
                     .clip(TemproxShapes.Card)
-                    .background(MEMORY_TINTS[idx].copy(alpha = 0.25f))
+                    .background(Color.White)
                     .border(3.dp, MEMORY_TINTS[idx], TemproxShapes.Card),
                 contentAlignment = Alignment.Center,
-            ) { Text(MEMORY_SHAPES[idx], fontSize = 64.sp) }
+            ) {
+                Image(
+                    painterResource(MEMORY_ICONS[idx]),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(104.dp)
+                        .graphicsLayer {
+                            scaleX = flashScale.value
+                            scaleY = flashScale.value
+                        },
+                )
+            }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 challenge.sequence.forEachIndexed { i, seqIdx ->
@@ -359,30 +409,52 @@ private fun MemoryHost(
             }
             Spacer(Modifier.height(22.dp))
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                MEMORY_SHAPES.indices.chunked(3).forEach { rowIdx ->
+                MEMORY_ICONS.indices.chunked(3).forEach { rowIdx ->
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         rowIdx.forEach { i ->
+                            val isWrongTile = wrongFlash > 0 && i == wrongFlash - 1
+                            val isPulseTile = pulseKey > 0 && pulseIdx == i
                             Box(
                                 Modifier
                                     .size(64.dp)
+                                    .shadow(4.dp, RoundedCornerShape(16.dp), spotColor = Color(0x33475569))
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(MEMORY_TINTS[i].copy(alpha = if (wrongFlash > 0 && i == wrongFlash - 1) 0.5f else 0.16f))
+                                    .background(if (isWrongTile) MEMORY_TINTS[i].copy(alpha = 0.25f) else Color.White)
                                     .border(2.dp, MEMORY_TINTS[i], RoundedCornerShape(16.dp))
                                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                                         if (inputCursor < challenge.sequence.size) {
                                             if (challenge.sequence[inputCursor] == i) {
+                                                pulseIdx = i
+                                                pulseKey++
+                                                SoundManager.vibrate(longArrayOf(0, 18))
                                                 inputCursor++
                                                 if (inputCursor == challenge.sequence.size) {
                                                     onResolve(true, challenge.sequence.size)
                                                 }
                                             } else {
+                                                pulseIdx = i
+                                                pulseKey++ // shake rides on wrongFlash effect
+                                                SoundManager.vibrate(longArrayOf(0, 40, 60, 40))
                                                 wrongFlash = i + 1
                                                 onResolve(false, 0)
                                             }
                                         }
                                     },
-                                contentAlignment = Alignment.Center,
-                            ) { Text(MEMORY_SHAPES[i], fontSize = 30.sp) }
+                            ) {
+                                Image(
+                                    painterResource(MEMORY_ICONS[i]),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .align(Alignment.Center)
+                                        .graphicsLayer {
+                                            val s = if (isPulseTile) pulse.value else 1f
+                                            scaleX = s
+                                            scaleY = s
+                                            translationX = if (isWrongTile) shakeX.value else 0f
+                                        },
+                                )
+                            }
                         }
                     }
                 }

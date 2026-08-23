@@ -1,0 +1,15 @@
+<!-- TEMPO X memory icon: circle with soft gloss highlight, green gradient -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M24 7 A17 17 0 1 1 23.99 7 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="10" android:startY="10" android:endX="36" android:endY="38"
+                android:startColor="#4ADE80" android:endColor="#16A34A"/>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M15.5 14.5 A12 12 0 0 1 24 11.5 L24 15 A9 9 0 0 0 18 17.5 Z"
+        android:fillColor="#66FFFFFF"/>
+</vector>

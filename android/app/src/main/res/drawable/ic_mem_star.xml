@@ -1,0 +1,13 @@
+<!-- TEMPO X memory icon: five-point star, soft amber gradient -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M24 7 L28.2 18.2 L40.2 18.7 L30.9 26.2 L34 37.8 L24 31.2 L14 37.8 L17.1 26.2 L7.8 18.7 L19.8 18.2 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="24" android:startY="7" android:endX="24" android:endY="38"
+                android:startColor="#FBBF24" android:endColor="#D97706"/>
+        </aapt:attr>
+    </path>
+</vector>

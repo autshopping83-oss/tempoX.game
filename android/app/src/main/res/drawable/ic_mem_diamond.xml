@@ -1,0 +1,13 @@
+<!-- TEMPO X memory icon: rounded diamond, soft orange gradient -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M21.8 8.2 Q24 6 26.2 8.2 L39.8 21.8 Q42 24 39.8 26.2 L26.2 39.8 Q24 42 21.8 39.8 L8.2 26.2 Q6 24 8.2 21.8 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="10" android:startY="8" android:endX="38" android:endY="40"
+                android:startColor="#FDBA74" android:endColor="#EA580C"/>
+        </aapt:attr>
+    </path>
+</vector>

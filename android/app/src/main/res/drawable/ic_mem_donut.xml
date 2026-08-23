@@ -1,0 +1,14 @@
+<!-- TEMPO X memory icon: donut ring, soft purple gradient -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M24 7 A17 17 0 1 1 23.99 7 Z M24 16 A8 8 0 1 0 24.01 16 Z"
+        android:fillType="evenOdd">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="10" android:startY="8" android:endX="38" android:endY="40"
+                android:startColor="#C084FC" android:endColor="#9333EA"/>
+        </aapt:attr>
+    </path>
+</vector>

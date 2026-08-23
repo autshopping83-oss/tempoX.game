@@ -1,0 +1,13 @@
+<!-- TEMPO X memory icon: rounded triangle, soft rose gradient -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M22.2 9.2 Q24 6.8 25.8 9.2 L40 34.6 Q42 38 38 38 L10 38 Q6 38 8 34.6 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear"
+                android:startX="24" android:startY="7" android:endX="24" android:endY="38"
+                android:startColor="#FB7185" android:endColor="#E11D48"/>
+        </aapt:attr>
+    </path>
+</vector>
