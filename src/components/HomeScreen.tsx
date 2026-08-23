@@ -52,7 +52,7 @@ export default function HomeScreen({
   };
 
   return (
-    <div className={`relative flex flex-col flex-grow justify-between ${GameTheme.spacing.outerPadding} w-full h-full text-slate-800 ${GameTheme.colors.background} overflow-y-auto select-none overflow-x-hidden`}>
+    <div className={`relative flex flex-col flex-grow min-h-0 justify-between ${GameTheme.spacing.outerPadding} w-full text-slate-800 ${GameTheme.colors.background} overflow-x-hidden`}>
       {/* Visual gradients & shapes in the background */}
       <FloatingBackgroundShapes />
       <ShapeGradients />
@@ -91,7 +91,7 @@ export default function HomeScreen({
         </div>
 
         {/* Official TEMPOX Logo Wordmark */}
-        <div className="text-center my-4">
+        <div className="text-center my-[var(--sp-xs)]">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -107,16 +107,16 @@ export default function HomeScreen({
               src="/logo.png"
               alt="TEMPOX"
               draggable={false}
-              className="h-28 sm:h-32 w-auto max-w-[240px] object-contain mx-auto select-none drop-shadow-[0_10px_25px_rgba(109,61,245,0.30)]"
+              style={{ height: "var(--logo-h)" }} className="w-auto max-w-[240px] object-contain mx-auto select-none drop-shadow-[0_10px_25px_rgba(109,61,245,0.30)]"
             />
-            <p className="text-xs text-slate-400 font-black tracking-[0.3em] uppercase mt-3">
+            <p className="text-xs text-slate-400 font-black tracking-[0.3em] uppercase mt-[var(--sp-xs)]">
               THINK FAST. REACT FASTER.
             </p>
           </motion.div>
         </div>
 
         {/* Main Tab Area Content */}
-        <div className="flex-grow flex flex-col justify-center my-2 min-h-[220px]">
+        <div className="flex-grow min-h-0 flex flex-col justify-center my-[var(--sp-xs)]">
           <AnimatePresence mode="wait">
             {activeTab === "MAIN" && (
               <motion.div
@@ -128,10 +128,10 @@ export default function HomeScreen({
                 className={`flex flex-col ${GameTheme.spacing.outerPadding} ${GameTheme.spacing.containerGap}`}
               >
                 {/* Clean, high-contrast premium card showing Level & HighScore */}
-                <FloatingCard className="p-5">
+                <FloatingCard className="p-[var(--sp-md)]">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#6D3DF5]/5 to-transparent rounded-full -mr-10 -mt-10" />
                   
-                  <div className="flex justify-between items-center mb-4 relative z-10">
+                  <div className="flex justify-between items-center mb-[var(--sp-xs)] relative z-10">
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-slate-400 font-extrabold">
                         Nível de Perfil
@@ -240,7 +240,7 @@ export default function HomeScreen({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ duration: 0.2 }}
-                className="flex flex-col gap-3 max-h-[260px] overflow-y-auto pr-1"
+                className="flex flex-col gap-[var(--sp-xs)]"
               >
                 <div className="flex items-center gap-2 pb-1">
                   <Trophy className="w-5 h-5 text-amber-500" />
@@ -268,7 +268,7 @@ export default function HomeScreen({
           </AnimatePresence>
         </div>
 
-        {/* Bottom Navigation — floating bar, lifted above system nav */}
+        {/* Bottom Navigation — floating bar (owns its safe-area lift) */}
         <BottomNavigation
           tabs={[
             { id: "MAIN", label: "Jogar" },

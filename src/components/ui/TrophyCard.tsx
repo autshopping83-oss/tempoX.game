@@ -19,7 +19,7 @@ interface Props {
 const TrophyCard: React.FC<Props> = ({ icon, title, description, unlocked }) => {
   return (
     <div
-      className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
+      className={`flex items-center gap-2.5 p-[var(--sp-sm)] rounded-2xl border transition-all ${
         unlocked
           ? "bg-white/90 border-purple-200 shadow-soft"
           : "bg-white/40 border-slate-100 opacity-60"

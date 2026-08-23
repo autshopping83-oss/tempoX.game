@@ -88,77 +88,68 @@ export default function ResultScreen({
   };
 
   return (
-    <div className={`relative flex flex-col justify-between ${GameTheme.spacing.outerPadding} max-w-md mx-auto w-full h-full text-slate-800 ${GameTheme.colors.background} overflow-y-auto select-none`}>
+    <div className={`relative flex flex-col flex-grow min-h-0 justify-between ${GameTheme.spacing.outerPadding} w-full text-slate-800 ${GameTheme.colors.background} overflow-x-hidden`}>
       <FloatingBackgroundShapes />
 
       <div className={`relative z-10 flex flex-col flex-grow justify-between h-full ${GameTheme.spacing.containerGap}`}>
         
         {/* Upper Header: Time Out Banner */}
-        <div className="text-center mt-3">
-          <motion.img
-            src="/logo.png"
-            alt="TEMPOX"
-            draggable={false}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.5, ease: "easeOut" }}
-            className="h-8 w-auto object-contain mx-auto select-none mb-2.5 drop-shadow-[0_0_12px_rgba(109,61,245,0.30)]"
-          />
+        <div className="text-center mt-[var(--sp-xs)]">
           <span className={`text-[10px] uppercase tracking-[0.25em] text-[#EF4444] ${GameTheme.colors.danger.lightBg} border ${GameTheme.colors.danger.border} px-3 py-1 rounded-full font-black`}>
             TEMPO ESGOTADO!
           </span>
           
           {/* Giant score display - center of attention */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.92, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 120, damping: 15 }}
-            className="my-5"
+            className="my-[var(--sp-xs)] flex items-center justify-center gap-[var(--sp-sm)]"
           >
-            <span className="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider">
-              Pontuação Final
-            </span>
-            <h1 className={`${GameTheme.typography.scoreMain} mt-1`}>
-              {score.toLocaleString()}
-            </h1>
+            {/* Compact medal/trophy badge — always visible */}
+            <motion.div
+              initial={{ y: 14, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring", delay: 0.1 }}
+              className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center border shadow-soft ${
+                isHighScore ? "bg-amber-50 border-amber-200" : "bg-indigo-50 border-slate-100"
+              }`}
+            >
+              {isHighScore ? (
+                <Trophy className="w-6 h-6 text-amber-500 fill-amber-500/20" />
+              ) : (
+                <Award className={`w-6 h-6 ${GameTheme.colors.primary.text}`} />
+              )}
+            </motion.div>
 
-            {isHighScore && (
-              <motion.div
-                initial={{ rotate: -3, scale: 0.9 }}
-                animate={{ rotate: 0, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className={`inline-flex items-center gap-1.5 ${GameTheme.colors.warning.bg} text-slate-900 px-4 py-1.5 rounded-full text-xs font-black uppercase mt-3 ${GameTheme.shadows.premium}`}
+            <div>
+              <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block leading-none">
+                Pontuação Final
+              </span>
+              <h1
+                className={`${GameTheme.typography.scoreMain.replace("text-7xl", "")} mt-0.5 leading-none`}
+                style={{ fontSize: "var(--fs-score)" }}
               >
-                <Trophy className="w-3.5 h-3.5 fill-current" />
-                🏆 NOVO RECORDE REGISTRADO!
-              </motion.div>
-            )}
+                {score.toLocaleString()}
+              </h1>
+            </div>
           </motion.div>
-        </div>
 
-        {/* Celebratory Graphic Cup or Badge if record */}
-        <div className="flex justify-center my-1.5">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: "spring", delay: 0.1 }}
-            className={`relative bg-white border ${GameTheme.colors.borders.light} rounded-full p-4 ${GameTheme.shadows.soft}`}
-          >
-            {isHighScore ? (
-              <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center relative">
-                <Trophy className="w-9 h-9 text-amber-500 fill-amber-500/20" />
-                <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-amber-500 animate-pulse" />
-              </div>
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center">
-                <Award className={`w-9 h-9 ${GameTheme.colors.primary.text}`} />
-              </div>
-            )}
-          </motion.div>
+          {isHighScore && (
+            <motion.div
+              initial={{ rotate: -3, scale: 0.9 }}
+              animate={{ rotate: 0, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className={`inline-flex items-center gap-1.5 ${GameTheme.colors.warning.bg} text-slate-900 px-3 py-1 rounded-full text-[10px] font-black uppercase ${GameTheme.shadows.premium}`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              🏆 NOVO RECORDE REGISTRADO!
+            </motion.div>
+          )}
         </div>
 
         {/* 3 Grid Stats */}
-        <div className="grid grid-cols-3 gap-3.5 my-4">
+        <div className="grid grid-cols-3 gap-[var(--sp-xs)] my-[var(--sp-xs)]">
           <StatCard
             label="Desafios"
             value={challengesCompletedSession}
@@ -180,30 +171,30 @@ export default function ResultScreen({
         </div>
 
         {/* Rewarded Ad Card */}
-        <FloatingCard className="p-5 mb-5 text-center">
+        <FloatingCard className="p-[var(--sp-sm)] mb-[var(--sp-xs)] text-center">
           {/* Graphic gold coins vector-ish indicator */}
-          <div className="flex justify-center gap-1.5 mb-2.5">
-            <div className="w-5 h-5 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800">XP</div>
-            <div className="w-5 h-5 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800 -ml-2">XP</div>
-            <div className="w-5 h-5 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800 -ml-2">XP</div>
+          <div className="flex justify-center gap-1 mb-[var(--sp-xs)]">
+            <div className="w-4 h-4 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800">XP</div>
+            <div className="w-4 h-4 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800 -ml-2">XP</div>
+            <div className="w-4 h-4 rounded-full bg-amber-400 border border-amber-300 shadow-sm flex items-center justify-center text-[10px] font-black text-amber-800 -ml-2">XP</div>
           </div>
 
           <span className="text-slate-400 text-[10px] uppercase tracking-wider font-extrabold">
             RECOMPENSA ACUMULADA
           </span>
-          <h2 className={`text-2xl font-black ${GameTheme.colors.success.text} font-mono mt-0.5`}>
+          <h2 className={`text-xl font-black ${GameTheme.colors.success.text} font-mono leading-none`}>
             +{adState === "COMPLETED" ? xpGainedSession * 2 : xpGainedSession} XP
           </h2>
 
           {adState !== "COMPLETED" ? (
-            <div className="mt-4 flex flex-col items-center gap-2">
+            <div className="mt-[var(--sp-xs)] flex flex-col items-center gap-1.5">
               <span className="text-[11px] text-slate-500">Dobre seus ganhos assistindo a um vídeo curto!</span>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={handleDoubleRewardClick}
                 disabled={adState !== "IDLE"}
-                className={`w-full max-w-[240px] py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-[#111827] rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${GameTheme.shadows.btnWarning} hover:from-amber-500 hover:to-amber-400 transition-all duration-150`}
+                className={`w-full min-h-[56px] bg-gradient-to-r from-amber-400 to-amber-500 text-[#111827] rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${GameTheme.shadows.btnWarning} hover:from-amber-500 hover:to-amber-400 transition-all duration-150`}
               >
                 <span>🎬 DOBRAR RECOMPENSA</span>
               </motion.button>
@@ -270,7 +261,7 @@ export default function ResultScreen({
         )}
 
         {/* Footer Navigation Actions */}
-        <div className="flex flex-col gap-3 mt-auto pb-safe">
+        <div className="flex flex-col gap-[var(--sp-xs)] mt-auto pb-safe">
           <PrimaryButton onClick={() => onPlayAgain(seed)} icon={<RotateCcw className="w-5 h-5" />}>
             JOGAR NOVAMENTE
           </PrimaryButton>

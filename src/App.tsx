@@ -66,7 +66,7 @@ export default function App() {
   const isPlayingMode = gameState === "PLAYING" || gameState === "PAUSED";
 
   return (
-    <div className="min-h-app w-full bg-slate-50 flex flex-col text-slate-800 font-sans antialiased selection:bg-[#6D3DF5]/10 overflow-x-hidden">
+    <div className="h-app w-full bg-slate-50 flex flex-col text-slate-800 font-sans antialiased selection:bg-[#6D3DF5]/10 overflow-hidden">
 
       {/* 1. TOP APP BAR (Only visible outside of active playing to maximize gaming space) */}
       {!isPlayingMode && (
@@ -194,14 +194,14 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#F8FAFC]/98 backdrop-blur-md z-50 flex flex-col justify-between py-8 px-6 text-slate-800 select-none"
+              className="absolute inset-0 bg-[#F8FAFC]/98 backdrop-blur-md z-50 flex flex-col justify-between pt-safe pb-safe py-6 px-5 text-slate-800 select-none overflow-hidden"
             >
-              <div className="flex flex-col gap-5 max-w-sm mx-auto w-full">
+              <div className="flex flex-col gap-[var(--sp-sm)] max-w-sm mx-auto w-full min-h-0">
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#6D3DF5] flex items-center justify-center mx-auto mb-2">
-                    <Sparkles className="w-6 h-6 animate-pulse" />
+                  <div className="w-9 h-9 rounded-full bg-indigo-50 text-[#6D3DF5] flex items-center justify-center mx-auto mb-2">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 mt-2 tracking-tight">
+                  <h3 className="text-xl font-black text-slate-900 mt-1 tracking-tight">
                     COMO JOGAR
                   </h3>
                   <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-extrabold">
@@ -209,7 +209,7 @@ export default function App() {
                   </p>
                 </div>
 
-                <FloatingCard className="flex flex-col gap-4 text-xs text-slate-600 leading-relaxed p-5">
+                <FloatingCard className="flex flex-col gap-[var(--sp-xs)] text-xs text-slate-600 leading-relaxed p-[var(--sp-md)]">
                   <p>
                     <strong className="text-slate-800">TEMPOX</strong> é um jogo rápido de agilidade mental extrema. Você tem exatamente um minuto para resolver uma sequência sem fim de testes rápidos:
                   </p>
@@ -256,7 +256,7 @@ export default function App() {
 
               <button
                 onClick={() => setAboutOpen(false)}
-                className="w-full max-w-xs mx-auto py-3.5 bg-[#6D3DF5] hover:bg-[#5124D6] text-white rounded-2xl font-black text-xs uppercase tracking-wider cursor-pointer shadow-btn transition-all flex items-center justify-center gap-1"
+                className="w-full max-w-xs mx-auto min-h-[56px] bg-[#6D3DF5] hover:bg-[#5124D6] text-white rounded-2xl font-black text-xs uppercase tracking-wider cursor-pointer shadow-btn transition-all flex items-center justify-center gap-1"
               >
                 <span>ENTENDI, VAMOS LÁ</span>
                 <ArrowRight className="w-3.5 h-3.5" />
