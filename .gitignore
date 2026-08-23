@@ -19,3 +19,4 @@ android/app/src/main/assets/public/
 !debug.keystore
 *.jks
 keystore.properties
+tsconfig.tsbuildinfo
