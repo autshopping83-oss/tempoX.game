@@ -105,4 +105,8 @@
 
     <string name="challenge_attention_instruction">Find the odd symbol</string>
     <string name="hud_points">SCORE</string>
+
+    <string name="result_ad_loading">Loading Ad...</string>
+    <string name="result_ad_video">Reward Video</string>
+    <string name="result_ad_note">Earn double XP at the end of the promotional ad.</string>
 </resources>

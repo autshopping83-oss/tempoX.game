@@ -5,6 +5,16 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
+/** Summary handed to the result screen when the 60 seconds run out. */
+data class MatchSummary(
+    val score: Int,
+    val totalCorrect: Int,
+    val totalIncorrect: Int,
+    val maxCombo: Int,
+    val xpGained: Int,
+    val completed: Boolean,
+)
+
 /** The four TEMPOX challenge types. */
 enum class ChallengeType { MEMORY, REFLEX, MATH, ATTENTION }
 

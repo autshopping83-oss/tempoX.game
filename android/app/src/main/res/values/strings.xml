@@ -105,4 +105,8 @@
 
     <string name="challenge_attention_instruction">Encontre o símbolo diferente</string>
     <string name="hud_points">PONTOS</string>
+
+    <string name="result_ad_loading">Carregando Anúncio...</string>
+    <string name="result_ad_video">Vídeo Premiado</string>
+    <string name="result_ad_note">Ganhe o dobro de XP ao fim do anúncio promocional.</string>
 </resources>
