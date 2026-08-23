@@ -1,5 +1,8 @@
 package com.tempoX.game.game
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -69,34 +72,36 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
 
     private val rng = Random(seed)
 
-    var timeLeftMillis: Long = Progression.MATCH_MILLIS
+    // All gameplay fields are Compose-observable so the UI recomposes
+    // every time the tick loop advances the match.
+    var timeLeftMillis: Long by mutableStateOf(Progression.MATCH_MILLIS)
         private set
 
-    var finished = false
+    var finished: Boolean by mutableStateOf(false)
         private set
 
-    var difficultyLevel = 1
+    var difficultyLevel: Int by mutableStateOf(1)
         private set
-    var combo = 0
+    var combo: Int by mutableStateOf(0)
         private set
-    var maxCombo = 0
+    var maxCombo: Int by mutableStateOf(0)
         private set
-    var totalCorrect = 0
+    var totalCorrect: Int by mutableStateOf(0)
         private set
-    var totalIncorrect = 0
+    var totalIncorrect: Int by mutableStateOf(0)
         private set
-    var xpGained = 0
+    var xpGained: Int by mutableStateOf(0)
         private set
-    var score = 0
+    var score: Int by mutableStateOf(0)
         private set
-    var maxMemorySequence = 0
+    var maxMemorySequence: Int by mutableStateOf(0)
         private set
-    var perfectReflexCount = 0
+    var perfectReflexCount: Int by mutableStateOf(0)
         private set
 
-    var challenge: Challenge = generate()
+    var challenge: Challenge by mutableStateOf(generate())
         private set
-    var challengeElapsedMillis: Long = 0
+    var challengeElapsedMillis: Long by mutableStateOf(0L)
         private set
 
     /** Events consumed by the UI layer to fire sounds/animations. */
