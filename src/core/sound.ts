@@ -169,15 +169,18 @@ class SoundEngine {
     return this.vibrationEnabled;
   }
 
-  /** Velvety wood-block pop <50ms, ±6% pitch drift vs fatigue. */
+  /** Soft Velvet Tap: warm 320Hz body + 640Hz harmonic, 35ms steep decay,
+   *  tactile 5ms transient — ±6% pitch drift vs fatigue. */
   playClick() {
     if (!this.soundEnabled) return;
     try {
       const dest = this.out();
       if (!this.ctx || !dest) return;
       const drift = 1 + (Math.random() - 0.5) * 0.12;
-      this.noise(dest, { dur: 0.02, gain: 0.13, filterType: "bandpass", freqFrom: 1750 * drift, q: 2.2 });
-      this.partial(dest, 880 * drift, 0.032, 0.06, this.ctx.currentTime);
+      const t0 = this.ctx.currentTime;
+      this.partial(dest, 320 * drift, 0.035, 0.16, t0);
+      this.partial(dest, 640 * drift, 0.03, 0.05, t0);
+      this.noise(dest, { dur: 0.005, gain: 0.02, filterType: "lowpass", freqFrom: 1100 });
     } catch (e) {
       console.warn("Audio failed to play:", e);
     }
