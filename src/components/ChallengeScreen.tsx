@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChallengeInstance } from "../challenge/types";
 import MemoryChallenge from "../challenge/challenges/MemoryChallenge";
 import ReflexChallenge from "../challenge/challenges/ReflexChallenge";
@@ -16,6 +16,8 @@ import FloatingCard from "./ui/FloatingCard";
 import { ShapeGradients } from "./GeometricShapes";
 import { GameTheme, GameColors } from "../core/GameTheme";
 import { gameFeel } from "../core/gameFeel";
+import { useI18n } from "../core/i18n";
+import { sound } from "../core/sound";
 import GameTimer from "./GameTimer";
 import AnimatedScore from "./AnimatedScore";
 import ProgressBar from "./ProgressBar";
@@ -37,6 +39,8 @@ interface Props {
   onToggleSound: () => void;
   onToggleVibration: () => void;
   onRestart: () => void;
+  /** Freeze/unfreeze the per-challenge countdown (Memory watch phase). */
+  onWatchPhaseChange?: (paused: boolean) => void;
 }
 
 export default function ChallengeScreen({
@@ -56,6 +60,7 @@ export default function ChallengeScreen({
   onToggleSound,
   onToggleVibration,
   onRestart,
+  onWatchPhaseChange,
 }: Props) {
 
   // Game feel FX tracking
@@ -65,6 +70,13 @@ export default function ChallengeScreen({
   const lastPointerRef = useRef({ x: window.innerWidth / 2, y: window.innerHeight * 0.6 });
   const prevScoreRef = useRef(score);
   const prevComboRef = useRef(combo);
+  const { t } = useI18n();
+  const [fxVolume, setFxVolume] = useState(() => sound.getVolume());
+
+  const handleVolumeChange = (value: number) => {
+    setFxVolume(value);
+    sound.setVolume(value);
+  };
 
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
@@ -112,19 +124,19 @@ export default function ChallengeScreen({
   const getChallengeMetadata = (): { color: string; name: string; instruction: string } => {
     switch (challenge.type) {
       case "MEMORY":
-        return { color: GameColors.pink, name: "Memória", instruction: "Decore e repita a sequência" };
+        return { color: GameColors.pink, name: t("challenge_memory_name"), instruction: t("challenge_memory_instruction") };
       case "REFLEX":
-        return { color: GameColors.orange, name: "Reflexo", instruction: "Toque rápido no alvo amarelo" };
+        return { color: GameColors.orange, name: t("challenge_reflex_name"), instruction: t("challenge_reflex_instruction") };
       case "MATH":
-        return { color: GameColors.blue, name: "Matemática", instruction: "Resolva a equação o mais rápido" };
+        return { color: GameColors.blue, name: t("challenge_math_name"), instruction: t("challenge_math_instruction") };
       case "ATTENTION":
         return {
           color: GameColors.green,
-          name: "Atenção",
-          instruction: challenge.question.toUpperCase(),
+          name: t("challenge_attention_name"),
+          instruction: t("challenge_attention_instruction"),
         };
       default:
-        return { color: GameColors.primary, name: "Desafio", instruction: "Reaja rápido!" };
+        return { color: GameColors.primary, name: t("nav_rules"), instruction: t("challenge_attention_instruction") };
     }
   };
 
@@ -141,14 +153,6 @@ export default function ChallengeScreen({
       {/* Living decorative background behind everything */}
       <FloatingBackgroundShapes />
       <ShapeGradients />
-
-      {/* Micro floating glyphs between the areas (never over touch zones) */}
-      <div className="absolute inset-0 z-0 pointer-events-none deco-extra" aria-hidden="true">
-        <span className="absolute left-[7%] top-[36%] text-lg opacity-10 animate-float-2" style={{ animationDelay: "-3s" }}>⚡</span>
-        <span className="absolute right-[9%] top-[30%] text-base opacity-10 animate-float-4" style={{ animationDelay: "-5s" }}>⏱</span>
-        <span className="absolute left-[11%] bottom-[28%] text-base opacity-10 animate-float-6" style={{ animationDelay: "-1.8s" }}>✦</span>
-        <span className="absolute right-[12%] bottom-[40%] text-sm opacity-[0.08] animate-float-5" style={{ animationDelay: "-7s" }}>△</span>
-      </div>
 
       {/* FX layer: particles and floating points */}
       <div ref={fxLayerRef} className="absolute inset-0 z-40 pointer-events-none overflow-hidden" />
@@ -178,7 +182,7 @@ export default function ChallengeScreen({
               className="hud-chip rounded-2xl px-3 py-1.5 flex flex-col items-end min-w-[76px]"
               style={{ boxShadow: "0 10px 22px -8px rgba(109,61,245,0.25)" }}
             >
-              <span className="text-[8px] font-black tracking-[0.2em] text-slate-400 uppercase">Pontos</span>
+              <span className="text-[8px] font-black tracking-[0.2em] text-slate-400 uppercase">{t("hud_points")}</span>
               <AnimatedScore value={score} className="font-mono font-black text-lg text-slate-900 leading-none mt-0.5" />
             </div>
           </div>
@@ -198,7 +202,7 @@ export default function ChallengeScreen({
                 className="flex items-center gap-1.5 bg-gradient-to-r from-[#EC4899] to-[#EF4444] text-white px-3 py-1 rounded-full text-xs font-black select-none pointer-events-none"
               >
                 <span>🔥</span>
-                <span>COMBO x{combo}</span>
+                <span>{t("hud_combo_chip", [combo])}</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -244,6 +248,7 @@ export default function ChallengeScreen({
                     <MemoryChallenge
                       challenge={challenge}
                       onSolve={(success, seqLen) => onSolveChallenge(success, seqLen)}
+                      onWatchPhaseChange={onWatchPhaseChange}
                     />
                   )}
                   {challenge.type === "REFLEX" && (
@@ -287,13 +292,13 @@ export default function ChallengeScreen({
             {/* Header pause status */}
             <div className="text-center shrink-0 pause-header">
               <span className={`text-xs uppercase tracking-[0.25em] ${GameTheme.colors.primary.text} ${GameTheme.colors.primary.lightBg} px-3.5 py-1 rounded-full font-black border ${GameTheme.colors.primary.borderLight}`}>
-                JOGO EM PAUSA
+                {t("pause_badge")}
               </span>
               <h1 className="pause-title font-black tracking-tight text-slate-900 leading-none">
-                PAUSADO
+                {t("pause_heading")}
               </h1>
               <p className="text-xs text-slate-400 pause-subtitle font-bold uppercase tracking-wider">
-                Respire fundo. Retorne quando estiver pronto!
+                {t("pause_subtitle")}
               </p>
             </div>
 
@@ -303,7 +308,7 @@ export default function ChallengeScreen({
               {/* Settings Card */}
               <div className={`flex flex-col pause-card bg-white/85 backdrop-blur-md border border-white/70 rounded-3xl shadow-premium overflow-hidden`}>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">Efeitos de Som</span>
+                  <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">{t("settings_sound")}</span>
                   <button
                     onClick={onToggleSound}
                     className={`p-2.5 rounded-full transition-all cursor-pointer ${
@@ -317,7 +322,7 @@ export default function ChallengeScreen({
                 </div>
 
                 <div className="flex justify-between items-center border-t border-slate-100 pt-4">
-                  <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">Vibração Háptica</span>
+                  <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">{t("settings_vibration")}</span>
                   <button
                     onClick={onToggleVibration}
                     className={`p-2.5 rounded-full transition-all cursor-pointer ${
@@ -329,6 +334,24 @@ export default function ChallengeScreen({
                     <Smartphone className="w-4 h-4" />
                   </button>
                 </div>
+
+                {/* Master SFX volume — persisted, mirrors the native pause menu */}
+                <div className="border-t border-slate-100 pt-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">{t("settings_volume")}</span>
+                    <span className="text-[10px] font-mono font-black text-slate-400">{Math.round(fxVolume * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={fxVolume}
+                    onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                    className="w-full accent-[#6D3DF5] cursor-pointer"
+                    aria-label={t("settings_volume")}
+                  />
+                </div>
               </div>
 
               {/* Quick Options */}
@@ -337,7 +360,7 @@ export default function ChallengeScreen({
                 className={`w-full shrink-0 pause-btn-primary ${GameTheme.colors.primary.bgGradient} text-white ${GameTheme.shapes.button} font-black flex items-center justify-center gap-2 cursor-pointer ${GameTheme.shadows.btnPrimary} transition-all duration-150`}
               >
                 <Play className="w-4 h-4 fill-white" />
-                <span>RETOMAR PARTIDA</span>
+                <span>{t("pause_resume")}</span>
               </button>
 
               <button
@@ -348,7 +371,7 @@ export default function ChallengeScreen({
                 className={`w-full shrink-0 pause-btn-secondary bg-slate-100 hover:bg-slate-200 text-slate-700 ${GameTheme.shapes.button} font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer border ${GameTheme.colors.borders.medium} transition-colors`}
               >
                 <RefreshCw className="w-4 h-4" />
-                <span>RECOMEÇAR DO ZERO</span>
+                <span>{t("pause_restart")}</span>
               </button>
             </div>
 
@@ -358,7 +381,7 @@ export default function ChallengeScreen({
               className={`shrink-0 mt-auto mx-auto px-5 py-2.5 text-xs font-black uppercase text-rose-500 ${GameTheme.colors.danger.lightBg} border ${GameTheme.colors.danger.border} ${GameTheme.shapes.button} cursor-pointer transition-all flex items-center gap-1.5`}
             >
               <X className="w-3.5 h-3.5" />
-              Abandonar Partida
+              {t("pause_quit")}
             </button>
           </motion.div>
         )}

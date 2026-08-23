@@ -14,6 +14,16 @@ import FloatingCard from "./ui/FloatingCard";
 import PrimaryButton from "./ui/PrimaryButton";
 import SecondaryButton from "./ui/SecondaryButton";
 import StatCard from "./ui/StatCard";
+import { useI18n, DictKey } from "../core/i18n";
+
+/** Web achievement ids -> i18n key stems (native ids differ). */
+const ACH_KEY_STEM: Record<string, string> = {
+  elefante: "elephant",
+  reflexo: "reflex",
+  imparavel: "unstoppable",
+  sobrevivente: "survivor",
+  recordista: "recordist",
+};
 
 interface Props {
   score: number;
@@ -44,6 +54,7 @@ export default function ResultScreen({
 }: Props) {
   const [adState, setAdState] = useState<"IDLE" | "LOADING" | "PLAYING" | "COMPLETED">("IDLE");
   const [adCountdown, setAdCountdown] = useState(5);
+  const { t } = useI18n();
 
   const isHighScore = score >= stats.highScore && score > 0;
   const accuracy =
@@ -76,14 +87,15 @@ export default function ResultScreen({
   };
 
   const handleShareClick = () => {
+    const shareText = t("share_text", [score, maxComboSession]);
     if (navigator.share) {
       navigator.share({
         title: "TEMPOX",
-        text: `Fiz ${score} pontos com combo x${maxComboSession} no TEMPOX! Consegue superar?`,
+        text: shareText,
         url: window.location.href,
       }).catch(() => {});
     } else {
-      alert(`Pontuação compartilhada: ${score} pontos!`);
+      alert(t("share_alert", [score]));
     }
   };
 
@@ -96,7 +108,7 @@ export default function ResultScreen({
         {/* Upper Header: Time Out Banner */}
         <div className="text-center mt-[var(--sp-xs)]">
           <span className={`text-[10px] uppercase tracking-[0.25em] text-[#EF4444] ${GameTheme.colors.danger.lightBg} border ${GameTheme.colors.danger.border} px-3 py-1 rounded-full font-black`}>
-            TEMPO ESGOTADO!
+            {t("result_time_up")}
           </span>
           
           {/* Giant score display - center of attention */}
@@ -124,7 +136,7 @@ export default function ResultScreen({
 
             <div>
               <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block leading-none">
-                Pontuação Final
+                {t("result_final_score")}
               </span>
               <h1
                 className={`${GameTheme.typography.scoreMain.replace("text-7xl", "")} mt-0.5 leading-none`}
@@ -143,7 +155,7 @@ export default function ResultScreen({
               className={`inline-flex items-center gap-1.5 ${GameTheme.colors.warning.bg} text-slate-900 px-3 py-1 rounded-full text-[10px] font-black uppercase ${GameTheme.shadows.premium}`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              🏆 NOVO RECORDE REGISTRADO!
+              {t("result_new_record")}
             </motion.div>
           )}
         </div>
@@ -151,19 +163,19 @@ export default function ResultScreen({
         {/* 3 Grid Stats */}
         <div className="grid grid-cols-3 gap-[var(--sp-xs)] my-[var(--sp-xs)]">
           <StatCard
-            label="Desafios"
+            label={t("stat_challenges")}
             value={challengesCompletedSession}
             icon={<Zap className="w-4 h-4 fill-amber-500/10" />}
             valueClassName="text-amber-500"
           />
           <StatCard
-            label="Precisão"
+            label={t("stat_accuracy")}
             value={`${accuracy}%`}
             icon={<Crosshair className="w-4 h-4" />}
             valueClassName={GameTheme.colors.success.text}
           />
           <StatCard
-            label="Combo Máx"
+            label={t("stat_max_combo")}
             value={`x${maxComboSession}`}
             icon={<span className="text-xs font-bold">🔥</span>}
             valueClassName="text-rose-500"
@@ -180,7 +192,7 @@ export default function ResultScreen({
           </div>
 
           <span className="text-slate-400 text-[10px] uppercase tracking-wider font-extrabold">
-            RECOMPENSA ACUMULADA
+            {t("result_reward_pool")}
           </span>
           <h2 className={`text-xl font-black ${GameTheme.colors.success.text} font-mono leading-none`}>
             +{adState === "COMPLETED" ? xpGainedSession * 2 : xpGainedSession} XP
@@ -188,7 +200,7 @@ export default function ResultScreen({
 
           {adState !== "COMPLETED" ? (
             <div className="mt-[var(--sp-xs)] flex flex-col items-center gap-1.5">
-              <span className="text-[11px] text-slate-500">Dobre seus ganhos assistindo a um vídeo curto!</span>
+              <span className="text-[11px] text-slate-500">{t("result_double_hint")}</span>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
@@ -196,12 +208,12 @@ export default function ResultScreen({
                 disabled={adState !== "IDLE"}
                 className={`w-full min-h-[56px] bg-gradient-to-r from-amber-400 to-amber-500 text-[#111827] rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${GameTheme.shadows.btnWarning} hover:from-amber-500 hover:to-amber-400 transition-all duration-150`}
               >
-                <span>🎬 DOBRAR RECOMPENSA</span>
+                <span>{t("result_double_btn")}</span>
               </motion.button>
             </div>
           ) : (
             <div className="mt-3 text-xs font-black text-emerald-600 flex items-center justify-center gap-1 bg-emerald-50 py-1.5 px-3 rounded-full border border-emerald-100 max-w-[180px] mx-auto">
-              <span>✓ DOBRADO COM SUCESSO!</span>
+              <span>{t("result_doubled_ok")}</span>
             </div>
           )}
 
@@ -218,7 +230,7 @@ export default function ResultScreen({
                   <div className="flex flex-col items-center gap-2">
                     <div className={`w-8 h-8 border-4 ${GameTheme.colors.primary.border} border-t-transparent rounded-full animate-spin`} />
                     <span className="text-xs uppercase tracking-wider text-slate-500 font-extrabold">
-                      Carregando Anúncio...
+                      {t("result_ad_loading")}
                     </span>
                   </div>
                 ) : (
@@ -227,10 +239,10 @@ export default function ResultScreen({
                       {adCountdown}
                     </div>
                     <span className="text-xs uppercase tracking-wider text-slate-700 font-extrabold">
-                      Vídeo Premiado
+                      {t("result_ad_video")}
                     </span>
                     <p className="text-[10px] text-slate-400 max-w-[200px]">
-                      Ganhe o dobro de XP ao fim do anúncio promocional.
+                      {t("result_ad_note")}
                     </p>
                   </div>
                 )}
@@ -244,18 +256,18 @@ export default function ResultScreen({
           <div className={`${GameTheme.colors.primary.lightBg} border ${GameTheme.colors.primary.borderLight} rounded-2xl p-4 mb-4`}>
             <h4 className={`text-[10px] font-black ${GameTheme.colors.primary.text} uppercase tracking-widest text-center mb-2 flex items-center justify-center gap-1.5`}>
               <Trophy className="w-3.5 h-3.5" />
-              NOVOS TROFÉUS CONQUISTADOS!
+              {t("result_new_trophies")}
             </h4>
             <div className="flex flex-col gap-1.5">
-              {newAchievementsUnlocked.map((id) => (
-                <div key={id} className="text-center text-xs font-black text-slate-700">
-                  {id === "elefante" && "🧠 Memória de Elefante"}
-                  {id === "reflexo" && "⚡ Reflexo Perfeito"}
-                  {id === "imparavel" && "🔥 Imparável"}
-                  {id === "sobrevivente" && "⏱️ Sobrevivente"}
-                  {id === "recordista" && "🏆 Recordista"}
-                </div>
-              ))}
+              {newAchievementsUnlocked.map((id) => {
+                const stem = ACH_KEY_STEM[id];
+                const label = stem ? t(`ach_${stem}_title` as DictKey) : id;
+                return (
+                  <div key={id} className="text-center text-xs font-black text-slate-700">
+                    {label}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -263,18 +275,18 @@ export default function ResultScreen({
         {/* Footer Navigation Actions */}
         <div className="flex flex-col gap-[var(--sp-xs)] mt-auto pb-safe">
           <PrimaryButton onClick={() => onPlayAgain(seed)} icon={<RotateCcw className="w-5 h-5" />}>
-            JOGAR NOVAMENTE
+            {t("result_play_again")}
           </PrimaryButton>
 
           <div className="grid grid-cols-2 gap-3.5">
             <SecondaryButton onClick={handleShareClick}>
               <Share2 className="w-4 h-4" />
-              <span>COMPARTILHAR</span>
+              <span>{t("action_share")}</span>
             </SecondaryButton>
 
             <SecondaryButton onClick={onGoHome}>
               <Home className="w-4 h-4" />
-              <span>MENU PRINCIPAL</span>
+              <span>{t("action_home")}</span>
             </SecondaryButton>
           </div>
         </div>

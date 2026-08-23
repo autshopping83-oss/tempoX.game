@@ -18,9 +18,12 @@ import {
   calculateChallengeScore,
   checkAchievements,
   getXPForLevel,
+  migrateStats,
 } from "./gameEngine";
 
 export type GameState = "HOME" | "PLAYING" | "PAUSED" | "GAMEOVER" | "ACHIEVEMENTS" | "STATS";
+
+const ALL_TYPES: ChallengeType[] = ["MEMORY", "REFLEX", "MATH", "ATTENTION"];
 
 export function useGame() {
   // Game states
@@ -30,11 +33,11 @@ export function useGame() {
   const [maxComboSession, setMaxComboSession] = useState(0);
   const [seed, setSeed] = useState<number>(0);
   const [currentChallenge, setCurrentChallenge] = useState<ChallengeInstance | null>(null);
-  
+
   // High-precision clock timers
   const [gameTimeLeft, setGameTimeLeft] = useState(60);
   const [challengeTimeLeft, setChallengeTimeLeft] = useState(0);
-  
+
   // Statistics and settings
   const [stats, setStats] = useState<GameStats>(INITIAL_STATS);
   const [soundOn, setSoundOn] = useState(true);
@@ -49,7 +52,6 @@ export function useGame() {
   // Core background instances
   const difficultyRef = useRef(new DifficultyManager());
   const rngRef = useRef<SeededRandom | null>(null);
-  const previousTypesRef = useRef<ChallengeType[]>([]);
 
   // Ref timers to avoid React state delay in the game loop
   const timerRef = useRef<number | null>(null);
@@ -57,6 +59,13 @@ export function useGame() {
   const accumulatedTimeRef = useRef<number>(0); // how much of the 60s has passed (ms)
   const challengeTimeAccumulatedRef = useRef<number>(0); // how long has the active challenge been running (ms)
   const activeChallengeDurationRef = useRef<number>(0); // allowed duration (ms)
+
+  /**
+   * Freezes ONLY the per-challenge clock (native parity): during a Memory
+   * watch phase the answer countdown does not run, exactly like the
+   * `memoryWatching` flag in the Compose GameScreen.
+   */
+  const challengeClockPausedRef = useRef(false);
 
   // Track session details for achievements
   const sessionPerfectReflexesRef = useRef(0);
@@ -68,7 +77,7 @@ export function useGame() {
       const savedStats = localStorage.getItem("60s_game_stats");
       if (savedStats) {
         try {
-          setStats(JSON.parse(savedStats));
+          setStats(migrateStats(JSON.parse(savedStats)));
         } catch (e) {
           console.error("Failed to parse saved game stats:", e);
         }
@@ -98,50 +107,24 @@ export function useGame() {
   };
 
   /**
-   * Challenge scheduler: avoids repeats and picks the next challenge type.
-   */
-  const getNextChallengeType = useCallback((): ChallengeType => {
-    const types: ChallengeType[] = ["MEMORY", "REFLEX", "MATH", "ATTENTION"];
-    if (!rngRef.current) return "MATH";
-
-    const last = previousTypesRef.current[previousTypesRef.current.length - 1];
-    const secondLast = previousTypesRef.current[previousTypesRef.current.length - 2];
-
-    // Filter out types to maintain high variety
-    let pool = types.filter((t) => t !== last);
-    if (pool.length === 0) pool = types;
-
-    // Avoid alternating MEMORY -> REFLEX -> MEMORY -> REFLEX too quickly if possible
-    if (secondLast && pool.includes(secondLast) && pool.length > 1) {
-      pool = pool.filter((t) => t !== secondLast);
-    }
-
-    const nextType = rngRef.current.choice(pool);
-    
-    // Maintain history of past 4 items
-    previousTypesRef.current.push(nextType);
-    if (previousTypesRef.current.length > 4) {
-      previousTypesRef.current.shift();
-    }
-
-    return nextType;
-  }, []);
-
-  /**
    * Generates and presents the next challenge.
+   * Type selection is uniform random — identical to native GameEngine.generate().
    */
   const loadNextChallenge = useCallback(() => {
     if (!rngRef.current) return;
 
-    const diffParams = difficultyRef.current.getDifficultyParams();
-    const type = getNextChallengeType();
-    const challenge = generateChallenge(type, rngRef.current, diffParams);
+    const level = difficultyRef.current.getLevel();
+    const type = ALL_TYPES[rngRef.current.int(0, ALL_TYPES.length - 1)];
+    const challenge = generateChallenge(type, rngRef.current, level);
 
+    // A fresh challenge always starts with its clock running
+    // (Memory re-freezes it when its watch phase mounts).
+    challengeClockPausedRef.current = false;
     setCurrentChallenge(challenge);
     challengeTimeAccumulatedRef.current = 0;
     activeChallengeDurationRef.current = challenge.duration * 1000;
     setChallengeTimeLeft(challenge.duration);
-  }, [getNextChallengeType]);
+  }, []);
 
   /**
    * Primary game over transition
@@ -177,6 +160,8 @@ export function useGame() {
       totalCorrect: stats.totalCorrect + correctAnswersSession,
       totalIncorrect: stats.totalIncorrect + (challengesCompletedSession - correctAnswersSession),
       maxCombo: Math.max(stats.maxCombo, finalMaxCombo),
+      maxMemorySequence: Math.max(stats.maxMemorySequence, sessionMaxMemorySeqRef.current),
+      perfectReflexCount: stats.perfectReflexCount + sessionPerfectReflexesRef.current,
     };
 
     // Evaluate and unlock achievements
@@ -239,8 +224,8 @@ export function useGame() {
       setGameTimeLeft(rawTimeLeft);
     }
 
-    // 2. Progress active challenge time
-    if (currentChallenge) {
+    // 2. Progress active challenge time (frozen during Memory watch phase)
+    if (currentChallenge && !challengeClockPausedRef.current) {
       challengeTimeAccumulatedRef.current += delta;
       const chTimeLeft = Math.max(0, (activeChallengeDurationRef.current - challengeTimeAccumulatedRef.current) / 1000);
       setChallengeTimeLeft(chTimeLeft);
@@ -249,6 +234,9 @@ export function useGame() {
         // Timeout counts as failure
         handleChallengeResult(false, 0);
       }
+    } else if (currentChallenge) {
+      const chTimeLeft = Math.max(0, (activeChallengeDurationRef.current - challengeTimeAccumulatedRef.current) / 1000);
+      setChallengeTimeLeft(chTimeLeft);
     }
 
     timerRef.current = requestAnimationFrame(gameLoop);
@@ -281,7 +269,6 @@ export function useGame() {
 
     const timeTakenMs = challengeTimeAccumulatedRef.current;
     const allowedTimeMs = activeChallengeDurationRef.current;
-    const ratioSolved = timeTakenMs / allowedTimeMs;
 
     setChallengesCompletedSession((prev) => prev + 1);
 
@@ -321,16 +308,15 @@ export function useGame() {
         sessionMaxMemorySeqRef.current = detailValue;
       }
 
-      // Adaptive difficulty progression
-      difficultyRef.current.recordResult(true, ratioSolved);
+      // Adaptive difficulty progression (fixed formula — native parity)
+      difficultyRef.current.recordResult(true);
     } else {
       // Mistake or timeout
       setCombo(0);
       sound.playIncorrect();
       sound.vibrate([60, 40, 60]);
 
-      // Adaptive difficulty degradation
-      difficultyRef.current.recordResult(false, ratioSolved);
+      difficultyRef.current.recordResult(false);
     }
 
     // Advance loop
@@ -344,11 +330,10 @@ export function useGame() {
     // Instantiate seed
     const activeSeed = customSeed || Math.floor(10000000 + Math.random() * 89999999);
     setSeed(activeSeed);
-    
+
     // Initialize deterministic generator
     rngRef.current = new SeededRandom(activeSeed);
     difficultyRef.current.reset();
-    previousTypesRef.current = [];
 
     // Reset runtime states
     setScore(0);
@@ -357,6 +342,7 @@ export function useGame() {
     setGameTimeLeft(60);
     accumulatedTimeRef.current = 0;
     challengeTimeAccumulatedRef.current = 0;
+    challengeClockPausedRef.current = false;
 
     // Reset session trackers
     setXpGainedSession(0);
@@ -366,12 +352,12 @@ export function useGame() {
     sessionMaxMemorySeqRef.current = 0;
 
     setGameState("PLAYING");
-    
-    // Instantly queue the first challenge
-    const type = "REFLEX"; // start with simple tactile reflex
-    const diffParams = difficultyRef.current.getDifficultyParams();
-    const challenge = generateChallenge(type, rngRef.current, diffParams);
-    
+
+    // Instantly queue the first challenge — uniform random, like native.
+    const level = difficultyRef.current.getLevel();
+    const type = ALL_TYPES[rngRef.current.int(0, ALL_TYPES.length - 1)];
+    const challenge = generateChallenge(type, rngRef.current, level);
+
     setCurrentChallenge(challenge);
     activeChallengeDurationRef.current = challenge.duration * 1000;
     setChallengeTimeLeft(challenge.duration);
@@ -398,6 +384,14 @@ export function useGame() {
   const quitGame = useCallback(() => {
     setGameState("HOME");
     setCurrentChallenge(null);
+    challengeClockPausedRef.current = false;
+  }, []);
+
+  /**
+   * Freeze/unfreeze the per-challenge countdown (Memory watch phase).
+   */
+  const setChallengeClockPaused = useCallback((paused: boolean) => {
+    challengeClockPausedRef.current = paused;
   }, []);
 
   return {
@@ -425,5 +419,6 @@ export function useGame() {
     resumeGame,
     quitGame,
     handleChallengeResult,
+    setChallengeClockPaused,
   };
 }

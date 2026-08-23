@@ -9,12 +9,21 @@ import HomeScreen from "./components/HomeScreen";
 import ChallengeScreen from "./components/ChallengeScreen";
 import ResultScreen from "./components/ResultScreen";
 import SplashScreen from "./components/SplashScreen";
-import { Smartphone, RotateCcw, Flame, Info, Sparkles, X, HelpCircle, ArrowRight } from "lucide-react";
+import { RotateCcw, Sparkles, HelpCircle, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import AppHeader from "./components/ui/AppHeader";
 import FloatingCard from "./components/ui/FloatingCard";
+import { LangProvider, useI18n, LangMode } from "./core/i18n";
 
 export default function App() {
+  return (
+    <LangProvider>
+      <TempxAppRoot />
+    </LangProvider>
+  );
+}
+
+function TempxAppRoot() {
   const {
     gameState,
     setGameState,
@@ -40,14 +49,16 @@ export default function App() {
     resumeGame,
     quitGame,
     handleChallengeResult,
+    setChallengeClockPaused,
   } = useGame();
 
+  const { t, mode, setMode } = useI18n();
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 1900);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setShowSplash(false), 1900);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleDoubleReward = (extraXP: number) => {
@@ -92,20 +103,20 @@ export default function App() {
                 gameState === "HOME" ? "text-[#6D3DF5] bg-[#6D3DF5]/5" : "text-slate-400 hover:text-slate-600"
               }`}
             >
-              Início
+              {t("nav_home")}
             </button>
             <button
               onClick={() => setAboutOpen(true)}
               className="text-xs font-extrabold px-3 py-2 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer flex items-center gap-1"
             >
               <HelpCircle className="w-4 h-4" />
-              <span>Regras</span>
+              <span>{t("nav_rules")}</span>
             </button>
             <button
               onClick={() => startGame()}
               className="px-4 py-2.5 ml-1 bg-gradient-to-r from-[#6D3DF5] to-[#5124D6] hover:from-[#5124D6] hover:to-[#6D3DF5] text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-soft"
             >
-              START
+              {t("nav_start")}
             </button>
           </nav>
         </AppHeader>
@@ -158,6 +169,7 @@ export default function App() {
                 onToggleSound={toggleSound}
                 onToggleVibration={toggleVibration}
                 onRestart={() => startGame(seed)}
+                onWatchPhaseChange={setChallengeClockPaused}
               />
             </motion.div>
           )}
@@ -202,63 +214,83 @@ export default function App() {
                     <Sparkles className="w-5 h-5 animate-pulse" />
                   </div>
                   <h3 className="text-xl font-black text-slate-900 mt-1 tracking-tight">
-                    COMO JOGAR
+                    {t("rules_title")}
                   </h3>
                   <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-extrabold">
-                    REGRAS DO TEMPOX
+                    {t("rules_subtitle")}
                   </p>
                 </div>
 
                 <FloatingCard className="flex flex-col gap-[var(--sp-xs)] text-xs text-slate-600 leading-relaxed p-[var(--sp-md)]">
                   <p>
-                    <strong className="text-slate-800">TEMPOX</strong> é um jogo rápido de agilidade mental extrema. Você tem exatamente um minuto para resolver uma sequência sem fim de testes rápidos:
+                    <strong className="text-slate-800">TEMPOX</strong> {t("rules_intro")}
                   </p>
-                  
+
                   <div className="flex flex-col gap-3.5 pl-1">
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">🧠</div>
                       <div>
-                        <h4 className="font-extrabold text-slate-800">Memória</h4>
-                        <p className="text-[11px] text-slate-500">Decore e repita a sequência exibida de formas coloridas.</p>
+                        <h4 className="font-extrabold text-slate-800">{t("challenge_memory_name")}</h4>
+                        <p className="text-[11px] text-slate-500">{t("rules_memory_desc")}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">⚡</div>
                       <div>
-                        <h4 className="font-extrabold text-slate-800">Reflexo</h4>
-                        <p className="text-[11px] text-slate-500">Toque rápido no alvo dourado. Nunca toque nos de perigo vermelho!</p>
+                        <h4 className="font-extrabold text-slate-800">{t("challenge_reflex_name")}</h4>
+                        <p className="text-[11px] text-slate-500">{t("rules_reflex_desc")}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">➗</div>
                       <div>
-                        <h4 className="font-extrabold text-slate-800">Matemática</h4>
-                        <p className="text-[11px] text-slate-500">Faça cálculos de múltipla escolha sob pressão extrema.</p>
+                        <h4 className="font-extrabold text-slate-800">{t("challenge_math_name")}</h4>
+                        <p className="text-[11px] text-slate-500">{t("rules_math_desc")}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">👀</div>
                       <div>
-                        <h4 className="font-extrabold text-slate-800">Atenção</h4>
-                        <p className="text-[11px] text-slate-500">Localize instantaneamente o símbolo que é diferente dos outros.</p>
+                        <h4 className="font-extrabold text-slate-800">{t("challenge_attention_name")}</h4>
+                        <p className="text-[11px] text-slate-500">{t("rules_attention_desc")}</p>
                       </div>
                     </div>
                   </div>
 
                   <p className="border-t border-slate-100 pt-3 text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">
-                    🔥 Acertos consecutivos geram COMBOS de pontos e aceleram os desafios! Erros quebram o combo.
+                    {t("rules_combo_tip")}
                   </p>
                 </FloatingCard>
+
+                {/* Language selector — SYSTEM / PT / EN, mirrors native settings */}
+                <div className={`bg-white/85 backdrop-blur border border-white/70 rounded-2xl shadow-premium px-[var(--sp-md)] py-3 flex items-center justify-between`}>
+                  <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wide">{t("settings_language")}</span>
+                  <div className="flex gap-1.5">
+                    {(["SYSTEM", "PT", "EN"] as LangMode[]).map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setMode(m)}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                          mode === m
+                            ? "bg-[#6D3DF5] text-white shadow-btn"
+                            : "bg-slate-50 text-slate-400 hover:text-slate-600 border border-slate-100"
+                        }`}
+                      >
+                        {m === "SYSTEM" ? t("lang_auto") : m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <button
                 onClick={() => setAboutOpen(false)}
                 className="w-full max-w-xs mx-auto min-h-[56px] bg-[#6D3DF5] hover:bg-[#5124D6] text-white rounded-2xl font-black text-xs uppercase tracking-wider cursor-pointer shadow-btn transition-all flex items-center justify-center gap-1"
               >
-                <span>ENTENDI, VAMOS LÁ</span>
+                <span>{t("rules_cta")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </motion.div>

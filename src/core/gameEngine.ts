@@ -13,6 +13,8 @@ export interface GameStats {
   totalCorrect: number;
   totalIncorrect: number;
   maxCombo: number;
+  maxMemorySequence: number;   // lifetime best memory sequence (v2)
+  perfectReflexCount: number;  // lifetime perfect reflexes <250ms (v2)
   achievements: string[]; // IDs of unlocked achievements
 }
 
@@ -64,8 +66,15 @@ export const INITIAL_STATS: GameStats = {
   totalCorrect: 0,
   totalIncorrect: 0,
   maxCombo: 0,
+  maxMemorySequence: 0,
+  perfectReflexCount: 0,
   achievements: [],
 };
+
+/** Fill v2 fields for stats persisted before the schema upgrade. */
+export function migrateStats(raw: Partial<GameStats>): GameStats {
+  return { ...INITIAL_STATS, ...raw };
+}
 
 /**
  * Calculates XP threshold required to reach a specific level.
@@ -102,8 +111,8 @@ export function checkAchievements(
     newlyUnlocked.push("reflexo");
   }
 
-  // 3. Imparável
-  if (!existing.has("imparavel") && (currentSession.maxCombo >= 10 || stats.maxCombo >= 10)) {
+  // 3. Imparável — session-only, identical to native StatsRepository
+  if (!existing.has("imparavel") && currentSession.maxCombo >= 10) {
     newlyUnlocked.push("imparavel");
   }
 

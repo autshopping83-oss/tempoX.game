@@ -5,8 +5,17 @@
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
   private soundEnabled: boolean = true;
   private vibrationEnabled: boolean = true;
+  private volume: number = SoundEngine.loadVolume();
+
+  /** Reads the persisted master volume, clamped to [0..1]. */
+  private static loadVolume(): number {
+    if (typeof window === "undefined") return 0.8;
+    const raw = parseFloat(localStorage.getItem("60s_volume") ?? "");
+    return Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 0.8;
+  }
 
   constructor() {
     // Load preferences from localStorage if available
@@ -24,6 +33,9 @@ class SoundEngine {
         const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
         if (AudioCtx) {
           this.ctx = new AudioCtx();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.value = this.volume;
+          this.masterGain.connect(this.ctx.destination);
         }
       } catch (e) {
         console.warn("Web Audio API is not supported:", e);
@@ -34,6 +46,11 @@ class SoundEngine {
     }
   }
 
+  private out(): AudioNode | null {
+    this.initContext();
+    return this.masterGain;
+  }
+
   setSoundEnabled(enabled: boolean) {
     this.soundEnabled = enabled;
     localStorage.setItem("60s_sound", enabled ? "true" : "false");
@@ -42,6 +59,19 @@ class SoundEngine {
   setVibrationEnabled(enabled: boolean) {
     this.vibrationEnabled = enabled;
     localStorage.setItem("60s_vibe", enabled ? "true" : "false");
+  }
+
+  /** Master SFX volume [0..1] — persisted, mirrors native SoundManager. */
+  setVolume(value: number) {
+    this.volume = Math.min(1, Math.max(0, value));
+    localStorage.setItem("60s_volume", String(this.volume));
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.01);
+    }
+  }
+
+  getVolume(): number {
+    return this.volume;
   }
 
   getSoundEnabled(): boolean {
@@ -55,8 +85,8 @@ class SoundEngine {
   playCorrect() {
     if (!this.soundEnabled) return;
     try {
-      this.initContext();
-      if (!this.ctx) return;
+      const dest = this.out();
+      if (!this.ctx || !dest) return;
       const now = this.ctx.currentTime;
 
       // Play a quick ascending major chord (C5 -> E5 -> G5)
@@ -72,7 +102,7 @@ class SoundEngine {
         gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(dest);
 
         osc.start(start);
         osc.stop(start + duration);
@@ -89,8 +119,8 @@ class SoundEngine {
   playIncorrect() {
     if (!this.soundEnabled) return;
     try {
-      this.initContext();
-      if (!this.ctx) return;
+      const dest = this.out();
+      if (!this.ctx || !dest) return;
       const now = this.ctx.currentTime;
 
       const osc = this.ctx.createOscillator();
@@ -104,7 +134,7 @@ class SoundEngine {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(dest);
 
       osc.start(now);
       osc.stop(now + 0.25);
@@ -116,8 +146,8 @@ class SoundEngine {
   playCombo(level: number) {
     if (!this.soundEnabled) return;
     try {
-      this.initContext();
-      if (!this.ctx) return;
+      const dest = this.out();
+      if (!this.ctx || !dest) return;
       const now = this.ctx.currentTime;
 
       // Higher combo -> higher pitch blips
@@ -133,7 +163,7 @@ class SoundEngine {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(dest);
 
       osc.start(now);
       osc.stop(now + 0.12);
@@ -145,15 +175,15 @@ class SoundEngine {
   playRecord() {
     if (!this.soundEnabled) return;
     try {
-      this.initContext();
-      if (!this.ctx) return;
+      const dest = this.out();
+      if (!this.ctx || !dest) return;
       const now = this.ctx.currentTime;
 
       // Triumph arpeggio melody
       const notes = [440.00, 554.37, 659.25, 880.00, 1108.73, 1318.51, 1760.00];
       const step = 0.06;
       notes.forEach((freq, idx) => {
-        if (!this.ctx) return;
+        if (!this.ctx || !dest) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
@@ -164,7 +194,7 @@ class SoundEngine {
         gain.gain.exponentialRampToValueAtTime(0.001, now + idx * step + 0.15);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(dest);
 
         osc.start(now + idx * step);
         osc.stop(now + idx * step + 0.15);
@@ -177,8 +207,8 @@ class SoundEngine {
   playTick(high: boolean = false) {
     if (!this.soundEnabled) return;
     try {
-      this.initContext();
-      if (!this.ctx) return;
+      const dest = this.out();
+      if (!this.ctx || !dest) return;
       const now = this.ctx.currentTime;
 
       const osc = this.ctx.createOscillator();
@@ -191,7 +221,7 @@ class SoundEngine {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(dest);
 
       osc.start(now);
       osc.stop(now + 0.04);

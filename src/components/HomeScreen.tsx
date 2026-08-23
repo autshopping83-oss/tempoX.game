@@ -15,6 +15,16 @@ import PrimaryButton from "./ui/PrimaryButton";
 import StatCard from "./ui/StatCard";
 import TrophyCard from "./ui/TrophyCard";
 import BottomNavigation from "./ui/BottomNavigation";
+import { useI18n, DictKey } from "../core/i18n";
+
+/** Web achievement ids -> i18n key stems (native ids differ). */
+const ACH_KEY_STEM: Record<string, string> = {
+  elefante: "elephant",
+  reflexo: "reflex",
+  imparavel: "unstoppable",
+  sobrevivente: "survivor",
+  recordista: "recordist",
+};
 
 interface Props {
   stats: GameStats;
@@ -35,6 +45,7 @@ export default function HomeScreen({
 }: Props) {
   const [activeTab, setActiveTab] = useState<"MAIN" | "STATS" | "ACHIEVEMENTS">("MAIN");
   const [customSeedInput, setCustomSeedInput] = useState<string>("");
+  const { t } = useI18n();
 
   // XP calculation
   const xpCurrentLevel = getXPForLevel(stats.level);
@@ -85,7 +96,7 @@ export default function HomeScreen({
           <div className={`text-right flex items-center gap-1 ${GameTheme.colors.primary.lightBg} px-3 py-1.5 rounded-full border ${GameTheme.colors.primary.borderLight}`}>
             <Sparkles className={`w-3.5 h-3.5 ${GameTheme.colors.primary.text}`} />
             <span className={`text-[10px] font-black tracking-wider ${GameTheme.colors.primary.text} uppercase`}>
-              PREMIUM ARCADE
+              {t("home_premium_badge")}
             </span>
           </div>
         </div>
@@ -110,7 +121,7 @@ export default function HomeScreen({
               style={{ height: "var(--logo-h)" }} className="w-auto max-w-[240px] object-contain mx-auto select-none drop-shadow-[0_10px_25px_rgba(109,61,245,0.30)]"
             />
             <p className="text-xs text-slate-400 font-black tracking-[0.3em] uppercase mt-[var(--sp-xs)]">
-              THINK FAST. REACT FASTER.
+              {t("home_tagline")}
             </p>
           </motion.div>
         </div>
@@ -134,15 +145,15 @@ export default function HomeScreen({
                   <div className="flex justify-between items-center mb-[var(--sp-xs)] relative z-10">
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-slate-400 font-extrabold">
-                        Nível de Perfil
+                        {t("home_level_profile")}
                       </span>
                       <h3 className={`text-2xl font-black ${GameTheme.colors.primary.text}`}>
-                        Nível {stats.level}
+                        {t("home_level")} {stats.level}
                       </h3>
                     </div>
                     <div className="text-right">
                       <span className="text-[10px] uppercase tracking-wider text-amber-500 font-extrabold flex items-center gap-1 justify-end">
-                        ★ MELHOR PONTUAÇÃO
+                        {t("home_best_score")}
                       </span>
                       <h3 className="text-3xl font-extrabold text-slate-950 tracking-tight font-mono">
                         {stats.highScore.toLocaleString()}
@@ -160,26 +171,26 @@ export default function HomeScreen({
                     />
                   </div>
                   <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                    <span>{stats.totalXP} XP acumulados</span>
-                    <span>{progressPercent}% para Nível {stats.level + 1}</span>
+                    <span>{stats.totalXP} {t("home_xp_accumulated")}</span>
+                    <span>{progressPercent}% {t("home_percent_to_level")} {stats.level + 1}</span>
                   </div>
                 </FloatingCard>
 
                 {/* Big Visual JOGAR Button */}
                 <PrimaryButton onClick={handlePlayClick}>
-                  JOGAR AGORA
+                  {t("home_play_now")}
                 </PrimaryButton>
 
                 {/* Compact, elegant Seed Input */}
                 <FloatingCard className="p-3 flex items-center justify-between gap-4 shadow-soft">
                   <div className="flex items-center gap-2">
                     <Sliders className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Seed da Partida</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("home_seed_label")}</span>
                   </div>
                   <input
                     type="text"
                     maxLength={8}
-                    placeholder="Opcional"
+                    placeholder={t("home_seed_placeholder")}
                     value={customSeedInput}
                     onChange={(e) => setCustomSeedInput(e.target.value.replace(/\D/g, ""))}
                     className={`w-32 bg-slate-50 border ${GameTheme.colors.borders.light} rounded-xl py-2 px-3 text-xs font-bold font-mono tracking-widest ${GameTheme.colors.primary.text} text-right placeholder-slate-300 focus:outline-none focus:border-[#6D3DF5]/30 focus:bg-white`}
@@ -200,27 +211,27 @@ export default function HomeScreen({
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                   <BarChart2 className={`w-5 h-5 ${GameTheme.colors.primary.text}`} />
                   <h3 className={GameTheme.typography.sectionTitle}>
-                    Estatísticas Históricas
+                    {t("stats_historical_title")}
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3.5">
-                  <StatCard label="Partidas" value={stats.gamesPlayed} />
-                  <StatCard label="Recorde" value={stats.highScore} valueClassName="text-amber-500" />
-                  <StatCard label="Total XP" value={stats.totalXP} valueClassName="text-[#6D3DF5]" />
-                  <StatCard label="Combo Máximo" value={`🔥 x${stats.maxCombo}`} valueClassName="text-[#EF4444]" />
+                  <StatCard label={t("stats_matches")} value={stats.gamesPlayed} />
+                  <StatCard label={t("stats_record")} value={stats.highScore} valueClassName="text-amber-500" />
+                  <StatCard label={t("stats_total_xp")} value={stats.totalXP} valueClassName="text-[#6D3DF5]" />
+                  <StatCard label={t("stats_max_combo")} value={`🔥 x${stats.maxCombo}`} valueClassName="text-[#EF4444]" />
                 </div>
 
                 <div className={`bg-slate-50/40 p-3 rounded-2xl border ${GameTheme.colors.borders.light} flex justify-between items-center text-sm`}>
                   <div>
-                    <span className={GameTheme.typography.pillLabel}>Respostas</span>
+                    <span className={GameTheme.typography.pillLabel}>{t("stats_answers")}</span>
                     <div className="flex gap-3 mt-1 text-xs">
                       <span className="text-[#22C55E] font-black">✓ {stats.totalCorrect}</span>
                       <span className="text-[#EF4444] font-black">✗ {stats.totalIncorrect}</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className={GameTheme.typography.pillLabel}>Precisão Média</span>
+                    <span className={GameTheme.typography.pillLabel}>{t("stats_avg_accuracy")}</span>
                     <p className="text-lg font-black text-slate-800 font-mono mt-0.5">
                       {stats.totalCorrect + stats.totalIncorrect > 0
                         ? `${Math.round(
@@ -245,19 +256,22 @@ export default function HomeScreen({
                 <div className="flex items-center gap-2 pb-1">
                   <Trophy className="w-5 h-5 text-amber-500" />
                   <h3 className={GameTheme.typography.sectionTitle}>
-                    Troféus e Conquistas ({stats.achievements.length}/5)
+                    {t("trophies_title")} ({stats.achievements.length}/5)
                   </h3>
                 </div>
 
                 <div className="flex flex-col gap-2.5">
                   {GAME_ACHIEVEMENTS.map((ach) => {
                     const unlocked = stats.achievements.includes(ach.id);
+                    const stem = ACH_KEY_STEM[ach.id];
+                    const title = stem ? t(`ach_${stem}_title` as DictKey) : ach.title;
+                    const description = stem ? t(`ach_${stem}_desc` as DictKey) : ach.description;
                     return (
                       <TrophyCard
                         key={ach.id}
                         icon={ach.icon}
-                        title={ach.title}
-                        description={ach.description}
+                        title={title}
+                        description={description}
                         unlocked={unlocked}
                       />
                     );
@@ -271,9 +285,9 @@ export default function HomeScreen({
         {/* Bottom Navigation — floating bar (owns its safe-area lift) */}
         <BottomNavigation
           tabs={[
-            { id: "MAIN", label: "Jogar" },
-            { id: "STATS", label: "Estatísticas" },
-            { id: "ACHIEVEMENTS", label: "Troféus" },
+            { id: "MAIN", label: t("tab_play") },
+            { id: "STATS", label: t("tab_stats") },
+            { id: "ACHIEVEMENTS", label: t("tab_trophies") },
           ]}
           activeTab={activeTab}
           onChange={(id) => setActiveTab(id as typeof activeTab)}
