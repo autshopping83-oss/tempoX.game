@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -64,7 +65,6 @@ fun HomeScreen(
     val context = LocalContext.current
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
     var showRules by remember { mutableStateOf(true) } // first-launch onboarding, like the web build
-    var soundOn by remember { mutableStateOf(SoundManager.isEnabled()) }
     var seedText by remember { mutableStateOf("") }
 
     val level = Progression.levelForXp(stats.totalXp)
@@ -79,6 +79,7 @@ fun HomeScreen(
             .fillMaxSize(),
     ) {
         com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        com.tempoX.game.ui.components.FormulaLayer(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
@@ -89,45 +90,36 @@ fun HomeScreen(
 
             // ---- Header -------------------------------------------------
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
+                        .clickable { showRules = true },
+                    contentAlignment = Alignment.Center,
+                ) { Text("☰", fontSize = 19.sp, color = TemproxColors.Ink) }
+                Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    TemproxLogo(heightText = 26)
+                    Text(
+                        stringResource(R.string.home_title),
+                        style = TemproxType.title.copy(color = TemproxColors.Ink),
+                        maxLines = 1,
+                    )
                     Text(stringResource(R.string.tagline), style = TemproxType.micro.copy(color = TemproxColors.Muted))
                 }
-                // Language selector — cycles Automatic → Português → English.
-                Box(
-                    Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
-                        .clickable { onLanguageChange(com.tempoX.game.game.LanguageManager.next(language)) },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("🌐", fontSize = 17.sp)
-                    Text(
-                        when (language) {
-                            LangMode.SYSTEM -> stringResource(R.string.lang_auto).take(3).uppercase()
-                            LangMode.PT -> "PT"
-                            LangMode.EN -> "EN"
-                        },
-                        style = TemproxType.micro.copy(color = TemproxColors.Accent),
-                        modifier = Modifier.padding(top = 26.dp),
-                    )
-                }
+                Spacer(Modifier.width(10.dp))
+                TopChip(
+                    glyph = "👑",
+                    value = "L$level",
+                    onClick = { tab = HomeTab.TROPHIES },
+                )
                 Spacer(Modifier.width(8.dp))
-                Box(
-                    Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
-                        .clickable {
-                            soundOn = !soundOn
-                            SoundManager.setEnabled(soundOn)
-                            if (soundOn) SoundManager.play(SoundManager.Sfx.CLICK)
-                        },
-                    contentAlignment = Alignment.Center,
-                ) { Text(if (soundOn) "🔊" else "🔇", fontSize = 17.sp) }
+                TopChip(
+                    glyph = "⭐",
+                    value = "${stats.highScore}",
+                    onClick = { tab = HomeTab.STATS },
+                )
             }
 
             Spacer(Modifier.height(16.dp))
@@ -154,7 +146,11 @@ fun HomeScreen(
             )
         }
 
-        if (showRules) RulesSheet(onClose = { showRules = false })
+        if (showRules) RulesSheet(
+                language = language,
+                onLanguageChange = onLanguageChange,
+                onClose = { showRules = false },
+            )
     }
 }
 
@@ -170,6 +166,27 @@ private fun PlayTab(
     onStartMatch: (String) -> Unit,
 ) {
     Column {
+        // ---- Featured task cards -------------------------------------
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TaskCard(
+                header = stringResource(R.string.card_pattern_header),
+                caption = stringResource(R.string.card_pattern_caption),
+                flow = "🧠  ▸  △ ▢ ◯  ▸  ⊘  ▸  ● ■ ▲ ✓",
+                tint = Color(0xFF22C55E),
+                glyph = "🧠",
+                modifier = Modifier.weight(1f),
+            ) { onStartMatch("") }
+            TaskCard(
+                header = stringResource(R.string.card_calc_header),
+                caption = stringResource(R.string.card_calc_caption),
+                flow = "15 − 8 = ?  ▸  ▦▦▦  ▸  7 ✓",
+                tint = Color(0xFF3B82F6),
+                glyph = "⚡",
+                modifier = Modifier.weight(1f),
+            ) { onStartMatch("") }
+        }
+        Spacer(Modifier.height(16.dp))
+
         // Premium badge
         Box(
             Modifier
@@ -288,5 +305,75 @@ private fun TrophiesTab(stats: PlayerStats) {
             )
             Spacer(Modifier.height(10.dp))
         }
+    }
+}
+
+
+/** Small circular stat chip for the top bar (crown = level, star = record). */
+@Composable
+private fun TopChip(glyph: String, value: String, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
+            .clickable { SoundManager.play(SoundManager.Sfx.CLICK); onClick() }
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+    ) {
+        Text(glyph, fontSize = 15.sp)
+        Text(value, style = TemproxType.micro.copy(color = TemproxColors.Muted), maxLines = 1)
+    }
+}
+
+/** Horizontal featured-task card: colored rail + stylized flow + affordance. */
+@Composable
+private fun TaskCard(
+    header: String,
+    caption: String,
+    flow: String,
+    tint: Color,
+    glyph: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    androidx.compose.foundation.layout.Row(
+        modifier = modifier
+            .height(112.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White)
+            .border(1.dp, tint.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
+            .clickable {
+                SoundManager.play(SoundManager.Sfx.CLICK)
+                SoundManager.vibrate(longArrayOf(0, 18))
+                onClick()
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .width(46.dp)
+                .fillMaxHeight()
+                .background(tint.copy(alpha = 0.16f)),
+            contentAlignment = Alignment.Center,
+        ) { Text(glyph, fontSize = 22.sp) }
+        Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
+            Text(
+                header,
+                style = TemproxType.micro.copy(color = tint, letterSpacing = 1.6.sp),
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(caption, style = TemproxType.bodyBold.copy(color = TemproxColors.Ink), maxLines = 1)
+            Spacer(Modifier.height(5.dp))
+            Text(flow, style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569)), maxLines = 1)
+        }
+        Box(
+            Modifier
+                .padding(end = 10.dp)
+                .size(30.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(tint.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) { Text("▶", fontSize = 12.sp, color = tint) }
     }
 }

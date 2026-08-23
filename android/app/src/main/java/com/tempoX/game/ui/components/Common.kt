@@ -72,7 +72,11 @@ fun PrimaryButton(
                 if (enabled) Brush.horizontalGradient(listOf(TemproxColors.Primary, Color(0xFF8B5CF6)))
                 else Brush.horizontalGradient(listOf(Color(0xFF494158), Color(0xFF575066)))
             )
-            .clickable(enabled = enabled) { SoundManager.play(SoundManager.Sfx.CLICK); onClick() },
+            .clickable(enabled = enabled) {
+            SoundManager.play(SoundManager.Sfx.CLICK)
+            SoundManager.vibrate(longArrayOf(0, 18)) // tactile feedback
+            onClick()
+        },
         contentAlignment = Alignment.Center,
     ) {
         Text(text, style = TemproxType.title.copy(color = Color.White), textAlign = TextAlign.Center)

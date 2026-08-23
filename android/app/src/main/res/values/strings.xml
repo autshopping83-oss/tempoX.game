@@ -114,4 +114,10 @@
     <string name="lang_auto">Automático</string>
     <string name="lang_pt">Português</string>
     <string name="lang_en">English</string>
+
+    <string name="home_title">MEMO &amp; MATH CHALLENGE</string>
+    <string name="card_pattern_header">PATTERN TASK</string>
+    <string name="card_pattern_caption">SHAPE MEMORY</string>
+    <string name="card_calc_header">CALC TASK</string>
+    <string name="card_calc_caption">SPEED MATH</string>
 </resources>

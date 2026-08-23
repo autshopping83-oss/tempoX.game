@@ -73,6 +73,7 @@ fun ResultScreen(
             .fillMaxSize(),
     ) {
         com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        com.tempoX.game.ui.components.FormulaLayer(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
