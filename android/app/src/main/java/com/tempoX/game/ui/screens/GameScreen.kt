@@ -89,8 +89,8 @@ fun GameScreen(
         GameEngine(seedText.hashCode().toLong()).also { eng ->
             eng.onEvent = { ev ->
                 when (ev) {
-                    GameEngine.Event.CORRECT -> SoundManager.play(SoundManager.Sfx.SUCCESS)
-                    GameEngine.Event.WRONG -> SoundManager.play(SoundManager.Sfx.ERROR)
+                    GameEngine.Event.CORRECT -> SoundManager.play(SoundManager.Sfx.CORRECT)
+                    GameEngine.Event.WRONG -> SoundManager.play(SoundManager.Sfx.WRONG)
                     GameEngine.Event.COMBO_MILESTONE -> {
                         SoundManager.play(SoundManager.Sfx.COMBO)
                         SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
@@ -129,6 +129,15 @@ fun GameScreen(
     }
 
     val secondsLeft = ceil(engine.timeLeftMillis / 1000f).toInt()
+
+    // Final-count digital ticks over the last 5 seconds.
+    var lastTickedSecond by remember { mutableIntStateOf(-1) }
+    LaunchedEffect(secondsLeft, paused) {
+        if (!paused && secondsLeft in 1..5 && lastTickedSecond != secondsLeft) {
+            lastTickedSecond = secondsLeft
+            SoundManager.play(SoundManager.Sfx.TICK)
+        }
+    }
 
     Box(
         Modifier
@@ -202,7 +211,7 @@ fun GameScreen(
                 },
                 onToggleHaptics = { hapticsOn = it; SoundManager.setHapticsEnabled(it) },
                 onVolumeChange = { fxVolume = it; SoundManager.setVolume(it) },
-                onResume = { SoundManager.play(CLICK); paused = false },
+                onResume = { SoundManager.play(SoundManager.Sfx.CONFIRM); paused = false },
                 onRestart = {
                     abandoned = false
                     paused = false

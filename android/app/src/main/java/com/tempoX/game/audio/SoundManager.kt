@@ -12,15 +12,16 @@ import com.tempoX.game.R
 /**
  * Native TEMPOX audio engine.
  *
- *  - All six SFX are bundled WAVs in res/raw, loaded ONCE into a SoundPool
- *    (low-latency, USAGE_GAME) at app start.
+ *  - All nine SFX are premium CC0 WAVs (Kenney interface/jingles packs,
+ *    post-processed to 44.1kHz mono 16-bit) bundled in res/raw and loaded
+ *    ONCE into a SoundPool (low-latency, USAGE_GAME) at app start.
  *  - Effects are muted while the ringer is in silent/vibrate mode.
  *  - Volume [0..1] is user-configurable (pause menu slider) and persisted.
  *  - Haptic feedback via Vibrator with graceful API fallbacks.
  */
 object SoundManager {
 
-    enum class Sfx { CLICK, SUCCESS, ERROR, COMBO, WIN, GAME_OVER }
+    enum class Sfx { CLICK, CONFIRM, CORRECT, WRONG, COMBO, TICK, RECORD, TROPHY, GAME_OVER }
 
     private var soundPool: SoundPool? = null
     private var audioManager: AudioManager? = null
@@ -57,10 +58,13 @@ object SoundManager {
         soundPool = pool
 
         sampleIds[Sfx.CLICK] = pool.load(app, R.raw.click, 1)
-        sampleIds[Sfx.SUCCESS] = pool.load(app, R.raw.success, 1)
-        sampleIds[Sfx.ERROR] = pool.load(app, R.raw.error, 1)
+        sampleIds[Sfx.CONFIRM] = pool.load(app, R.raw.confirm, 1)
+        sampleIds[Sfx.CORRECT] = pool.load(app, R.raw.correct, 1)
+        sampleIds[Sfx.WRONG] = pool.load(app, R.raw.wrong, 1)
         sampleIds[Sfx.COMBO] = pool.load(app, R.raw.combo, 1)
-        sampleIds[Sfx.WIN] = pool.load(app, R.raw.win, 1)
+        sampleIds[Sfx.TICK] = pool.load(app, R.raw.tick, 1)
+        sampleIds[Sfx.RECORD] = pool.load(app, R.raw.record, 1)
+        sampleIds[Sfx.TROPHY] = pool.load(app, R.raw.trophy, 1)
         sampleIds[Sfx.GAME_OVER] = pool.load(app, R.raw.game_over, 1)
     }
 

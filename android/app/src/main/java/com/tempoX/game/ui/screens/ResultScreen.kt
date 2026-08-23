@@ -64,8 +64,13 @@ fun ResultScreen(
     var bonusXp by remember { mutableStateOf(if (doubledAlready) summary.xpGained else 0) }
 
     LaunchedEffect(Unit) {
-        SoundManager.play(if (isRecord) SoundManager.Sfx.WIN else SoundManager.Sfx.GAME_OVER)
-        if (unlockedIds.isNotEmpty()) SoundManager.vibrate(longArrayOf(0, 60, 80, 60))
+        SoundManager.play(if (isRecord) SoundManager.Sfx.RECORD else SoundManager.Sfx.GAME_OVER)
+        if (unlockedIds.isNotEmpty()) {
+            SoundManager.vibrate(longArrayOf(0, 60, 80, 60))
+            // Metallic trophy shine layered just after the main sting.
+            delay(700)
+            SoundManager.play(SoundManager.Sfx.TROPHY)
+        }
     }
 
     val total = summary.totalCorrect + summary.totalIncorrect
@@ -175,7 +180,7 @@ fun ResultScreen(
                                 delay(1600)
                                 bonusXp = summary.xpGained
                                 doubleState = 2
-                                SoundManager.play(SoundManager.Sfx.WIN)
+                                SoundManager.play(SoundManager.Sfx.RECORD)
                             }
                         }
                         else -> {
