@@ -76,9 +76,9 @@ fun HomeScreen(
 
     Box(
         Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(TemproxColors.NightA, TemproxColors.NightB))),
+            .fillMaxSize(),
     ) {
+        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
@@ -91,15 +91,15 @@ fun HomeScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     TemproxLogo(heightText = 26)
-                    Text(stringResource(R.string.tagline), style = TemproxType.micro.copy(color = Color(0xFF8B86A3)))
+                    Text(stringResource(R.string.tagline), style = TemproxType.micro.copy(color = TemproxColors.Muted))
                 }
                 // Language selector — cycles Automatic → Português → English.
                 Box(
                     Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.07f))
-                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
                         .clickable { onLanguageChange(com.tempoX.game.game.LanguageManager.next(language)) },
                     contentAlignment = Alignment.Center,
                 ) {
@@ -119,8 +119,8 @@ fun HomeScreen(
                     Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.07f))
-                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
                         .clickable {
                             soundOn = !soundOn
                             SoundManager.setEnabled(soundOn)
@@ -223,19 +223,19 @@ private fun PlayTab(
             value = seedText,
             onValueChange = onSeedChange,
             singleLine = true,
-            textStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White),
+            textStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TemproxColors.Ink),
             decorationBox = { inner ->
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.06f))
-                        .border(1.dp, Color.White.copy(alpha = 0.14f), RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
                         .padding(horizontal = 14.dp, vertical = 13.dp),
                 ) {
                     if (seedText.isEmpty()) Text(
                         stringResource(R.string.home_seed_placeholder),
-                        style = TemproxType.body.copy(color = Color(0xFF6E6890)),
+                        style = TemproxType.body.copy(color = Color(0xFF94A3B8)),
                     )
                     inner()
                 }

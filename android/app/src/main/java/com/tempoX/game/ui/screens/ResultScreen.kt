@@ -70,9 +70,9 @@ fun ResultScreen(
 
     Box(
         Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1B1438), Color(0xFF0C0920)))),
+            .fillMaxSize(),
     ) {
+        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
@@ -85,7 +85,7 @@ fun ResultScreen(
             Spacer(Modifier.height(34.dp))
             Text("🏁", fontSize = TemproxType.display.fontSize)
             Spacer(Modifier.height(6.dp))
-            Text(stringResource(R.string.result_time_up), style = TemproxType.titleLg.copy(color = Color.White))
+            Text(stringResource(R.string.result_time_up), style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
 
             if (isRecord) {
                 Spacer(Modifier.height(10.dp))
@@ -103,7 +103,7 @@ fun ResultScreen(
             Spacer(Modifier.height(18.dp))
             FloatingCard(accent = TemproxColors.Accent) {
                 Text(stringResource(R.string.result_final_score), style = TemproxType.caption.copy(color = Color(0xFF9A94B5)))
-                Text("${summary.score}", style = TemproxType.score.copy(color = Color.White))
+                Text("${summary.score}", style = TemproxType.score.copy(color = TemproxColors.Ink))
             }
 
             Spacer(Modifier.height(12.dp))
@@ -125,11 +125,11 @@ fun ResultScreen(
                 when (doubleState) {
                     0 -> {
                         Spacer(Modifier.height(4.dp))
-                        Text(stringResource(R.string.result_double_hint), style = TemproxType.caption.copy(color = Color(0xFFB7B2CE)))
+                        Text(stringResource(R.string.result_double_hint), style = TemproxType.caption.copy(color = Color(0xFF475569)))
                         Spacer(Modifier.height(10.dp))
                         PrimaryButton(text = stringResource(R.string.result_double_btn), onClick = { doubleState = 1 })
                         Spacer(Modifier.height(6.dp))
-                        Text(stringResource(R.string.result_ad_note), style = TemproxType.micro.copy(color = Color(0xFF6E6890)))
+                        Text(stringResource(R.string.result_ad_note), style = TemproxType.micro.copy(color = Color(0xFF94A3B8)))
                     }
                     1 -> {
                         Spacer(Modifier.height(12.dp))
@@ -180,6 +180,7 @@ fun ResultScreen(
             PrimaryButton(text = stringResource(R.string.result_play_again), onClick = onPlayAgain)
             Spacer(Modifier.height(10.dp))
             SecondaryButton(
+                light = true,
                 text = stringResource(R.string.action_share),
                 onClick = {
                     val text = context.getString(R.string.share_text, summary.score, summary.maxCombo)
@@ -200,7 +201,7 @@ fun ResultScreen(
                 },
             )
             Spacer(Modifier.height(10.dp))
-            SecondaryButton(text = stringResource(R.string.result_main_menu), onClick = onMenu)
+            SecondaryButton(text = stringResource(R.string.result_main_menu), onClick = onMenu, light = true)
         }
     }
 }
@@ -210,14 +211,14 @@ private fun MiniStat(label: String, value: String, modifier: Modifier = Modifier
     Box(
         modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.05f))
-            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(value, style = TemproxType.title.copy(color = Color.White))
-            Text(label, style = TemproxType.micro.copy(color = Color(0xFF9A94B5)), maxLines = 1)
+            Text(value, style = TemproxType.title.copy(color = TemproxColors.Ink))
+            Text(label, style = TemproxType.micro.copy(color = TemproxColors.Muted), maxLines = 1)
         }
     }
 }

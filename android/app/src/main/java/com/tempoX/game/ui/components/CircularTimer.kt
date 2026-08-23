@@ -40,7 +40,7 @@ fun CircularTimer(
             val inset = stroke / 2
             val arcSize = Size(size.width - stroke, size.height - stroke)
             drawArc(
-                color = Color.White.copy(alpha = 0.10f),
+                color = Color(0xFF1E1B2E).copy(alpha = 0.08f),
                 startAngle = -90f, sweepAngle = 360f, useCenter = false,
                 topLeft = Offset(inset, inset), size = arcSize,
                 style = Stroke(stroke, cap = StrokeCap.Round),
@@ -52,6 +52,6 @@ fun CircularTimer(
                 style = Stroke(stroke, cap = StrokeCap.Round),
             )
         }
-        Text("$secondsLeft", style = TemproxType.titleLg.copy(color = Color.White))
+        Text("$secondsLeft", style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
     }
 }

@@ -131,9 +131,9 @@ fun GameScreen(
 
     Box(
         Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF191238), Color(0xFF0B081C)))),
+            .fillMaxSize(),
     ) {
+        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
@@ -147,8 +147,8 @@ fun GameScreen(
                     Modifier
                         .size(46.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.07f))
-                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
                         .clickable { SoundManager.play(CLICK); paused = true },
                     contentAlignment = Alignment.Center,
                 ) { Text("⏸", fontSize = 17.sp, color = Color.White) }
@@ -160,8 +160,8 @@ fun GameScreen(
                 )
                 Spacer(Modifier.size(12.dp))
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.hud_points), style = TemproxType.micro.copy(color = Color(0xFF9A94B5)))
-                    Text("${engine.score}", style = TemproxType.titleLg.copy(color = Color.White))
+                    Text(stringResource(R.string.hud_points), style = TemproxType.micro.copy(color = TemproxColors.Muted))
+                    Text("${engine.score}", style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
                 }
             }
 
@@ -248,7 +248,7 @@ private fun ChallengeBanner(challenge: Challenge, combo: Int) {
         ) {
             Text(stringResource(nameRes), style = TemproxType.bodyBold.copy(color = tint), maxLines = 1)
             Spacer(Modifier.size(10.dp))
-            Text(stringResource(instrRes), style = TemproxType.caption.copy(color = Color(0xFFC9C4DE)), maxLines = 1)
+            Text(stringResource(instrRes), style = TemproxType.caption.copy(color = Color(0xFF334155)), maxLines = 1)
         }
         if (combo >= 2) {
             Spacer(Modifier.size(8.dp))
@@ -303,7 +303,7 @@ private fun MemoryHost(
     ) {
         Text(
             stringResource(if (watching) R.string.memory_watch_phase else R.string.memory_input_phase),
-            style = TemproxType.bodyBold.copy(color = Color.White),
+            style = TemproxType.bodyBold.copy(color = TemproxColors.Ink),
         )
         Spacer(Modifier.height(18.dp))
 
@@ -324,9 +324,9 @@ private fun MemoryHost(
                         Modifier
                             .size(if (i < inputCursor) 34.dp else 28.dp)
                             .clip(RoundedCornerShape(9.dp))
-                            .background(if (i < inputCursor) MEMORY_TINTS[seqIdx] else Color.White.copy(alpha = 0.07f)),
+                            .background(if (i < inputCursor) MEMORY_TINTS[seqIdx] else Color(0xFF1E1B2E).copy(alpha = 0.08f)),
                         contentAlignment = Alignment.Center,
-                    ) { Text(if (i < inputCursor) "✓" else "?", color = Color.White, fontSize = 12.sp) }
+                    ) { Text(if (i < inputCursor) "✓" else "?", color = if (i < inputCursor) Color.White else Color(0xFF475569), fontSize = 12.sp) }
                 }
             }
             Spacer(Modifier.height(22.dp))
@@ -429,7 +429,7 @@ private fun ReflexHost(
 @Composable
 private fun MathHost(challenge: Challenge.Math, onAnswer: (Boolean) -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Text(challenge.question + " = ?", style = TemproxType.titleLg.copy(color = Color.White, fontSize = 40.sp))
+        Text(challenge.question + " = ?", style = TemproxType.titleLg.copy(color = TemproxColors.Ink, fontSize = 40.sp))
         Spacer(Modifier.height(24.dp))
         Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             val correctValue = challenge.options[challenge.correctIndex]
@@ -441,14 +441,14 @@ private fun MathHost(challenge: Challenge.Math, onAnswer: (Boolean) -> Unit) {
                                 .weight(1f)
                                 .height(62.dp)
                                 .clip(TemproxShapes.Button)
-                                .background(Color.White.copy(alpha = 0.06f))
-                                .border(1.dp, Color.White.copy(alpha = 0.18f), TemproxShapes.Button)
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFE2E8F0), TemproxShapes.Button)
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,
                                 ) { SoundManager.play(CLICK); onAnswer(opt == correctValue) },
                             contentAlignment = Alignment.Center,
-                        ) { Text("$opt", style = TemproxType.title.copy(color = Color.White)) }
+                        ) { Text("$opt", style = TemproxType.title.copy(color = TemproxColors.Ink)) }
                     }
                     if (rowOpts.size == 1) Spacer(Modifier.weight(1f))
                 }

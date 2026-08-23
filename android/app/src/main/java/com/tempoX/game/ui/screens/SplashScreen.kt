@@ -83,11 +83,14 @@ fun SplashScreen() {
 
     Box(
         Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(TemproxColors.NightA, TemproxColors.NightB))),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.align(Alignment.Center),
+        ) {
             Image(
                 painter = painterResource(R.drawable.temprox_logo),
                 contentDescription = stringResource(R.string.app_name),
@@ -103,7 +106,7 @@ fun SplashScreen() {
             Spacer(Modifier.height(20.dp))
             Text(
                 stringResource(R.string.tagline),
-                style = TemproxType.micro.copy(color = Color(0xFF9A94B5), letterSpacing = 3.sp),
+                style = TemproxType.micro.copy(color = TemproxColors.Muted, letterSpacing = 3.sp),
                 modifier = Modifier
                     .offset(y = ((1f - tagAlpha.value) * 14).dp)
                     .alpha(tagAlpha.value * glow),

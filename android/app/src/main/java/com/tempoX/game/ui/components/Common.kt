@@ -79,24 +79,28 @@ fun PrimaryButton(
     }
 }
 
-/** Outlined secondary action. */
+/** Outlined secondary action. `light` adapts the chip to bright surfaces. */
 @Composable
 fun SecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    light: Boolean = false,
 ) {
+    val container = if (light) Color.White else Color.White.copy(alpha = 0.06f)
+    val line = if (light) Color(0xFFCBD5E1) else Color.White.copy(alpha = 0.25f)
+    val content = if (light) TemproxColors.Ink else Color.White
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(54.dp)
             .clip(TemproxShapes.Button)
-            .background(Color.White.copy(alpha = 0.06f))
-            .border(1.dp, Color.White.copy(alpha = 0.25f), TemproxShapes.Button)
+            .background(container)
+            .border(1.dp, line, TemproxShapes.Button)
             .clickable { SoundManager.play(SoundManager.Sfx.CLICK); onClick() },
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = TemproxType.bodyBold.copy(color = Color.White), textAlign = TextAlign.Center)
+        Text(text, style = TemproxType.bodyBold.copy(color = content), textAlign = TextAlign.Center)
     }
 }
 
@@ -155,7 +159,7 @@ fun TemproxLogo(heightText: Int = 30) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             "TEMPO",
-            style = TemproxType.display.copy(fontSize = heightText.sp, color = Color.White),
+            style = TemproxType.display.copy(fontSize = heightText.sp, color = TemproxColors.Ink),
         )
         Box(
             modifier = Modifier
