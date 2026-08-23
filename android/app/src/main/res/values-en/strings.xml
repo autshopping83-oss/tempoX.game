@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English -->
+<resources>
+    <string name="app_name">TEMPOX</string>
+    <string name="title_activity_main">TEMPOX</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_rules">Rules</string>
+    <string name="nav_start">START</string>
+
+    <string name="rules_title">HOW TO PLAY</string>
+    <string name="rules_subtitle">TEMPOX RULES</string>
+    <string name="rules_intro">TEMPOX is a fast extreme mental agility game. You have exactly one minute to solve an endless sequence of quick tests:</string>
+    <string name="rules_memory_title">Memory</string>
+    <string name="rules_memory_desc">Memorize and repeat the displayed sequence of colored shapes.</string>
+    <string name="rules_reflex_title">Reflex</string>
+    <string name="rules_reflex_desc">Tap the golden target fast. Never touch the red danger ones!</string>
+    <string name="rules_math_title">Math</string>
+    <string name="rules_math_desc">Solve multiple choice equations under extreme pressure.</string>
+    <string name="rules_attention_title">Attention</string>
+    <string name="rules_attention_desc">Instantly spot the symbol that differs from the others.</string>
+    <string name="rules_combo_tip">🔥 Consecutive hits build COMBOS for extra points and speed challenges up! Misses break the combo.</string>
+    <string name="rules_cta">GOT IT, LET'S GO</string>
+
+    <string name="home_premium_badge">PREMIUM ARCADE</string>
+    <string name="home_seed_label">Match Seed</string>
+    <string name="home_seed_placeholder">Optional</string>
+    <string name="home_level_profile">Profile Level</string>
+    <string name="home_level">Level %1$d</string>
+    <string name="home_best_score">★ BEST SCORE</string>
+    <string name="home_xp_accumulated">%1$d XP accumulated</string>
+    <string name="home_percent_to_level">%1$d%% to Level %2$d</string>
+    <string name="home_play_now">PLAY NOW</string>
+    <string name="tagline">THINK FAST. REACT FASTER.</string>
+
+    <string name="tab_play">Play</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_trophies">Trophies</string>
+
+    <string name="stats_historical_title">Historical Stats</string>
+    <string name="stats_matches">Matches</string>
+    <string name="stats_record">Record</string>
+    <string name="stats_total_xp">Total XP</string>
+    <string name="stats_max_combo">Max Combo</string>
+    <string name="stats_answers">Answers</string>
+    <string name="stats_avg_accuracy">Avg Accuracy</string>
+
+    <string name="trophies_title">Trophies &amp; Achievements (%1$d/5)</string>
+    <string name="status_unlocked">✓ UNLOCKED</string>
+    <string name="status_locked">LOCKED</string>
+
+    <string name="ach_elephant_title">Elephant Memory</string>
+    <string name="ach_elephant_desc">Complete a sequence of 7+ symbols in Memory.</string>
+    <string name="ach_reflex_title">Perfect Reflex</string>
+    <string name="ach_reflex_desc">Answer a reflex challenge in under 0.25 seconds.</string>
+    <string name="ach_unstoppable_title">Unstoppable</string>
+    <string name="ach_unstoppable_desc">Reach Combo x10 during a match.</string>
+    <string name="ach_survivor_title">Survivor</string>
+    <string name="ach_survivor_desc">Complete an entire 60-second match.</string>
+    <string name="ach_recordist_title">Record Breaker</string>
+    <string name="ach_recordist_desc">Beat your own all-time high score.</string>
+
+    <string name="challenge_memory_name">Memory</string>
+    <string name="challenge_memory_instruction">Memorize and repeat the sequence</string>
+    <string name="challenge_reflex_name">Reflex</string>
+    <string name="challenge_reflex_instruction">Tap the yellow target fast</string>
+    <string name="challenge_math_name">Math</string>
+    <string name="challenge_math_instruction">Solve the equation as fast as you can</string>
+    <string name="challenge_attention_name">Attention</string>
+    <string name="challenge_fallback_name">Challenge</string>
+    <string name="challenge_fallback_instruction">React fast!</string>
+    <string name="memory_watch_phase">Memorize…</string>
+    <string name="memory_input_phase">Repeat the sequence!</string>
+
+    <string name="pause_badge">GAME PAUSED</string>
+    <string name="pause_heading">PAUSED</string>
+    <string name="pause_subtitle">Take a deep breath. Come back when ready!</string>
+    <string name="settings_sound">Sound Effects</string>
+    <string name="settings_vibration">Haptic Vibration</string>
+    <string name="settings_volume">Effects Volume</string>
+    <string name="pause_resume">RESUME MATCH</string>
+    <string name="pause_restart">RESTART MATCH</string>
+    <string name="pause_quit">Abandon Match</string>
+
+    <string name="result_time_up">TIME'S UP!</string>
+    <string name="result_final_score">Final Score</string>
+    <string name="result_new_record">🏆 NEW RECORD SET!</string>
+    <string name="stat_challenges">Challenges</string>
+    <string name="stat_accuracy">Accuracy</string>
+    <string name="stat_max_combo">Max Combo</string>
+    <string name="result_reward_pool">ACCUMULATED REWARD</string>
+    <string name="result_double_hint">Double your earnings by watching a short video!</string>
+    <string name="result_double_btn">🎬 DOUBLE REWARD</string>
+    <string name="result_doubled_ok">✓ DOUBLED SUCCESSFULLY!</string>
+    <string name="result_new_trophies">NEW TROPHIES UNLOCKED!</string>
+    <string name="result_play_again">PLAY AGAIN</string>
+    <string name="action_share">SHARE</string>
+    <string name="result_main_menu">MAIN MENU</string>
+    <string name="share_text">I scored %1$d points with a x%2$d combo on TEMPOX! Can you beat it?</string>
+    <string name="share_alert">Score shared: %1$d points!</string>
+
+    <string name="combo_chip">COMBO x%1$d</string>
+    <string name="vibrate_toggle_desc">Toggle vibration</string>
+    <string name="sound_toggle_desc">Toggle sound</string>
+
+    <string name="challenge_attention_instruction">Find the odd symbol</string>
+    <string name="hud_points">SCORE</string>
+</resources>
