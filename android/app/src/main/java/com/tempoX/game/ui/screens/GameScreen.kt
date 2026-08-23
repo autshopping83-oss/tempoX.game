@@ -746,7 +746,7 @@ private fun GlobalTimeBar(engine: GameEngine) {
         Box(
             Modifier
                 .fillMaxHeight()
-                .fillFraction(anim)
+                .fillFraction { anim.value }
                 .clip(RoundedCornerShape(12.dp))
                 .background(
                     if (urgent) {
@@ -777,13 +777,6 @@ private fun GlobalTimeBar(engine: GameEngine) {
                 .background(if (urgent) TemproxColors.Danger else Color.White, RoundedCornerShape(999.dp))
                 .border(1.dp, if (urgent) Color.Transparent else Color(0xFF94A3B8), RoundedCornerShape(999.dp))
                 .padding(horizontal = 10.dp, vertical = 3.dp),
-        )
-    }
-}
-                }
-                .background(if (urgent) TemproxColors.Danger else Color.White, RoundedCornerShape(999.dp))
-                .border(1.dp, if (urgent) Color.Transparent else Color(0xFFE2E8F0), RoundedCornerShape(999.dp))
-                .padding(horizontal = 9.dp, vertical = 2.dp),
         )
     }
 }
