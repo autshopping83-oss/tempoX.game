@@ -1,6 +1,6 @@
 package com.tempoX.game.ui.screens
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -62,7 +66,9 @@ import com.tempoX.game.ui.theme.TemproxColors
 import com.tempoX.game.ui.theme.TemproxShapes
 import com.tempoX.game.ui.theme.TemproxType
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 private const val TICK_MS = 60L
 
@@ -184,10 +190,7 @@ fun GameScreen(
 
             Spacer(Modifier.height(12.dp))
             ChallengeBanner(engine.challenge, combo = engine.combo)
-
-            Spacer(Modifier.height(10.dp))
-            QuestionTimeBar(engine)
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
 
             key(engine.challenge) {
                 when (val ch = engine.challenge) {
@@ -208,6 +211,9 @@ fun GameScreen(
                     is Challenge.Attention -> AttentionHost(ch) { ok -> engine.resolve(ok) }
                 }
             }
+
+            Spacer(Modifier.height(14.dp))
+            QuestionTimeBar(engine)
         }
 
         if (paused && !engine.finished) {
@@ -621,56 +627,110 @@ private fun SettingsRow(label: String, emoji: String, control: @Composable () ->
 }
 
 // ---------------------------------------------------------------------
-// Linear time bars — state reads are isolated via derivedStateOf so each
-// tick recomposes only its own bar, never the challenge tree.
+// Linear time bars — continuous values are read during layout (fraction)
+// and draw (badge offset) phases, so per-tick updates never recompose the
+// challenge tree. Only rare discrete flips (integer second, urgency) do.
 // ---------------------------------------------------------------------
 
-/** Slim global 60s session bar — neutral track, brand gradient fill. */
+/** Fractional-width helper: reads [state] at LAYOUT phase, not composition. */
+private fun Modifier.fillFraction(state: androidx.compose.runtime.State<Float>): Modifier =
+    androidx.compose.ui.layout.layout { measurable, constraints ->
+        val w = (constraints.maxWidth * state.value.coerceIn(0f, 1f)).roundToInt()
+        val placeable = measurable.measure(
+            androidx.compose.ui.unit.Constraints(minWidth = w, maxWidth = w),
+        )
+        layout(w, placeable.height) { placeable.placeRelative(0, 0) }
+    }
+
+/** Chunky global 60s bar with a floating seconds badge riding the fill tip;
+ *  turns red under 10 seconds for the final urgency spike. */
 @Composable
 private fun GlobalTimeBar(engine: GameEngine) {
-    val frac by remember {
+    val secondsLeft by remember { derivedStateOf { ceil(engine.timeLeftMillis / 1000f).toInt() } }
+    val urgent by remember { derivedStateOf { engine.timeLeftMillis < 10_000L } }
+    val frac = remember {
         derivedStateOf { (engine.timeLeftMillis / Progression.MATCH_MILLIS.toFloat()).coerceIn(0f, 1f) }
     }
-    val anim by animateFloatAsState(frac, tween(140), label = "globalTime")
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(6.dp)
-            .clip(RoundedCornerShape(999.dp))
-            .background(TemproxColors.BorderSofter),
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth(anim)
-                .height(6.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(Brush.horizontalGradient(listOf(Color(0xFF8B5CF6), TemproxColors.Primary))),
-        )
+    // Animated off-composition: the fraction value is only ever read during
+    // layout (fill width) and draw (badge offset), never in composition.
+    val anim = remember { Animatable(1f) }
+    LaunchedEffect(Unit) {
+        snapshotFlow { frac.value }
+            .collectLatest { anim.animateTo(it, tween(160)) }
     }
-}
 
-/** Fast per-question urgency bar — challenge tint, red under 20%. */
-@Composable
-private fun QuestionTimeBar(engine: GameEngine) {
-    val limit = engine.challenge.limitMillis.coerceAtLeast(1L).toFloat()
-    val remain by remember(engine.challenge) {
-        derivedStateOf { (1f - engine.challengeElapsedMillis / limit).coerceIn(0f, 1f) }
-    }
-    val fill = if (remain < 0.2f) TemproxColors.Danger else TemproxColors.challengeColor(engine.challenge.type)
+    var barWidthPx by remember { mutableFloatStateOf(0f) }
     Box(
         Modifier
             .fillMaxWidth()
-            .height(7.dp)
+            .height(15.dp)
+            .onSizeChanged { barWidthPx = it.width.toFloat() }
             .clip(RoundedCornerShape(999.dp))
             .background(Color.White)
             .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(999.dp)),
     ) {
         Box(
             Modifier
-                .fillMaxWidth(remain)
-                .height(7.dp)
+                .fillMaxHeight()
+                .fillFraction(anim)
                 .clip(RoundedCornerShape(999.dp))
-                .background(fill),
+                .background(
+                    if (urgent) {
+                        Brush.horizontalGradient(listOf(Color(0xFFEF4444), TemproxColors.Danger))
+                    } else {
+                        Brush.horizontalGradient(listOf(Color(0xFF8B5CF6), TemproxColors.Primary))
+                    },
+                ),
+        )
+        Text(
+            "${secondsLeft}s",
+            style = TemproxType.caption.copy(color = if (urgent) Color.White else TemproxColors.Ink),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .graphicsLayer {
+                    if (barWidthPx > 0f && size.width > 0f) {
+                        alpha = 1f
+                        // Ride the fill tip, clamped so the badge can never
+                        // leave the bar bounds near 0% or 100%.
+                        translationX = (barWidthPx * anim.value - size.width / 2f)
+                            .coerceIn(8.dp.toPx(), (barWidthPx - size.width - 8.dp.toPx()).coerceAtLeast(8.dp.toPx()))
+                    } else {
+                        alpha = 0f
+                    }
+                }
+                .background(if (urgent) TemproxColors.Danger else Color.White, RoundedCornerShape(999.dp))
+                .border(1.dp, if (urgent) Color.Transparent else Color(0xFFE2E8F0), RoundedCornerShape(999.dp))
+                .padding(horizontal = 9.dp, vertical = 2.dp),
+        )
+    }
+}
+
+/** Fast per-question urgency bar below the interaction zone — challenge
+ *  tint, red under 20% remaining. */
+@Composable
+private fun QuestionTimeBar(engine: GameEngine) {
+    val limit = engine.challenge.limitMillis.coerceAtLeast(1L).toFloat()
+    val remain = remember(engine.challenge) {
+        derivedStateOf { (1f - engine.challengeElapsedMillis / limit).coerceIn(0f, 1f) }
+    }
+    val low by remember(engine.challenge) {
+        derivedStateOf { engine.challengeElapsedMillis / limit >= 0.8f }
+    }
+    val fill = if (low) TemproxColors.Danger else TemproxColors.challengeColor(engine.challenge.type)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(11.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White)
+            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(999.dp)),
+    ) {
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillFraction(remain)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Brush.horizontalGradient(listOf(fill.copy(alpha = 0.75f), fill))),
         )
     }
 }
