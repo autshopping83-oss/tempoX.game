@@ -737,28 +737,29 @@ private fun GlobalTimeBar(engine: GameEngine) {
     Box(
         Modifier
             .fillMaxWidth()
-            .height(15.dp)
+            .height(22.dp)
             .onSizeChanged { barWidthPx = it.width.toFloat() }
-            .clip(RoundedCornerShape(999.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(999.dp)),
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFE2E8F0))
+            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(12.dp)),
     ) {
         Box(
             Modifier
                 .fillMaxHeight()
-                .fillFraction { anim.value }
-                .clip(RoundedCornerShape(999.dp))
+                .fillFraction(anim)
+                .clip(RoundedCornerShape(12.dp))
                 .background(
                     if (urgent) {
                         Brush.horizontalGradient(listOf(Color(0xFFEF4444), TemproxColors.Danger))
                     } else {
-                        Brush.horizontalGradient(listOf(Color(0xFF8B5CF6), TemproxColors.Primary))
+                        // Neon purple -> electric blue: unmistakable against the track
+                        Brush.horizontalGradient(listOf(Color(0xFF8B5CF6), Color(0xFF2563EB)))
                     },
                 ),
         )
         Text(
             "${secondsLeft}s",
-            style = TemproxType.caption.copy(color = if (urgent) Color.White else TemproxColors.Ink),
+            style = TemproxType.bodyBold.copy(fontSize = 13.sp, color = if (urgent) Color.White else TemproxColors.Ink),
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .graphicsLayer {
@@ -772,6 +773,14 @@ private fun GlobalTimeBar(engine: GameEngine) {
                         alpha = 0f
                     }
                 }
+                .shadow(3.dp, RoundedCornerShape(999.dp), spotColor = Color(0x33475569))
+                .background(if (urgent) TemproxColors.Danger else Color.White, RoundedCornerShape(999.dp))
+                .border(1.dp, if (urgent) Color.Transparent else Color(0xFF94A3B8), RoundedCornerShape(999.dp))
+                .padding(horizontal = 10.dp, vertical = 3.dp),
+        )
+    }
+}
+                }
                 .background(if (urgent) TemproxColors.Danger else Color.White, RoundedCornerShape(999.dp))
                 .border(1.dp, if (urgent) Color.Transparent else Color(0xFFE2E8F0), RoundedCornerShape(999.dp))
                 .padding(horizontal = 9.dp, vertical = 2.dp),
@@ -779,8 +788,8 @@ private fun GlobalTimeBar(engine: GameEngine) {
     }
 }
 
-/** Fast per-question urgency bar below the interaction zone — challenge
- *  tint, red under 20% remaining. */
+/** Fast per-question urgency bar below the interaction zone — vibrant
+ *  orange fill, red under 20% remaining. */
 @Composable
 private fun QuestionTimeBar(engine: GameEngine) {
     val limit = engine.challenge.limitMillis.coerceAtLeast(1L).toFloat()
@@ -790,21 +799,26 @@ private fun QuestionTimeBar(engine: GameEngine) {
     val low by remember(engine.challenge) {
         derivedStateOf { engine.challengeElapsedMillis / limit >= 0.8f }
     }
-    val fill = if (low) TemproxColors.Danger else TemproxColors.challengeColor(engine.challenge.type)
     Box(
         Modifier
             .fillMaxWidth()
-            .height(11.dp)
-            .clip(RoundedCornerShape(999.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(999.dp)),
+            .height(15.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFE2E8F0))
+            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(12.dp)),
     ) {
         Box(
             Modifier
                 .fillMaxHeight()
                 .fillFraction { remain.value }
-                .clip(RoundedCornerShape(999.dp))
-                .background(Brush.horizontalGradient(listOf(fill.copy(alpha = 0.75f), fill))),
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    if (low) {
+                        Brush.horizontalGradient(listOf(Color(0xFFEF4444), TemproxColors.Danger))
+                    } else {
+                        Brush.horizontalGradient(listOf(Color(0xFFFB923C), Color(0xFFF97316)))
+                    },
+                ),
         )
     }
 }
