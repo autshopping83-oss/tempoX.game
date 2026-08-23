@@ -27,6 +27,10 @@ object TemproxColors {
     val Green = Color(0xFF22C55E)
     val Pink = Color(0xFFEC4899)
 
+    // Light-surface lines (web slate-200 / slate-50 equivalents)
+    val BorderLight = Color(0xFFE2E8F0)
+    val BorderSofter = Color(0xFFF1F5F9)
+
     // Dark hero surfaces (home / gameplay backdrops)
     val NightA = Color(0xFF151032)
     val NightB = Color(0xFF0B081C)

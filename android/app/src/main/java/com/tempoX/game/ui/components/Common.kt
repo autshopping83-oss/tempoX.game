@@ -33,7 +33,7 @@ import com.tempoX.game.ui.theme.TemproxColors
 import com.tempoX.game.ui.theme.TemproxShapes
 import com.tempoX.game.ui.theme.TemproxType
 
-/** Frosted dark card used across the arcade UI. */
+/** Frosted light card used across the arcade UI (web parity: white + slate border). */
 @Composable
 fun FloatingCard(
     modifier: Modifier = Modifier,
@@ -44,10 +44,10 @@ fun FloatingCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(TemproxShapes.Card)
-            .background(Brush.verticalGradient(listOf(Color(0xFF2A2352), Color(0xFF1E183E))))
+            .background(Color.White)
             .border(
                 width = 1.dp,
-                brush = Brush.verticalGradient(listOf(accent?.copy(alpha = 0.55f) ?: Color(0x40FFFFFF), Color(0x14FFFFFF))),
+                color = accent?.copy(alpha = 0.45f) ?: TemproxColors.BorderLight,
                 shape = TemproxShapes.Card,
             )
             .padding(horizontal = 18.dp, vertical = 16.dp),
@@ -83,17 +83,16 @@ fun PrimaryButton(
     }
 }
 
-/** Outlined secondary action. `light` adapts the chip to bright surfaces. */
+/** Outlined secondary action on light surfaces. */
 @Composable
 fun SecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    light: Boolean = false,
+    light: Boolean = true,
 ) {
-    val container = if (light) Color.White else Color.White.copy(alpha = 0.06f)
-    val line = if (light) Color(0xFFCBD5E1) else Color.White.copy(alpha = 0.25f)
-    val content = if (light) TemproxColors.Ink else Color.White
+    val container = Color.White
+    val line = if (light) Color(0xFFCBD5E1) else TemproxColors.BorderLight
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -104,7 +103,7 @@ fun SecondaryButton(
             .clickable { SoundManager.play(SoundManager.Sfx.CLICK); onClick() },
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = TemproxType.bodyBold.copy(color = content), textAlign = TextAlign.Center)
+        Text(text, style = TemproxType.bodyBold.copy(color = TemproxColors.Ink), textAlign = TextAlign.Center)
     }
 }
 
@@ -114,33 +113,33 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier, tint: 
     FloatingCard(modifier = modifier, accent = tint) {
         Text(value, style = TemproxType.titleLg.copy(color = tint))
         Spacer(Modifier.height(2.dp))
-        Text(label, style = TemproxType.micro.copy(color = Color(0xFF94A3B8)), maxLines = 1)
+        Text(label, style = TemproxType.micro.copy(color = TemproxColors.Muted), maxLines = 1)
     }
 }
 
 /** Trophy row with unlocked / locked styling. */
 @Composable
 fun TrophyCard(title: String, description: String, unlocked: Boolean) {
-    val tint = if (unlocked) TemproxColors.Accent else Color(0xFF4A4560)
+    val tint = if (unlocked) TemproxColors.Accent else Color(0xFFCBD5E1)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(if (unlocked) Color(0xFF2A2352) else Color(0xFF181430))
-            .border(1.dp, tint.copy(alpha = if (unlocked) 0.5f else 0.18f), RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .border(1.dp, if (unlocked) tint.copy(alpha = 0.6f) else TemproxColors.BorderLight, RoundedCornerShape(16.dp))
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("🏆", fontSize = TemproxType.title.fontSize, fontWeight = FontWeight.Black)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, style = TemproxType.bodyBold.copy(color = if (unlocked) Color.White else Color(0xFF8B86A3)))
-            Text(description, style = TemproxType.caption.copy(color = Color(0xFF6E6890), fontWeight = FontWeight.Medium))
+            Text(title, style = TemproxType.bodyBold.copy(color = if (unlocked) TemproxColors.Ink else TemproxColors.Muted))
+            Text(description, style = TemproxType.caption.copy(color = Color(0xFF94A3B8), fontWeight = FontWeight.Medium))
         }
         Spacer(Modifier.width(8.dp))
         Text(
             if (unlocked) "✓ LIBERADO" else "BLOQUEADO",
-            style = TemproxType.micro.copy(color = tint),
+            style = TemproxType.micro.copy(color = if (unlocked) Color(0xFFB45309) else Color(0xFF94A3B8)),
         )
     }
 }
@@ -151,7 +150,7 @@ fun BrandedProgress(fraction: Float, tint: Color = TemproxColors.Accent, modifie
     LinearProgressIndicator(
         progress = { fraction.coerceIn(0f, 1f) },
         color = tint,
-        trackColor = Color.White.copy(alpha = 0.10f),
+        trackColor = TemproxColors.BorderSofter,
         strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
         modifier = modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(999.dp)),
     )
@@ -183,6 +182,6 @@ fun TemproxLogo(heightText: Int = 30) {
 fun SectionLabel(text: String, tint: Color = TemproxColors.Accent) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Box(Modifier.size(8.dp).clip(RoundedCornerShape(99)).background(tint))
-        Text(text.uppercase(), style = TemproxType.caption.copy(color = Color(0xFFB7B2CE), letterSpacing = 1.2.sp))
+        Text(text.uppercase(), style = TemproxType.caption.copy(color = TemproxColors.Muted, letterSpacing = 1.2.sp))
     }
 }

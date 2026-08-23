@@ -32,8 +32,8 @@ import com.tempoX.game.ui.theme.TemproxColors
 enum class HomeTab { PLAY, STATS, TROPHIES }
 
 /**
- * Floating pill bottom navigation — glassy dark bar lifted above the
- * gesture area, active tab gets the brand gradient.
+ * Floating pill bottom navigation — glassy white bar lifted above the
+ * gesture area, active tab gets the brand gradient (light theme parity).
  */
 @Composable
 fun BottomNavigation(
@@ -47,10 +47,10 @@ fun BottomNavigation(
             .navigationBarsPadding()
             .padding(horizontal = 24.dp)
             .fillMaxWidth()
-            .shadow(18.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.45f))
+            .shadow(18.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.12f))
             .clip(RoundedCornerShape(28.dp))
-            .background(Color(0xE6171233))
-            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(28.dp))
+            .background(Color(0xF7FFFFFF))
+            .border(1.dp, TemproxColors.BorderLight, RoundedCornerShape(28.dp))
             .height(68.dp)
             .padding(8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -81,7 +81,7 @@ fun BottomNavigation(
                     style = androidx.compose.ui.text.TextStyle(
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = if (selected) Color.White else Color(0xFF9A94B5),
+                        color = if (selected) Color.White else Color(0xFF94A3B8),
                     ),
                 )
             }

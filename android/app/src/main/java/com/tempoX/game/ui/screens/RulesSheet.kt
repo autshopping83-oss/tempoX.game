@@ -2,6 +2,7 @@ package com.tempoX.game.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -59,7 +59,7 @@ fun RulesSheet(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.72f)),
+            .background(TemproxColors.Background.copy(alpha = 0.98f)),
         contentAlignment = Alignment.Center,
     ) {
         // Outer column constrains the card to the available height.
@@ -74,17 +74,17 @@ fun RulesSheet(
                     .weight(1f, fill = false)
                     .padding(horizontal = 20.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Brush.verticalGradient(listOf(Color(0xFF231D45), Color(0xFF171230))))
-                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(24.dp))
+                    .background(Color.White)
+                    .border(1.dp, TemproxColors.BorderLight, RoundedCornerShape(24.dp))
                     .verticalScroll(rememberScrollState())
                     .padding(22.dp),
             ) {
-                Text(stringResource(R.string.rules_title), style = TemproxType.titleLg.copy(color = Color.White))
-                Text(stringResource(R.string.rules_subtitle), style = TemproxType.micro.copy(color = TemproxColors.Accent))
+                Text(stringResource(R.string.rules_title), style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
+                Text(stringResource(R.string.rules_subtitle), style = TemproxType.micro.copy(color = TemproxColors.Primary))
                 Spacer(Modifier.height(14.dp))
                 Text(
                     stringResource(R.string.rules_intro),
-                    style = TemproxType.body.copy(color = Color(0xFFC9C4DE)),
+                    style = TemproxType.body.copy(color = TemproxColors.Muted),
                 )
                 Spacer(Modifier.height(16.dp))
 
@@ -94,7 +94,7 @@ fun RulesSheet(
                             .fillMaxWidth()
                             .padding(bottom = 12.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White.copy(alpha = 0.05f))
+                            .background(item.tint.copy(alpha = 0.06f))
                             .border(1.dp, item.tint.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -104,7 +104,7 @@ fun RulesSheet(
                                 .width(44.dp)
                                 .height(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(item.tint.copy(alpha = 0.18f)),
+                                .background(item.tint.copy(alpha = 0.14f)),
                             contentAlignment = Alignment.Center,
                         ) { Text(item.emoji, fontSize = TemproxType.title.fontSize) }
                         Spacer(Modifier.width(12.dp))
@@ -115,7 +115,7 @@ fun RulesSheet(
                             )
                             Text(
                                 stringResource(item.descRes),
-                                style = TemproxType.caption.copy(color = Color(0xFFB7B2CE)),
+                                style = TemproxType.caption.copy(color = TemproxColors.Muted),
                             )
                         }
                     }
@@ -124,7 +124,7 @@ fun RulesSheet(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     stringResource(R.string.rules_combo_tip),
-                    style = TemproxType.body.copy(color = TemproxColors.Warning),
+                    style = TemproxType.body.copy(color = Color(0xFFB45309)),
                 )
 
                 // ---- Quick settings ------------------------------------
@@ -158,13 +158,11 @@ fun RulesSheet(
                             Text(
                                 label,
                                 style = TemproxType.micro.copy(
-                                    color = if (selected) Color.White else Color(0xFF9A94B5),
+                                    color = if (selected) Color.White else TemproxColors.Muted,
                                 ),
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(999.dp))
-                                    .background(
-                                        if (selected) TemproxColors.Primary else Color.White.copy(alpha = 0.08f)
-                                    )
+                                    .background(if (selected) TemproxColors.Primary else TemproxColors.BorderSofter)
                                     .clickable { onLanguageChange(mode) }
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                             )
@@ -182,10 +180,10 @@ fun RulesSheet(
 
 @Composable
 private fun sheetSwitch() = SwitchDefaults.colors(
-    checkedThumbColor = TemproxColors.Accent,
-    checkedTrackColor = TemproxColors.Accent.copy(alpha = 0.35f),
-    uncheckedThumbColor = Color(0xFF6E6890),
-    uncheckedTrackColor = Color.White.copy(alpha = 0.12f),
+    checkedThumbColor = Color.White,
+    checkedTrackColor = TemproxColors.Primary,
+    uncheckedThumbColor = Color(0xFF94A3B8),
+    uncheckedTrackColor = TemproxColors.BorderLight,
 )
 
 @Composable
@@ -198,7 +196,7 @@ private fun SheetRow(label: String, emoji: String, control: @Composable () -> Un
     ) {
         Text(emoji, fontSize = 15.sp)
         Spacer(Modifier.width(8.dp))
-        Text(label, style = TemproxType.bodyBold.copy(color = Color.White), modifier = Modifier.weight(1f))
+        Text(label, style = TemproxType.bodyBold.copy(color = TemproxColors.Ink), modifier = Modifier.weight(1f))
         control()
     }
 }

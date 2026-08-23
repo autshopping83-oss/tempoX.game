@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tempoX.game.R
@@ -152,7 +153,7 @@ fun GameScreen(
                         .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
                         .clickable { SoundManager.play(CLICK); paused = true },
                     contentAlignment = Alignment.Center,
-                ) { Text("⏸", fontSize = 17.sp, color = Color.White) }
+                ) { Text("⏸", fontSize = 17.sp, color = TemproxColors.Ink) }
 
                 Spacer(Modifier.size(12.dp))
                 CircularTimer(
@@ -516,18 +517,19 @@ private fun PauseOverlay(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.78f))
+            // Light frosted scrim — web parity (bg #F8FAFC at ~98%)
+            .background(TemproxColors.Background.copy(alpha = 0.98f))
             .navigationBarsPadding(),
         contentAlignment = Alignment.Center,
     ) {
         Column(Modifier.padding(22.dp)) {
             FloatingCard {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.pause_badge), style = TemproxType.micro.copy(color = TemproxColors.Warning))
+                    Text(stringResource(R.string.pause_badge), style = TemproxType.micro.copy(color = TemproxColors.Primary))
                     Spacer(Modifier.height(4.dp))
-                    Text(stringResource(R.string.pause_heading), style = TemproxType.titleLg.copy(color = Color.White))
+                    Text(stringResource(R.string.pause_heading), style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
                     Spacer(Modifier.height(2.dp))
-                    Text(stringResource(R.string.pause_subtitle), style = TemproxType.caption.copy(color = Color(0xFFB7B2CE)))
+                    Text(stringResource(R.string.pause_subtitle), style = TemproxType.caption.copy(color = TemproxColors.Muted))
 
                     Spacer(Modifier.height(16.dp))
                     SettingsRow(stringResource(R.string.settings_sound), "🔊") {
@@ -537,14 +539,14 @@ private fun PauseOverlay(
                         Switch(checked = hapticsOn, onCheckedChange = onToggleHaptics, colors = pauseSwitchColors())
                     }
                     Column(Modifier.padding(vertical = 6.dp)) {
-                        Text(stringResource(R.string.settings_volume), style = TemproxType.caption.copy(color = Color.White))
+                        Text(stringResource(R.string.settings_volume), style = TemproxType.caption.copy(color = TemproxColors.Ink))
                         Slider(
                             value = fxVolume,
                             onValueChange = onVolumeChange,
                             colors = SliderDefaults.colors(
-                                thumbColor = TemproxColors.Accent,
-                                activeTrackColor = TemproxColors.Accent,
-                                inactiveTrackColor = Color.White.copy(alpha = 0.15f),
+                                thumbColor = TemproxColors.Primary,
+                                activeTrackColor = TemproxColors.Primary,
+                                inactiveTrackColor = TemproxColors.BorderLight,
                             ),
                         )
                     }
@@ -554,7 +556,23 @@ private fun PauseOverlay(
                     Spacer(Modifier.height(10.dp))
                     SecondaryButton(text = stringResource(R.string.pause_restart), onClick = onRestart)
                     Spacer(Modifier.height(10.dp))
-                    SecondaryButton(text = stringResource(R.string.pause_quit), onClick = onQuit)
+                    // Danger-tinted abandon action — mirrors the web pause menu.
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .clip(TemproxShapes.Button)
+                            .background(TemproxColors.Danger.copy(alpha = 0.06f))
+                            .border(1.dp, TemproxColors.Danger.copy(alpha = 0.35f), TemproxShapes.Button)
+                            .clickable { SoundManager.play(SoundManager.Sfx.CLICK); onQuit() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(R.string.pause_quit),
+                            style = TemproxType.bodyBold.copy(color = TemproxColors.Danger),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
         }
@@ -563,10 +581,10 @@ private fun PauseOverlay(
 
 @Composable
 private fun pauseSwitchColors() = SwitchDefaults.colors(
-    checkedThumbColor = TemproxColors.Accent,
-    checkedTrackColor = TemproxColors.Accent.copy(alpha = 0.35f),
-    uncheckedThumbColor = Color(0xFF6E6890),
-    uncheckedTrackColor = Color.White.copy(alpha = 0.12f),
+    checkedThumbColor = Color.White,
+    checkedTrackColor = TemproxColors.Primary,
+    uncheckedThumbColor = Color(0xFF94A3B8),
+    uncheckedTrackColor = TemproxColors.BorderLight,
 )
 
 @Composable
@@ -579,7 +597,7 @@ private fun SettingsRow(label: String, emoji: String, control: @Composable () ->
     ) {
         Text(emoji, fontSize = 15.sp)
         Spacer(Modifier.size(8.dp))
-        Text(label, style = TemproxType.bodyBold.copy(color = Color.White), modifier = Modifier.weight(1f))
+        Text(label, style = TemproxType.bodyBold.copy(color = TemproxColors.Ink), modifier = Modifier.weight(1f))
         control()
     }
 }

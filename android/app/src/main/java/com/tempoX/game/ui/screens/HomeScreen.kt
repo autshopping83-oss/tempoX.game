@@ -64,7 +64,11 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
-    var showRules by remember { mutableStateOf(true) } // first-launch onboarding, like the web build
+    // First-launch onboarding only — persisted flag survives navigation.
+    var showRules by remember {
+        val prefs = context.getSharedPreferences("temprox_settings", android.content.Context.MODE_PRIVATE)
+        mutableStateOf(!prefs.getBoolean("rules_seen", false))
+    }
     var seedText by remember { mutableStateOf("") }
 
     val level = Progression.levelForXp(stats.totalXp)
@@ -149,7 +153,11 @@ fun HomeScreen(
         if (showRules) RulesSheet(
                 language = language,
                 onLanguageChange = onLanguageChange,
-                onClose = { showRules = false },
+                onClose = {
+                    context.getSharedPreferences("temprox_settings", android.content.Context.MODE_PRIVATE)
+                        .edit().putBoolean("rules_seen", true).apply()
+                    showRules = false
+                },
             )
     }
 }
@@ -201,11 +209,11 @@ private fun PlayTab(
 
         // Best score hero card
         FloatingCard(accent = TemproxColors.Accent) {
-            Text(stringResource(R.string.home_best_score), style = TemproxType.caption.copy(color = TemproxColors.Accent))
-            Text("${stats.highScore}", style = TemproxType.score.copy(color = Color.White))
+            Text(stringResource(R.string.home_best_score), style = TemproxType.caption.copy(color = Color(0xFFB45309)))
+            Text("${stats.highScore}", style = TemproxType.score.copy(color = TemproxColors.Ink))
             Spacer(Modifier.height(10.dp))
 
-            Text(stringResource(R.string.home_level_profile), style = TemproxType.micro.copy(color = Color(0xFF9A94B5)))
+            Text(stringResource(R.string.home_level_profile), style = TemproxType.micro.copy(color = TemproxColors.Muted))
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -219,14 +227,14 @@ private fun PlayTab(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     stringResource(R.string.home_xp_accumulated, stats.totalXp),
-                    style = TemproxType.micro.copy(color = Color(0xFF9A94B5)),
+                    style = TemproxType.micro.copy(color = TemproxColors.Muted),
                 )
                 val floor = Progression.xpForLevel(level)
                 val cost = Progression.xpForLevel(level + 1)
                 val pct = if (cost <= floor) 100 else ((stats.totalXp - floor) * 100 / (cost - floor)).toInt().coerceIn(0, 100)
                 Text(
                     stringResource(R.string.home_percent_to_level, pct, level + 1),
-                    style = TemproxType.micro.copy(color = Color(0xFF9A94B5)),
+                    style = TemproxType.micro.copy(color = TemproxColors.Muted),
                 )
             }
         }
