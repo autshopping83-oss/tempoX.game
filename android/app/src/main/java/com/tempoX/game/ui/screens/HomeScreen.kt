@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tempoX.game.R
 import com.tempoX.game.audio.SoundManager
+import com.tempoX.game.game.LangMode
 import com.tempoX.game.game.PlayerStats
 import com.tempoX.game.game.Progression
 import com.tempoX.game.ui.components.BottomNavigation
@@ -57,6 +58,8 @@ import com.tempoX.game.ui.theme.TemproxType
 fun HomeScreen(
     stats: PlayerStats,
     onStartMatch: (seedText: String) -> Unit,
+    language: LangMode = LangMode.SYSTEM,
+    onLanguageChange: (LangMode) -> Unit = {},
 ) {
     val context = LocalContext.current
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
@@ -90,6 +93,28 @@ fun HomeScreen(
                     TemproxLogo(heightText = 26)
                     Text(stringResource(R.string.tagline), style = TemproxType.micro.copy(color = Color(0xFF8B86A3)))
                 }
+                // Language selector — cycles Automatic → Português → English.
+                Box(
+                    Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = 0.07f))
+                        .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(14.dp))
+                        .clickable { onLanguageChange(com.tempoX.game.game.LanguageManager.next(language)) },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("🌐", fontSize = 17.sp)
+                    Text(
+                        when (language) {
+                            LangMode.SYSTEM -> stringResource(R.string.lang_auto).take(3).uppercase()
+                            LangMode.PT -> "PT"
+                            LangMode.EN -> "EN"
+                        },
+                        style = TemproxType.micro.copy(color = TemproxColors.Accent),
+                        modifier = Modifier.padding(top = 26.dp),
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
                 Box(
                     Modifier
                         .size(44.dp)

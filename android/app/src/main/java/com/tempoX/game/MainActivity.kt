@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.tempoX.game.audio.SoundManager
 import com.tempoX.game.game.GameEngine
+import com.tempoX.game.game.LangMode
+import com.tempoX.game.game.LanguageManager
 import com.tempoX.game.game.MatchSummary
 import com.tempoX.game.game.PlayerStats
 import com.tempoX.game.game.StatsRepository
@@ -33,7 +36,7 @@ class MainActivity : ComponentActivity() {
         SoundManager.init(applicationContext)
         setContent {
             TemproxTheme {
-                AppRoot()
+                AppRootHost()
             }
         }
     }
@@ -47,7 +50,28 @@ private data class FinishedMatch(
 )
 
 @Composable
-fun AppRoot() {
+fun AppRootHost() {
+    val sysContext = LocalContext.current
+    var langMode by remember { mutableStateOf(LanguageManager.load(sysContext)) }
+    val localized = remember(langMode) { LanguageManager.wrap(sysContext, langMode) }
+
+    CompositionLocalProvider(LocalContext provides localized) {
+        AppRoot(
+            langMode = langMode,
+            onLanguageChange = { next ->
+                LanguageManager.save(sysContext, next)
+                langMode = next
+                SoundManager.play(SoundManager.Sfx.CLICK)
+            },
+        )
+    }
+}
+
+@Composable
+fun AppRoot(
+    langMode: LangMode,
+    onLanguageChange: (LangMode) -> Unit,
+) {
     val context = LocalContext.current
     val statsRepo = remember { StatsRepository(context) }
 
@@ -93,6 +117,8 @@ fun AppRoot() {
 
             else -> HomeScreen(
                 stats = statsRepo.load(),
+                language = langMode,
+                onLanguageChange = onLanguageChange,
                 onStartMatch = { seed ->
                     seedText = seed
                     finished = null
