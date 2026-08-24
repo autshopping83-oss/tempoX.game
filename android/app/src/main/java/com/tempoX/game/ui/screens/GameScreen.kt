@@ -72,6 +72,7 @@ import com.tempoX.game.game.ChallengeType
 import com.tempoX.game.game.GameEngine
 import com.tempoX.game.game.GameMode
 import com.tempoX.game.game.MatchSummary
+import com.tempoX.game.game.MockAdManager
 import com.tempoX.game.game.Progression
 import com.tempoX.game.ui.components.FloatingCard
 import com.tempoX.game.ui.components.PrimaryButton
@@ -92,6 +93,7 @@ private const val TICK_MS = 60L
 fun GameScreen(
     seedText: String,
     mode: GameMode,
+    vipInstant: Boolean = false,
     onFinish: (summary: MatchSummary, engine: GameEngine) -> Unit,
     onQuit: () -> Unit,
 ) {
@@ -292,7 +294,7 @@ fun GameScreen(
             var adWatching by remember { mutableStateOf(false) }
             LaunchedEffect(adWatching) {
                 if (adWatching) {
-                    delay(1600) // simulated rewarded video
+                    delay(MockAdManager.rewardedWaitMillis()) // VIP: instant revive
                     adWatching = false
                     SoundManager.play(SoundManager.Sfx.TROPHY)
                     engine.recoverWithAd()
@@ -300,6 +302,7 @@ fun GameScreen(
             }
             RecoveryOverlay(
                 watching = adWatching,
+                instant = vipInstant,
                 onWatch = { adWatching = true },
                 onDecline = { SoundManager.play(CLICK); engine.giveUpRecovery() },
             )
@@ -356,6 +359,7 @@ private fun PenaltyScore(engine: GameEngine) {
 @Composable
 private fun RecoveryOverlay(
     watching: Boolean,
+    instant: Boolean = false,
     onWatch: () -> Unit,
     onDecline: () -> Unit,
 ) {
@@ -397,7 +401,11 @@ private fun RecoveryOverlay(
                         .clickable { SoundManager.play(SoundManager.Sfx.CONFIRM); onWatch() },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(stringResource(R.string.recovery_watch_btn), style = TemproxType.bodyBold.copy(color = Color(0xFF111827)))
+                    Text(
+                        // VIP keeps the continue button — instant, no video wait.
+                        stringResource(if (instant) R.string.recovery_vip_btn else R.string.recovery_watch_btn),
+                        style = TemproxType.bodyBold.copy(color = Color(0xFF111827)),
+                    )
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(

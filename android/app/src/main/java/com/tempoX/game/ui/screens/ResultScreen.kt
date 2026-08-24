@@ -54,6 +54,7 @@ fun ResultScreen(
     isRecord: Boolean,
     doubledAlready: Boolean,
     unlockedIds: List<String>,
+    vipInstant: Boolean = false,
     onPlayAgain: () -> Unit,
     onMenu: () -> Unit,
 ) {
@@ -152,7 +153,17 @@ fun ResultScreen(
                                     .height(58.dp)
                                     .clip(TemproxShapes.Button)
                                     .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
-                                    .clickable { SoundManager.play(SoundManager.Sfx.CLICK); doubleState = 1 },
+                                    .clickable {
+                                        SoundManager.play(SoundManager.Sfx.CLICK)
+                                        if (vipInstant) {
+                                            // VIP: reward doubles instantly, no video wait.
+                                            bonusXp = summary.xpGained
+                                            doubleState = 2
+                                            SoundManager.play(SoundManager.Sfx.RECORD)
+                                        } else {
+                                            doubleState = 1
+                                        }
+                                    },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(

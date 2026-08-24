@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tempoX.game.R
 import com.tempoX.game.audio.SoundManager
+import com.tempoX.game.game.BillingRepository
 import com.tempoX.game.game.EconomyRepository
 import com.tempoX.game.game.EconomyState
 import com.tempoX.game.game.GameMode
@@ -64,6 +66,7 @@ import kotlinx.coroutines.delay
 fun HomeScreen(
     stats: PlayerStats,
     economy: EconomyState,
+    billing: BillingRepository,
     onStartMatch: (mode: GameMode, seedText: String) -> Unit,
     language: LangMode = LangMode.SYSTEM,
     onLanguageChange: (LangMode) -> Unit = {},
@@ -71,6 +74,7 @@ fun HomeScreen(
     onUnlockWithAd: (GameMode) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val adFree by billing.isAdFreeUser.collectAsState()
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
     // First-launch onboarding only — persisted flag survives navigation.
     var showRules by remember {
@@ -79,6 +83,8 @@ fun HomeScreen(
     }
     var seedText by remember { mutableStateOf("") }
     var unlockFor by remember { mutableStateOf<GameMode?>(null) }
+    var showPurchaseSheet by remember { mutableStateOf(false) }
+    var purchaseError by remember { mutableStateOf(false) }
 
     val level = Progression.levelForXp(stats.totalXp)
     val currentLevelFloor = Progression.xpForLevel(level)
@@ -202,6 +208,78 @@ fun HomeScreen(
                 onDismiss = { unlockFor = null },
             )
         }
+
+        // Simulated Google Play purchase sheet for the Remove Ads product.
+        if (showPurchaseSheet) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color(0xB30F172A)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    Modifier
+                        .padding(horizontal = 28.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(24.dp))
+                        .padding(22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("💳", fontSize = 34.sp)
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        stringResource(R.string.purchase_title),
+                        style = TemproxType.bodyBold.copy(color = TemproxColors.Ink),
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        stringResource(R.string.purchase_body),
+                        style = TemproxType.caption.copy(color = Color(0xFF475569)),
+                    )
+                    if (purchaseError) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            stringResource(R.string.purchase_error),
+                            style = TemproxType.micro.copy(color = TemproxColors.Danger),
+                        )
+                    }
+                    Spacer(Modifier.height(18.dp))
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(TemproxColors.Primary)
+                            .clickable {
+                                billing.purchaseRemoveAds(
+                                    onSuccess = {
+                                        SoundManager.play(SoundManager.Sfx.TROPHY)
+                                        SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
+                                        showPurchaseSheet = false
+                                    },
+                                    onError = { purchaseError = true },
+                                )
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(R.string.purchase_confirm),
+                            style = TemproxType.bodyBold.copy(color = Color.White),
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        stringResource(R.string.purchase_cancel),
+                        style = TemproxType.caption.copy(color = TemproxColors.Muted),
+                        modifier = Modifier
+                            .clickable { showPurchaseSheet = false }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -241,15 +319,27 @@ private fun PlayTab(
         }
         Spacer(Modifier.height(16.dp))
 
-        // Premium badge
+        // Premium / Remove-Ads card (ARCADE PREMIUM spot)
         Box(
             Modifier
                 .clip(RoundedCornerShape(999.dp))
-                .background(TemproxColors.Accent.copy(alpha = 0.15f))
-                .border(1.dp, TemproxColors.Accent.copy(alpha = 0.45f), RoundedCornerShape(999.dp))
+                .background(TemproxColors.Accent.copy(alpha = if (adFree) 0.22f else 0.15f))
+                .border(
+                    1.dp,
+                    TemproxColors.Accent.copy(alpha = if (adFree) 0.6f else 0.45f),
+                    RoundedCornerShape(999.dp),
+                )
+                .clickable(enabled = !adFree) {
+                    SoundManager.play(SoundManager.Sfx.CLICK)
+                    purchaseError = false
+                    showPurchaseSheet = true
+                }
                 .padding(horizontal = 12.dp, vertical = 5.dp),
         ) {
-            Text(stringResource(R.string.home_premium_badge), style = TemproxType.micro.copy(color = TemproxColors.Accent))
+            Text(
+                stringResource(if (adFree) R.string.premium_vip_badge else R.string.premium_remove_btn),
+                style = TemproxType.micro.copy(color = TemproxColors.Accent),
+            )
         }
         Spacer(Modifier.height(16.dp))
 
