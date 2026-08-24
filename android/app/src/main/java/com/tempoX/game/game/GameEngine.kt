@@ -16,6 +16,7 @@ data class MatchSummary(
     val maxCombo: Int,
     val xpGained: Int,
     val completed: Boolean,
+    val coinsEarned: Int = 0,
 )
 
 /** The four TEMPOX challenge types. */
@@ -92,7 +93,7 @@ object Progression {
  *   xp    += round(15 * s * (1 + combo * 0.05))
  * Difficulty rises one level every 5 correct answers (cap 10).
  */
-class GameEngine(private val seed: Long = System.currentTimeMillis()) {
+class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: GameMode = GameMode.ARCADE) {
 
     private val rng = Random(seed) // wall-clock seeded per match — never a static seed
 
@@ -150,37 +151,64 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
     var challengeElapsedMillis: Long by mutableStateOf(0L)
         private set
 
+    /** Progression wallet earned THIS match (committed to EconomyRepository at the end). */
+    var sessionCoins: Int by mutableStateOf(0)
+        private set
+
+    /** Specialized-mode mistake counter; 3 mistakes pause the run for ad recovery. */
+    var strikes: Int by mutableStateOf(0)
+        private set
+
+    /** True while the recovery modal is up: every clock is frozen. */
+    var awaitingRecovery: Boolean by mutableStateOf(false)
+        private set
+
+    /** One simulated-ad recovery per match; also doubles the coins earned so far. */
+    var recoveryUsed: Boolean by mutableStateOf(false)
+        private set
+
+    /** HUD feedback hooks for score penalties (floating red "-N"). */
+    var penaltyFlashKey: Int by mutableStateOf(0)
+        private set
+    var lastPenalty: Int by mutableStateOf(0)
+        private set
+
+    /** Speed Math runs on per-round clocks only — the 60s global timer is off. */
+    val survival: Boolean get() = mode == GameMode.MATH
+
+    private fun isSpecialized(): Boolean = mode != GameMode.ARCADE
+
     /** Events consumed by the UI layer to fire sounds/animations. */
     enum class Event { CORRECT, WRONG, COMBO_MILESTONE }
 
     var onEvent: ((Event) -> Unit)? = null
 
-    private fun speedFactor(): Double {
-        val frac = challengeElapsedMillis.toDouble() / challenge.limitMillis.coerceAtLeast(1)
-        return max(1.0, 2.5 - frac * 1.5)
-    }
-
     private fun levelScale(): Double = 1.0 + (difficultyLevel - 1) * 0.15
 
     /** Advance the global 60s clock. */
+    /** Advance the global 60s clock (off in Survival Speed Math). */
     fun tick(deltaMillis: Long) {
-        if (finished) return
+        if (finished || awaitingRecovery || survival) return
         timeLeftMillis = max(0L, timeLeftMillis - deltaMillis)
         if (timeLeftMillis == 0L) finish()
     }
 
     /** Advance the per-challenge clock (not called during Memory watch phase). */
     fun tickChallenge(deltaMillis: Long) {
-        if (finished) return
+        if (finished || awaitingRecovery) return
         challengeElapsedMillis += deltaMillis
         if (challenge.limitMillis > 0 && challengeElapsedMillis >= challenge.limitMillis) {
             resolve(false, perfect = false, memoryLength = 0)
         }
     }
 
-    /** Player answered the active challenge. */
+    /**
+     * Player answered the active challenge. Single funnel for taps AND round
+     * timeouts — main-thread confined, so the timeout/tap race is impossible:
+     * the first call freezes the run before a second event can be observed.
+     */
     fun resolve(correct: Boolean, perfect: Boolean = false, memoryLength: Int = 0) {
-        if (finished) return
+        if (finished || awaitingRecovery) return
         if (correct) {
             totalCorrect++
             combo++
@@ -188,8 +216,16 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
             if (memoryLength > maxMemorySequence) maxMemorySequence = memoryLength
             if (perfect) perfectReflexCount++
 
-            val d = 1.0 + min(2.0, combo * 0.1)
-            score += (100.0 * levelScale() * speedFactor() * d).roundToInt()
+            // Asymmetric economy: Arcade pays little but forgives; specialized
+            // modes pay per-combo and cost more to fail.
+            if (isSpecialized()) {
+                val d = 1.0 + min(2.0, combo * 0.1)
+                score += (25.0 * d).roundToInt()
+                sessionCoins += 2
+            } else {
+                score += 10
+                sessionCoins += 1
+            }
             xpGained += (15.0 * levelScale() * (1.0 + combo * 0.05)).roundToInt()
 
             onEvent?.invoke(if (combo >= 3 && combo % 3 == 0) Event.COMBO_MILESTONE else Event.CORRECT)
@@ -197,12 +233,51 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
         } else {
             totalIncorrect++
             combo = 0
+            lastPenalty = if (isSpecialized()) 10 else 5
+            score = max(0, score - lastPenalty)
+            penaltyFlashKey++
             onEvent?.invoke(Event.WRONG)
+            when {
+                survival -> enterRecoveryOrFail()
+                isSpecialized() -> {
+                    strikes++
+                    if (strikes >= 3) awaitingRecovery = true
+                }
+            }
         }
-        if (!finished && timeLeftMillis > 0) {
+        if (!finished && !awaitingRecovery && timeLeftMillis > 0) {
             challenge = generate()
             challengeElapsedMillis = 0
         }
+    }
+
+    /** Survival Speed Math: first failure offers one ad revival; after that, game over. */
+    private fun enterRecoveryOrFail() {
+        if (!recoveryUsed) awaitingRecovery = true else finish()
+    }
+
+    /**
+     * Simulated rewarded-ad recovery: clears strikes, refreshes the current
+     * round clock (+10s window in timed modes) and doubles coins earned once.
+     */
+    fun recoverWithAd() {
+        if (!awaitingRecovery) return
+        awaitingRecovery = false
+        strikes = 0
+        challengeElapsedMillis = 0 // fresh round bar in survival; fair resume elsewhere
+        if (survival) {
+            recoveryUsed = true
+        } else {
+            timeLeftMillis += 10_000
+            if (!recoveryUsed) {
+                sessionCoins *= 2
+                recoveryUsed = true
+            }
+        }
+    }
+
+    fun giveUpRecovery() {
+        if (awaitingRecovery) finish()
     }
 
     fun finish() {
@@ -213,11 +288,22 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
     // Challenge factory — sizes/timings scale with difficultyLevel.
     // ------------------------------------------------------------------
 
-    private fun generate(): Challenge = when (rng.nextInt(4)) {
-        0 -> genMemory()
-        1 -> genReflex()
-        2 -> genMath()
-        else -> genAttention()
+    private fun generate(): Challenge = when (mode) {
+        // Speed Math: strict equation-only stream.
+        GameMode.MATH -> genMath()
+        // Shape Lab: visual drills only (memory / search / attention).
+        GameMode.SHAPE -> when (rng.nextInt(3)) {
+            0 -> genMemory()
+            1 -> genReflex()
+            else -> genAttention()
+        }
+        // Arcade: the classic mixed 60s run.
+        GameMode.ARCADE -> when (rng.nextInt(4)) {
+            0 -> genMemory()
+            1 -> genReflex()
+            2 -> genMath()
+            else -> genAttention()
+        }
     }
 
     private fun genMemory(): Challenge.Memory =

@@ -1,7 +1,11 @@
 package com.tempoX.game.ui.screens
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -66,6 +70,7 @@ import com.tempoX.game.audio.SoundManager.Sfx.CLICK
 import com.tempoX.game.game.Challenge
 import com.tempoX.game.game.ChallengeType
 import com.tempoX.game.game.GameEngine
+import com.tempoX.game.game.GameMode
 import com.tempoX.game.game.MatchSummary
 import com.tempoX.game.game.Progression
 import com.tempoX.game.ui.components.FloatingCard
@@ -86,6 +91,7 @@ private const val TICK_MS = 60L
 @Composable
 fun GameScreen(
     seedText: String,
+    mode: GameMode,
     onFinish: (summary: MatchSummary, engine: GameEngine) -> Unit,
     onQuit: () -> Unit,
 ) {
@@ -106,7 +112,7 @@ fun GameScreen(
     }
 
     val engine = remember(sessionId) {
-        GameEngine(seedText.hashCode().toLong()).also { eng ->
+        GameEngine(seedText.hashCode().toLong(), mode).also { eng ->
             eng.onEvent = { ev ->
                 when (ev) {
                     GameEngine.Event.CORRECT -> SoundManager.play(SoundManager.Sfx.CORRECT)
@@ -133,7 +139,7 @@ fun GameScreen(
             }
             delay(TICK_MS)
         }
-        if (!abandoned && !paused) {
+        if (!abandoned && !paused && engine.finished) {
             onFinish(
                 MatchSummary(
                     score = engine.score,
@@ -142,6 +148,7 @@ fun GameScreen(
                     maxCombo = engine.maxCombo,
                     xpGained = engine.xpGained,
                     completed = engine.timeLeftMillis == 0L,
+                    coinsEarned = engine.sessionCoins,
                 ),
                 engine,
             )
@@ -189,14 +196,29 @@ fun GameScreen(
 
                 Spacer(Modifier.size(12.dp))
                 Spacer(Modifier.weight(1f))
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(stringResource(R.string.hud_points), style = TemproxType.micro.copy(color = TemproxColors.Muted))
-                    Text("${engine.score}", style = TemproxType.titleLg.copy(color = TemproxColors.Ink))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Live progression wallet for THIS match.
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(999.dp))
+                            .padding(horizontal = 9.dp, vertical = 4.dp),
+                    ) {
+                        Text("🪙 ${engine.sessionCoins}", style = TemproxType.micro.copy(color = Color(0xFFB45309)))
+                    }
+                    Spacer(Modifier.size(10.dp))
+                    PenaltyScore(engine)
                 }
             }
 
             Spacer(Modifier.height(10.dp))
-            GlobalTimeBar(engine)
+            if (engine.survival) {
+                // Speed Math: the round gauge IS the match clock.
+                QuestionTimeBar(engine)
+            } else {
+                GlobalTimeBar(engine)
+            }
 
             Spacer(Modifier.height(12.dp))
             val reflex = engine.challenge as? Challenge.Reflex
@@ -237,7 +259,7 @@ fun GameScreen(
             }
 
             Spacer(Modifier.height(14.dp))
-            QuestionTimeBar(engine)
+            if (!engine.survival) QuestionTimeBar(engine)
         }
 
         if (paused && !engine.finished) {
@@ -263,6 +285,134 @@ fun GameScreen(
                     onQuit()
                 },
             )
+        }
+
+        // Strike/timeout recovery — topmost layer, freezes every clock while up.
+        if (engine.awaitingRecovery) {
+            var adWatching by remember { mutableStateOf(false) }
+            LaunchedEffect(adWatching) {
+                if (adWatching) {
+                    delay(1600) // simulated rewarded video
+                    adWatching = false
+                    SoundManager.play(SoundManager.Sfx.TROPHY)
+                    engine.recoverWithAd()
+                }
+            }
+            RecoveryOverlay(
+                watching = adWatching,
+                onWatch = { adWatching = true },
+                onDecline = { SoundManager.play(CLICK); engine.giveUpRecovery() },
+            )
+        }
+    }
+}
+
+/** Floating red "-N" + shake on the score whenever a penalty lands. */
+@Composable
+private fun PenaltyScore(engine: GameEngine) {
+    val shake = remember { Animatable(0f) }
+    val floatY = remember { Animatable(0f) }
+    val floatA = remember { Animatable(0f) }
+    LaunchedEffect(engine.penaltyFlashKey) {
+        if (engine.penaltyFlashKey > 0 && engine.lastPenalty > 0) {
+            launch {
+                repeat(3) {
+                    shake.animateTo(-6f, tween(45))
+                    shake.animateTo(6f, tween(45))
+                }
+                shake.animateTo(0f, tween(45))
+            }
+            floatY.snapTo(0f)
+            floatA.snapTo(1f)
+            launch { floatY.animateTo(-30f, tween(700)) }
+            floatA.animateTo(0f, tween(700))
+        }
+    }
+    Box(contentAlignment = Alignment.TopEnd) {
+        Column(horizontalAlignment = Alignment.End) {
+            Text(stringResource(R.string.hud_points), style = TemproxType.micro.copy(color = TemproxColors.Muted))
+            Text(
+                "${engine.score}",
+                style = TemproxType.titleLg.copy(color = TemproxColors.Ink),
+                modifier = Modifier.graphicsLayer { translationX = shake.value },
+            )
+        }
+        Text(
+            "-${engine.lastPenalty}",
+            style = TemproxType.title.copy(color = TemproxColors.Danger),
+            modifier = Modifier.graphicsLayer {
+                translationY = floatY.value
+                alpha = floatA.value
+            },
+        )
+    }
+}
+
+/**
+ * Full-screen recovery gate shown after 3 strikes (specialized modes) or the
+ * first failure in Speed Math. Accepting plays a simulated ad: strikes reset,
+ * clocks resume and coins earned so far are doubled (once per match).
+ */
+@Composable
+private fun RecoveryOverlay(
+    watching: Boolean,
+    onWatch: () -> Unit,
+    onDecline: () -> Unit,
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xB30F172A)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier
+                .padding(horizontal = 28.dp)
+                .fillMaxWidth()
+                .clip(TemproxShapes.Card)
+                .background(Color.White)
+                .border(1.dp, Color(0xFFE2E8F0), TemproxShapes.Card)
+                .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("🛟", fontSize = 34.sp)
+            Spacer(Modifier.height(10.dp))
+            Text(
+                stringResource(R.string.recovery_title),
+                style = TemproxType.bodyBold.copy(color = TemproxColors.Ink),
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.recovery_body),
+                style = TemproxType.caption.copy(color = Color(0xFF475569)),
+            )
+            Spacer(Modifier.height(18.dp))
+            if (!watching) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .clip(TemproxShapes.Button)
+                        .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
+                        .clickable { SoundManager.play(SoundManager.Sfx.CONFIRM); onWatch() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(stringResource(R.string.recovery_watch_btn), style = TemproxType.bodyBold.copy(color = Color(0xFF111827)))
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.recovery_decline),
+                    style = TemproxType.caption.copy(color = TemproxColors.Muted),
+                    modifier = Modifier
+                        .clickable(onClick = onDecline)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                )
+            } else {
+                Text(
+                    stringResource(R.string.recovery_ad_loading),
+                    style = TemproxType.bodyBold.copy(color = Color(0xFFB45309)),
+                )
+            }
         }
     }
 }
@@ -929,6 +1079,18 @@ private fun QuestionTimeBar(engine: GameEngine) {
             ceil((limit - engine.challengeElapsedMillis) / 1000f).toInt().coerceAtLeast(0)
         }
     }
+    // Sub-1.5s tension pulse: flips composition once at the threshold, the
+    // alpha oscillation itself rides the draw phase for free.
+    val blink by remember(engine.challenge) {
+        derivedStateOf { limit - engine.challengeElapsedMillis <= 1499f }
+    }
+    val pulse = rememberInfiniteTransition(label = "roundBlink")
+    val pulseAlpha by pulse.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.55f,
+        animationSpec = infiniteRepeatable(tween(260), RepeatMode.Reverse),
+        label = "roundBlinkAlpha",
+    )
     // Animated off-composition. Keyed per challenge so each round restarts
     // the gauge full (no backward refill sweep between questions).
     val anim = remember { Animatable(1f) }
@@ -952,6 +1114,7 @@ private fun QuestionTimeBar(engine: GameEngine) {
             Modifier
                 .fillMaxHeight()
                 .fillFraction { anim.value }
+                .graphicsLayer { alpha = if (blink) pulseAlpha else 1f }
                 .clip(RoundedCornerShape(8.dp))
                 .background(
                     if (low) {

@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tempoX.game.R
 import com.tempoX.game.audio.SoundManager
+import com.tempoX.game.game.EconomyRepository
+import com.tempoX.game.game.EconomyState
+import com.tempoX.game.game.GameMode
 import com.tempoX.game.game.LangMode
 import com.tempoX.game.game.PlayerStats
 import com.tempoX.game.game.Progression
@@ -53,14 +56,18 @@ import com.tempoX.game.ui.components.TemproxLogo
 import com.tempoX.game.ui.components.TrophyCard
 import com.tempoX.game.ui.theme.TemproxColors
 import com.tempoX.game.ui.theme.TemproxType
+import kotlinx.coroutines.delay
 
 /** Home hub: play / stats / trophies + rules modal + optional match seed. */
 @Composable
 fun HomeScreen(
     stats: PlayerStats,
-    onStartMatch: (seedText: String) -> Unit,
+    economy: EconomyState,
+    onStartMatch: (mode: GameMode, seedText: String) -> Unit,
     language: LangMode = LangMode.SYSTEM,
     onLanguageChange: (LangMode) -> Unit = {},
+    onUnlockWithCoins: (GameMode) -> Boolean = { false },
+    onUnlockWithAd: (GameMode) -> Unit = {},
 ) {
     val context = LocalContext.current
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
@@ -70,6 +77,7 @@ fun HomeScreen(
         mutableStateOf(!prefs.getBoolean("rules_seen", false))
     }
     var seedText by remember { mutableStateOf("") }
+    var unlockFor by remember { mutableStateOf<GameMode?>(null) }
 
     val level = Progression.levelForXp(stats.totalXp)
     val currentLevelFloor = Progression.xpForLevel(level)
@@ -129,7 +137,21 @@ fun HomeScreen(
             Spacer(Modifier.height(16.dp))
             Row(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 when (tab) {
-                    HomeTab.PLAY -> PlayTab(stats, level, levelProgress, seedText, { seedText = it }, onStartMatch)
+                    HomeTab.PLAY -> PlayTab(
+                        stats = stats,
+                        level = level,
+                        levelProgress = levelProgress,
+                        economy = economy,
+                        seedText = seedText,
+                        onSeedChange = { seedText = it },
+                        onPlay = { mode, seed ->
+                            if (mode == GameMode.ARCADE || mode in economy.unlockedModes) {
+                                onStartMatch(mode, seed)
+                            } else {
+                                unlockFor = mode
+                            }
+                        },
+                    )
                     HomeTab.STATS -> StatsTab(stats)
                     HomeTab.TROPHIES -> TrophiesTab(stats)
                 }
@@ -159,6 +181,26 @@ fun HomeScreen(
                     showRules = false
                 },
             )
+
+        unlockFor?.let { mode ->
+            UnlockModeDialog(
+                mode = mode,
+                coins = economy.coins,
+                onUseCoins = {
+                    if (onUnlockWithCoins(mode)) {
+                        SoundManager.play(SoundManager.Sfx.TROPHY)
+                        SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
+                        unlockFor = null
+                    }
+                },
+                onWatchAd = {
+                    SoundManager.play(SoundManager.Sfx.TROPHY)
+                    onUnlockWithAd(mode)
+                    unlockFor = null
+                },
+                onDismiss = { unlockFor = null },
+            )
+        }
     }
 }
 
@@ -169,12 +211,13 @@ private fun PlayTab(
     stats: PlayerStats,
     level: Int,
     levelProgress: Float,
+    economy: EconomyState,
     seedText: String,
     onSeedChange: (String) -> Unit,
-    onStartMatch: (String) -> Unit,
+    onPlay: (GameMode, String) -> Unit,
 ) {
     Column {
-        // ---- Featured task cards -------------------------------------
+        // ---- Mode cards (specialized modes are economy-locked) --------
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             TaskCard(
                 header = stringResource(R.string.card_pattern_header),
@@ -182,16 +225,18 @@ private fun PlayTab(
                 flow = "🧠  ▸  △ ▢ ◯  ▸  ⊘  ▸  ● ■ ▲ ✓",
                 tint = Color(0xFF22C55E),
                 glyph = "🧠",
+                locked = GameMode.SHAPE !in economy.unlockedModes,
                 modifier = Modifier.weight(1f),
-            ) { onStartMatch("") }
+            ) { onPlay(GameMode.SHAPE, "") }
             TaskCard(
                 header = stringResource(R.string.card_calc_header),
                 caption = stringResource(R.string.card_calc_caption),
                 flow = "15 − 8 = ?  ▸  ▦▦▦  ▸  7 ✓",
                 tint = Color(0xFF3B82F6),
                 glyph = "⚡",
+                locked = GameMode.MATH !in economy.unlockedModes,
                 modifier = Modifier.weight(1f),
-            ) { onStartMatch("") }
+            ) { onPlay(GameMode.MATH, "") }
         }
         Spacer(Modifier.height(16.dp))
 
@@ -269,7 +314,112 @@ private fun PlayTab(
         )
 
         Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = stringResource(R.string.home_play_now), onClick = { onStartMatch(seedText) })
+        PrimaryButton(text = stringResource(R.string.home_play_now), onClick = { onPlay(GameMode.ARCADE, seedText) })
+    }
+}
+
+/**
+ * Unlock gate for specialized modes: 150 coins offline purchase or a
+ * simulated rewarded video. Coin path always works — network failures on
+ * the ad path just leave the dialog open with a retry hint.
+ */
+@Composable
+private fun UnlockModeDialog(
+    mode: GameMode,
+    coins: Int,
+    onUseCoins: () -> Unit,
+    onWatchAd: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var adLoading by remember { mutableStateOf(false) }
+    var adFailed by remember { mutableStateOf(false) }
+    val modeName = stringResource(
+        if (mode == GameMode.MATH) R.string.card_calc_header else R.string.card_pattern_header,
+    )
+    LaunchedEffect(adLoading) {
+        if (adLoading) {
+            delay(1600) // simulated rewarded video
+            adLoading = false
+            if ((0..99).random() < 20) adFailed = true else onWatchAd()
+        }
+    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xB30F172A)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier
+                .padding(horizontal = 28.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color.White)
+                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(24.dp))
+                .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("🔓", fontSize = 34.sp)
+            Spacer(Modifier.height(10.dp))
+            Text(
+                stringResource(R.string.unlock_title, modeName),
+                style = TemproxType.bodyBold.copy(color = TemproxColors.Ink),
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.unlock_body, coins),
+                style = TemproxType.caption.copy(color = Color(0xFF475569)),
+            )
+            Spacer(Modifier.height(18.dp))
+            // Offline coin purchase — disabled while short on balance.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (coins >= EconomyRepository.UNLOCK_COST) TemproxColors.Primary else Color(0xFFE2E8F0))
+                    .clickable(enabled = coins >= EconomyRepository.UNLOCK_COST && !adLoading) {
+                        SoundManager.play(SoundManager.Sfx.CLICK)
+                        onUseCoins()
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    stringResource(R.string.unlock_coins_btn, EconomyRepository.UNLOCK_COST),
+                    style = TemproxType.bodyBold.copy(color = Color.White),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
+                    .clickable(enabled = !adLoading) { SoundManager.play(SoundManager.Sfx.CLICK); adLoading = true },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    if (adLoading) stringResource(R.string.unlock_ad_loading) else stringResource(R.string.unlock_ad_btn),
+                    style = TemproxType.bodyBold.copy(color = Color(0xFF111827)),
+                )
+            }
+            if (adFailed) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.unlock_ad_fail),
+                    style = TemproxType.micro.copy(color = TemproxColors.Danger),
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.unlock_close),
+                style = TemproxType.caption.copy(color = TemproxColors.Muted),
+                modifier = Modifier
+                    .clickable(onClick = onDismiss)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            )
+        }
     }
 }
 
@@ -342,6 +492,7 @@ private fun TaskCard(
     flow: String,
     tint: Color,
     glyph: String,
+    locked: Boolean = false,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -349,7 +500,7 @@ private fun TaskCard(
         modifier = modifier
             .height(112.dp)
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
+            .background(Color.White.copy(alpha = if (locked) 0.72f else 1f))
             .border(1.dp, tint.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
             .clickable {
                 SoundManager.play(SoundManager.Sfx.CLICK)
@@ -382,6 +533,6 @@ private fun TaskCard(
                 .clip(RoundedCornerShape(999.dp))
                 .background(tint.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center,
-        ) { Text("▶", fontSize = 12.sp, color = tint) }
+        ) { Text(if (locked) "🔒" else "▶", fontSize = 12.sp, color = tint) }
     }
 }

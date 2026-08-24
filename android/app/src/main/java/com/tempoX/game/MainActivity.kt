@@ -16,7 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.tempoX.game.audio.SoundManager
+import com.tempoX.game.game.EconomyRepository
 import com.tempoX.game.game.GameEngine
+import com.tempoX.game.game.GameMode
 import com.tempoX.game.game.LangMode
 import com.tempoX.game.game.LanguageManager
 import com.tempoX.game.game.MatchSummary
@@ -74,6 +76,8 @@ fun AppRoot(
 ) {
     val context = LocalContext.current
     val statsRepo = remember { StatsRepository(context) }
+    val econRepo = remember { EconomyRepository(context) }
+    var economy by remember { mutableStateOf(econRepo.load()) }
 
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
@@ -82,6 +86,7 @@ fun AppRoot(
     }
 
     var playing by remember { mutableStateOf(false) }
+    var matchMode by remember { mutableStateOf(GameMode.ARCADE) }
     var seedText by remember { mutableStateOf("") }
     var finished by remember { mutableStateOf<FinishedMatch?>(null) }
 
@@ -91,10 +96,13 @@ fun AppRoot(
 
             playing -> GameScreen(
                 seedText = seedText,
+                mode = matchMode,
                 onFinish = { summary, engine ->
                     val before = statsRepo.load()
                     val isRecord = summary.score > before.highScore && summary.score > 0
                     val unlocked = statsRepo.commitMatch(summary, engine)
+                    econRepo.addCoins(summary.coinsEarned)
+                    economy = econRepo.load()
                     finished = FinishedMatch(summary, isRecord, unlocked)
                     playing = false
                 },
@@ -117,12 +125,26 @@ fun AppRoot(
 
             else -> HomeScreen(
                 stats = statsRepo.load(),
+                economy = economy,
                 language = langMode,
                 onLanguageChange = onLanguageChange,
-                onStartMatch = { seed ->
+                onStartMatch = { mode, seed ->
+                    matchMode = mode
                     seedText = seed
                     finished = null
                     playing = true
+                },
+                onUnlockWithCoins = { mode ->
+                    econRepo.trySpendCoins(EconomyRepository.UNLOCK_COST).also { ok ->
+                        if (ok) {
+                            econRepo.unlockMode(mode)
+                            economy = econRepo.load()
+                        }
+                    }
+                },
+                onUnlockWithAd = { mode ->
+                    econRepo.unlockMode(mode)
+                    economy = econRepo.load()
                 },
             )
         }

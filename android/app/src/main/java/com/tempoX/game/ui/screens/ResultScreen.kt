@@ -126,6 +126,11 @@ fun ResultScreen(
                     MiniStat(stringResource(R.string.stat_max_combo), "x${summary.maxCombo}", Modifier.weight(1f))
                 }
 
+                Spacer(Modifier.height(8.dp))
+                Row {
+                    MiniStat(stringResource(R.string.result_coins_stat), "🪙 ${summary.coinsEarned}", Modifier.weight(1f))
+                }
+
                 Spacer(Modifier.height(16.dp))
 
                 // ---- Reward pool / double -----------------------------------
