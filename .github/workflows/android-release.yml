@@ -32,9 +32,12 @@ jobs:
             echo "::error::Secret KEYSTORE_BASE64 is not set."
             exit 1
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+          # Strip newlines/CR/spaces: multiline base64 pastes corrupt the key silently.
+          echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 --decode > android/app/release.keystore
           echo "KEYSTORE_PATH=android/app/release.keystore" >> "$GITHUB_ENV"
+          echo "KEYSTORE_FILE=android/app/release.keystore" >> "$GITHUB_ENV"
           test -s android/app/release.keystore || { echo "::error::Decoded keystore is empty — check KEYSTORE_BASE64."; exit 1; }
+          file android/app/release.keystore
 
       - name: Grant execute permission to gradlew
         run: chmod +x android/gradlew
@@ -48,6 +51,12 @@ jobs:
           AAB="android/app/build/outputs/bundle/release/app-release.aab"
           test -f "$AAB" || { echo "::error::app-release.aab was not produced."; exit 1; }
           ls -lh "$AAB"
+          # jarsigner validates .aab bundles (apksigner only handles APKs).
+          jarsigner -verify "$AAB" > /tmp/jarsigner.log 2>&1 \
+            || { echo "::error::AAB is NOT properly signed:"; cat /tmp/jarsigner.log; exit 1; }
+          grep -i "jar verified" /tmp/jarsigner.log \
+            || { echo "::error::Signature verification inconclusive:"; cat /tmp/jarsigner.log; exit 1; }
+          echo "AAB signature verified OK."
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4

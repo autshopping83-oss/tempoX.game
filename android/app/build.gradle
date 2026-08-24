@@ -15,10 +15,14 @@ android {
     }
 
     // Release signing — populated in CI from GitHub Secrets:
-    // KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+    // KEYSTORE_BASE64 (decoded by the workflow), KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+    // Accepts KEYSTORE_FILE (spec) or legacy KEYSTORE_PATH; default is app/release.keystore
+    // relative to the android/ root project dir.
     signingConfigs {
         release {
-            def keystoreFile = rootProject.file(System.getenv('KEYSTORE_PATH') ?: 'app/release.keystore')
+            def keystoreFile = rootProject.file(
+                System.getenv('KEYSTORE_FILE') ?: System.getenv('KEYSTORE_PATH') ?: 'app/release.keystore'
+            )
             if (keystoreFile.exists()) {
                 storeFile keystoreFile
                 storePassword System.getenv('KEYSTORE_PASSWORD')
@@ -32,9 +36,14 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            def keystoreFile = rootProject.file(System.getenv('KEYSTORE_PATH') ?: 'app/release.keystore')
+            def keystoreFile = rootProject.file(
+                System.getenv('KEYSTORE_FILE') ?: System.getenv('KEYSTORE_PATH') ?: 'app/release.keystore'
+            )
             if (keystoreFile.exists()) {
                 signingConfig signingConfigs.release
+            } else if (System.getenv('CI') == 'true') {
+                // CI without a keystore must never ship an unsigned bundle silently.
+                throw new GradleException('release.keystore not found in CI — refusing to produce an unsigned AAB.')
             } else {
                 logger.warn('release.keystore not found - AAB will be unsigned.')
             }
