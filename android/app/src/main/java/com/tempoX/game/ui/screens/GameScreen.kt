@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -60,7 +61,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -456,30 +460,66 @@ private fun ChallengeBanner(
         ChallengeType.MATH -> R.string.challenge_math_instruction
         ChallengeType.ATTENTION -> R.string.challenge_attention_instruction
     }
+    // Pictogram first: at survival speeds the brain should recognize the mode
+    // by shape+color before reading a single word.
+    val typeIcon = when (challenge.type) {
+        ChallengeType.MEMORY -> "🧠"
+        ChallengeType.REFLEX -> "🔎"
+        ChallengeType.MATH -> "🧮"
+        ChallengeType.ATTENTION -> "👁️"
+    }
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Row(
+        Column(
             Modifier
                 .weight(1f)
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
                 .clip(RoundedCornerShape(16.dp))
-                .background(tint.copy(alpha = 0.15f))
+                .background(TemproxColors.Surface)
                 .border(1.dp, tint.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .heightIn(min = 60.dp),
         ) {
-            // Target preview: kills the reading dependency for look-alike
-            // shapes (solid disc vs ring) — see icon, then scan the grid.
-            if (iconRes != null && iconTint != null) {
-                Image(
-                    painterResource(iconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    colorFilter = ColorFilter.tint(iconTint),
+            // Category pill: solid fill + white bold caps = instant recognition.
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(tint)
+                    .padding(horizontal = 10.dp, vertical = 3.dp),
+            ) {
+                Text(
+                    typeIcon + "  " + stringResource(nameRes).uppercase(),
+                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    maxLines = 1,
                 )
-                Spacer(Modifier.size(8.dp))
             }
-            Text(stringResource(nameRes), style = TemproxType.bodyBold.copy(color = tint), maxLines = 1)
-            Spacer(Modifier.size(10.dp))
-            Text(instrOverride ?: stringResource(instrRes), style = TemproxType.caption.copy(color = Color(0xFF334155)), maxLines = 1)
+            Spacer(Modifier.size(6.dp))
+            // Command row: optional live target preview (solid disc vs ring)
+            // rides beside the text so look-alike shapes need no reading at all.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (iconRes != null && iconTint != null) {
+                    Image(
+                        painterResource(iconRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        colorFilter = ColorFilter.tint(iconTint),
+                    )
+                    Spacer(Modifier.size(8.dp))
+                }
+                // The command itself: extra-bold, high-contrast ink, two lines max
+                // so enlarged system fonts can never push the grid off screen.
+                Text(
+                    instrOverride ?: stringResource(instrRes),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        lineHeight = 24.sp,
+                    ),
+                    color = Color(0xFF1E1B18),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         if (combo >= 2) {
             Spacer(Modifier.size(8.dp))

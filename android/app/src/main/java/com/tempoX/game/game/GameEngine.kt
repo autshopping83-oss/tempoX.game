@@ -141,7 +141,19 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
             queue.refill() // keep the buffer full behind the consumed slot
             ready
         } else {
-            synchronized(genLock) { generate() }
+            // Underflow fallback for ultra-fast players: same validation and
+            // spatial-history pipeline, just executed synchronously on main.
+            val buffered = queue.snapshot()
+            var candidate = synchronized(genLock) { generate() }
+            var tries = 0
+            while (
+                tries++ < LookaheadSessionQueue.MAX_VALIDATE_TRIES &&
+                !isValidNext(candidate, buffered)
+            ) {
+                candidate = synchronized(genLock) { generate() }
+            }
+            rememberSpatialHistory(candidate)
+            candidate
         }
     }
 

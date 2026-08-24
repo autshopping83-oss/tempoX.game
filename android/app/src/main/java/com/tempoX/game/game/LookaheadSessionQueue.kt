@@ -53,6 +53,9 @@ class LookaheadSessionQueue(
         buffer.removeFirstOrNull()?.also(onConsume)
     }
 
+    /** Consistent view of the buffered rounds for out-of-band validation. */
+    fun snapshot(): List<Challenge> = synchronized(lock) { buffer.toList() }
+
     /** Cancel every pending producer job and drop buffered sessions. */
     fun clear() {
         closed = true
