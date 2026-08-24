@@ -4,10 +4,8 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
 import cloud.bizflow.tempox.R
+import cloud.bizflow.tempox.game.HapticManager
 
 /**
  * Native TEMPOX audio engine.
@@ -25,14 +23,12 @@ object SoundManager {
 
     private var soundPool: SoundPool? = null
     private var audioManager: AudioManager? = null
-    private var vibrator: Vibrator? = null
     private var prefs: android.content.SharedPreferences? = null
 
     private val sampleIds = mutableMapOf<Sfx, Int>()
     private val loaded = mutableSetOf<Int>()
 
     @Volatile private var enabled: Boolean = true
-    @Volatile private var hapticsEnabled: Boolean = true
     @Volatile private var volume: Float = 0.8f
 
     /** Call once from Application/Activity onCreate. */
@@ -41,11 +37,12 @@ object SoundManager {
         val app = context.applicationContext
         prefs = app.getSharedPreferences("temprox_settings", Context.MODE_PRIVATE)
         enabled = prefs!!.getBoolean("sound_enabled", true)
-        hapticsEnabled = prefs!!.getBoolean("vibration_enabled", true)
         volume = prefs!!.getFloat("volume", 0.8f)
 
+        // Haptics live in their own manager now (same persisted toggle).
+        HapticManager.init(app)
+
         audioManager = app.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        vibrator = app.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
 
         val attrs = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_GAME)
@@ -88,17 +85,16 @@ object SoundManager {
     }
 
     fun setHapticsEnabled(value: Boolean) {
-        hapticsEnabled = value
-        prefs?.edit()?.putBoolean("vibration_enabled", value)?.apply()
+        HapticManager.setEnabled(value)
     }
 
     fun setVolume(value: Float) {
         volume = value.coerceIn(0f, 1f)
-        prefs?.edit()?.putFloat("volume", volume)?.apply()
+        prefs?.edit()?.putFloat("volume", value)?.apply()
     }
 
     fun isEnabled() = enabled
-    fun isHapticsEnabled() = hapticsEnabled
+    fun isHapticsEnabled(): Boolean = HapticManager.isEnabled()
     fun getVolume() = volume
 
     // ------------------------------------------------------------------
@@ -106,12 +102,6 @@ object SoundManager {
     // ------------------------------------------------------------------
 
     fun vibrate(pattern: LongArray = longArrayOf(0, 40)) {
-        if (!hapticsEnabled) return
-        val vib = vibrator ?: return
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
-                vib.vibrate(VibrationEffect.createWaveform(pattern, -1))
-            else -> @Suppress("DEPRECATION") vib.vibrate(pattern, -1)
-        }
+        HapticManager.pattern(pattern)
     }
 }

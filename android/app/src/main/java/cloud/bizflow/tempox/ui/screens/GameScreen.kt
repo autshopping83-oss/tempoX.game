@@ -75,6 +75,7 @@ import cloud.bizflow.tempox.game.Challenge
 import cloud.bizflow.tempox.game.ChallengeType
 import cloud.bizflow.tempox.game.GameEngine
 import cloud.bizflow.tempox.game.GameMode
+import cloud.bizflow.tempox.game.HapticManager
 import cloud.bizflow.tempox.game.MatchSummary
 import cloud.bizflow.tempox.game.MockAdManager
 import cloud.bizflow.tempox.game.Progression
@@ -121,11 +122,17 @@ fun GameScreen(
         GameEngine(seedText.hashCode().toLong(), mode).also { eng ->
             eng.onEvent = { ev ->
                 when (ev) {
-                    GameEngine.Event.CORRECT -> SoundManager.play(SoundManager.Sfx.CORRECT)
-                    GameEngine.Event.WRONG -> SoundManager.play(SoundManager.Sfx.WRONG)
+                    GameEngine.Event.CORRECT -> {
+                        SoundManager.play(SoundManager.Sfx.CORRECT)
+                        HapticManager.click()
+                    }
+                    GameEngine.Event.WRONG -> {
+                        SoundManager.play(SoundManager.Sfx.WRONG)
+                        HapticManager.error()
+                    }
                     GameEngine.Event.COMBO_MILESTONE -> {
                         SoundManager.play(SoundManager.Sfx.COMBO)
-                        SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
+                        HapticManager.win()
                     }
                 }
             }
@@ -152,6 +159,7 @@ fun GameScreen(
             delay(TICK_MS)
         }
         if (!abandoned && !paused && engine.finished) {
+            HapticManager.gameOver()
             onFinish(
                 MatchSummary(
                     score = engine.score,
