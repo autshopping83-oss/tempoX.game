@@ -1,8 +1,8 @@
-package com.tempoX.game.game
+package cloud.bizflow.tempox.game
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.tempoX.game.R
+import cloud.bizflow.tempox.R
 
 /** Achievement ids — stable keys also used by the string resources. */
 object Achievements {

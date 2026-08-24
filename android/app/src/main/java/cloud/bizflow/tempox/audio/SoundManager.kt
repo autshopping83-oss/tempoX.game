@@ -1,4 +1,4 @@
-package com.tempoX.game.audio
+package cloud.bizflow.tempox.audio
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -7,7 +7,7 @@ import android.media.SoundPool
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
-import com.tempoX.game.R
+import cloud.bizflow.tempox.R
 
 /**
  * Native TEMPOX audio engine.

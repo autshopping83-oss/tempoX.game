@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.screens
+package cloud.bizflow.tempox.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,12 +31,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tempoX.game.R
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.game.LangMode
-import com.tempoX.game.ui.components.PrimaryButton
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.R
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.game.LangMode
+import cloud.bizflow.tempox.ui.components.PrimaryButton
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxType
 
 private data class RuleItem(val emoji: String, val titleRes: Int, val descRes: Int, val tint: Color)
 

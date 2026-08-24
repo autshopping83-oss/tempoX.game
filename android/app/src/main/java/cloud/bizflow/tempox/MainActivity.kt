@@ -1,4 +1,4 @@
-package com.tempoX.game
+package cloud.bizflow.tempox
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,23 +16,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.game.BillingRepository
-import com.tempoX.game.game.EconomyRepository
-import com.tempoX.game.game.GameEngine
-import com.tempoX.game.game.GameMode
-import com.tempoX.game.game.LangMode
-import com.tempoX.game.game.LanguageManager
-import com.tempoX.game.game.MatchSummary
-import com.tempoX.game.game.MockAdManager
-import com.tempoX.game.game.MockBillingRepositoryImpl
-import com.tempoX.game.game.PlayerStats
-import com.tempoX.game.game.StatsRepository
-import com.tempoX.game.ui.screens.GameScreen
-import com.tempoX.game.ui.screens.HomeScreen
-import com.tempoX.game.ui.screens.ResultScreen
-import com.tempoX.game.ui.screens.SplashScreen
-import com.tempoX.game.ui.theme.TemproxTheme
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.game.BillingRepository
+import cloud.bizflow.tempox.game.EconomyRepository
+import cloud.bizflow.tempox.game.GameEngine
+import cloud.bizflow.tempox.game.GameMode
+import cloud.bizflow.tempox.game.LangMode
+import cloud.bizflow.tempox.game.LanguageManager
+import cloud.bizflow.tempox.game.MatchSummary
+import cloud.bizflow.tempox.game.MockAdManager
+import cloud.bizflow.tempox.game.MockBillingRepositoryImpl
+import cloud.bizflow.tempox.game.PlayerStats
+import cloud.bizflow.tempox.game.StatsRepository
+import cloud.bizflow.tempox.ui.screens.GameScreen
+import cloud.bizflow.tempox.ui.screens.HomeScreen
+import cloud.bizflow.tempox.ui.screens.ResultScreen
+import cloud.bizflow.tempox.ui.screens.SplashScreen
+import cloud.bizflow.tempox.ui.theme.TemproxTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {

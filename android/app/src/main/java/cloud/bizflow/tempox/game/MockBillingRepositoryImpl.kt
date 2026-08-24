@@ -1,4 +1,4 @@
-package com.tempoX.game.game
+package cloud.bizflow.tempox.game
 
 import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow

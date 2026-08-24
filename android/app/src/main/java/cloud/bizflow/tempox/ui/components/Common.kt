@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.components
+package cloud.bizflow.tempox.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,10 +28,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxShapes
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxShapes
+import cloud.bizflow.tempox.ui.theme.TemproxType
 
 /** Frosted light card used across the arcade UI (web parity: white + slate border). */
 @Composable

@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.components
+package cloud.bizflow.tempox.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -14,8 +14,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxType
 
 /**
  * Circular countdown ring — mirrors the original CircularTimer:

@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.components
+package cloud.bizflow.tempox.ui.components
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat

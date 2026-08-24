@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.screens
+package cloud.bizflow.tempox.ui.screens
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
@@ -68,22 +68,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tempoX.game.R
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.audio.SoundManager.Sfx.CLICK
-import com.tempoX.game.game.Challenge
-import com.tempoX.game.game.ChallengeType
-import com.tempoX.game.game.GameEngine
-import com.tempoX.game.game.GameMode
-import com.tempoX.game.game.MatchSummary
-import com.tempoX.game.game.MockAdManager
-import com.tempoX.game.game.Progression
-import com.tempoX.game.ui.components.FloatingCard
-import com.tempoX.game.ui.components.PrimaryButton
-import com.tempoX.game.ui.components.SecondaryButton
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxShapes
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.R
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.audio.SoundManager.Sfx.CLICK
+import cloud.bizflow.tempox.game.Challenge
+import cloud.bizflow.tempox.game.ChallengeType
+import cloud.bizflow.tempox.game.GameEngine
+import cloud.bizflow.tempox.game.GameMode
+import cloud.bizflow.tempox.game.MatchSummary
+import cloud.bizflow.tempox.game.MockAdManager
+import cloud.bizflow.tempox.game.Progression
+import cloud.bizflow.tempox.ui.components.FloatingCard
+import cloud.bizflow.tempox.ui.components.PrimaryButton
+import cloud.bizflow.tempox.ui.components.SecondaryButton
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxShapes
+import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
@@ -185,8 +185,8 @@ fun GameScreen(
         Modifier
             .fillMaxSize(),
     ) {
-        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
-        com.tempoX.game.ui.components.FormulaLayer(Modifier.fillMaxSize())
+        cloud.bizflow.tempox.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        cloud.bizflow.tempox.ui.components.FormulaLayer(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()

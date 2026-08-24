@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.theme
+package cloud.bizflow.tempox.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -36,11 +36,11 @@ object TemproxColors {
     val NightB = Color(0xFF0B081C)
     val CardDark = Color(0xFF231D45)
 
-    fun challengeColor(type: com.tempoX.game.game.ChallengeType): Color = when (type) {
-        com.tempoX.game.game.ChallengeType.MEMORY -> Pink
-        com.tempoX.game.game.ChallengeType.REFLEX -> Warning
-        com.tempoX.game.game.ChallengeType.MATH -> Info
-        com.tempoX.game.game.ChallengeType.ATTENTION -> Green
+    fun challengeColor(type: cloud.bizflow.tempox.game.ChallengeType): Color = when (type) {
+        cloud.bizflow.tempox.game.ChallengeType.MEMORY -> Pink
+        cloud.bizflow.tempox.game.ChallengeType.REFLEX -> Warning
+        cloud.bizflow.tempox.game.ChallengeType.MATH -> Info
+        cloud.bizflow.tempox.game.ChallengeType.ATTENTION -> Green
     }
 }
 

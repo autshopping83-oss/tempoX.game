@@ -1,4 +1,4 @@
-package com.tempoX.game.game
+package cloud.bizflow.tempox.game
 
 /**
  * Single gate shared by every simulated ad placement. Reads the billing

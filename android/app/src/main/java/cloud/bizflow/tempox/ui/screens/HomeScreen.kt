@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.screens
+package cloud.bizflow.tempox.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,26 +54,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tempoX.game.R
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.game.BillingRepository
-import com.tempoX.game.game.EconomyRepository
-import com.tempoX.game.game.EconomyState
-import com.tempoX.game.game.GameMode
-import com.tempoX.game.game.LangMode
-import com.tempoX.game.game.PlayerStats
-import com.tempoX.game.game.Progression
-import com.tempoX.game.ui.components.BottomNavigation
-import com.tempoX.game.ui.components.BrandedProgress
-import com.tempoX.game.ui.components.FloatingCard
-import com.tempoX.game.ui.components.HomeTab
-import com.tempoX.game.ui.components.PrimaryButton
-import com.tempoX.game.ui.components.SectionLabel
-import com.tempoX.game.ui.components.StatCard
-import com.tempoX.game.ui.components.TemproxLogo
-import com.tempoX.game.ui.components.TrophyCard
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.BuildConfig
+import cloud.bizflow.tempox.R
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.game.BillingRepository
+import cloud.bizflow.tempox.game.EconomyRepository
+import cloud.bizflow.tempox.game.EconomyState
+import cloud.bizflow.tempox.game.GameMode
+import cloud.bizflow.tempox.game.LangMode
+import cloud.bizflow.tempox.game.PlayerStats
+import cloud.bizflow.tempox.game.Progression
+import cloud.bizflow.tempox.ui.components.BottomNavigation
+import cloud.bizflow.tempox.ui.components.BrandedProgress
+import cloud.bizflow.tempox.ui.components.FloatingCard
+import cloud.bizflow.tempox.ui.components.HomeTab
+import cloud.bizflow.tempox.ui.components.PrimaryButton
+import cloud.bizflow.tempox.ui.components.SectionLabel
+import cloud.bizflow.tempox.ui.components.StatCard
+import cloud.bizflow.tempox.ui.components.TemproxLogo
+import cloud.bizflow.tempox.ui.components.TrophyCard
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
 
 /** Home hub: play / stats / trophies + rules modal + optional match seed. */
@@ -113,12 +114,12 @@ fun HomeScreen(
             .fillMaxSize(),
     ) {
         // Violet-arcade ambient: this screen owns a warmer, more saturated mood.
-        com.tempoX.game.ui.components.AnimatedBackground(
+        cloud.bizflow.tempox.ui.components.AnimatedBackground(
             Modifier.fillMaxSize(),
             topColor = Color(0xFFF4F3FF),
             bottomColor = Color(0xFFE4E0FF),
         )
-        com.tempoX.game.ui.components.FormulaLayer(Modifier.fillMaxSize())
+        cloud.bizflow.tempox.ui.components.FormulaLayer(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
@@ -419,6 +420,14 @@ private fun PlayTab(
         ArcadePlayButton(text = stringResource(R.string.home_play_now)) {
             onPlay(GameMode.ARCADE, seedText)
         }
+        Spacer(Modifier.height(14.dp))
+        // Build fingerprint for beta testers; privacy route lives on the
+        // biz-flow.cloud legal subdomain per store listing requirements.
+        Text(
+            "v" + BuildConfig.VERSION_NAME + "  ·  biz-flow.cloud/privacy",
+            style = TemproxType.micro.copy(color = TemproxColors.Muted),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
     }
 }
 
@@ -652,10 +661,10 @@ private fun TrophiesTab(stats: PlayerStats) {
             TemproxColors.Accent,
         )
         Spacer(Modifier.height(12.dp))
-        com.tempoX.game.game.Achievements.ALL.forEach { id ->
+        cloud.bizflow.tempox.game.Achievements.ALL.forEach { id ->
             TrophyCard(
-                title = stringResource(com.tempoX.game.game.Achievements.titleRes(id)),
-                description = stringResource(com.tempoX.game.game.Achievements.descRes(id)),
+                title = stringResource(cloud.bizflow.tempox.game.Achievements.titleRes(id)),
+                description = stringResource(cloud.bizflow.tempox.game.Achievements.descRes(id)),
                 unlocked = id in stats.achievements,
             )
             Spacer(Modifier.height(10.dp))

@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.screens
+package cloud.bizflow.tempox.ui.screens
 
 import android.content.Intent
 import android.widget.Toast
@@ -34,17 +34,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.tempoX.game.R
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.game.Achievements
-import com.tempoX.game.game.MatchSummary
-import com.tempoX.game.ui.components.FloatingCard
-import com.tempoX.game.ui.components.PrimaryButton
-import com.tempoX.game.ui.components.SecondaryButton
-import com.tempoX.game.ui.components.TrophyCard
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxShapes
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.R
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.game.Achievements
+import cloud.bizflow.tempox.game.MatchSummary
+import cloud.bizflow.tempox.ui.components.FloatingCard
+import cloud.bizflow.tempox.ui.components.PrimaryButton
+import cloud.bizflow.tempox.ui.components.SecondaryButton
+import cloud.bizflow.tempox.ui.components.TrophyCard
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxShapes
+import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
 
 /** Post-match screen: score, XP pool with simulated "double reward" ad, new trophies, share. */
@@ -81,8 +81,8 @@ fun ResultScreen(
         Modifier
             .fillMaxSize(),
     ) {
-        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
-        com.tempoX.game.ui.components.FormulaLayer(Modifier.fillMaxSize())
+        cloud.bizflow.tempox.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        cloud.bizflow.tempox.ui.components.FormulaLayer(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()

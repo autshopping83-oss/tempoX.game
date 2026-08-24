@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.screens
+package cloud.bizflow.tempox.ui.screens
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -32,9 +32,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tempoX.game.R
-import com.tempoX.game.ui.theme.TemproxColors
-import com.tempoX.game.ui.theme.TemproxType
+import cloud.bizflow.tempox.R
+import cloud.bizflow.tempox.ui.theme.TemproxColors
+import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -86,7 +86,7 @@ fun SplashScreen() {
             .fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        cloud.bizflow.tempox.ui.components.AnimatedBackground(Modifier.fillMaxSize())
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.align(Alignment.Center),

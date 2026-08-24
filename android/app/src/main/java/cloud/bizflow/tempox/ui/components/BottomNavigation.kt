@@ -1,4 +1,4 @@
-package com.tempoX.game.ui.components
+package cloud.bizflow.tempox.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,8 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tempoX.game.audio.SoundManager
-import com.tempoX.game.ui.theme.TemproxColors
+import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.ui.theme.TemproxColors
 
 /** Home tabs. */
 enum class HomeTab { PLAY, STATS, TROPHIES }
