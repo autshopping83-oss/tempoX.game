@@ -28,13 +28,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cloud.bizflow.tempox.R
 import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.game.LangMode
+import cloud.bizflow.tempox.ui.LegalType
 import cloud.bizflow.tempox.ui.components.PrimaryButton
+import cloud.bizflow.tempox.ui.openLegal
 import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxType
 
@@ -170,6 +173,15 @@ fun RulesSheet(
                     }
                 }
 
+                // ---- Legal pages -----------------------------------------
+                Spacer(Modifier.height(14.dp))
+                LegalLinkRow("🔒", stringResource(R.string.legal_privacy_btn)) {
+                    openLegal(context, LegalType.PRIVACY)
+                }
+                LegalLinkRow("📜", stringResource(R.string.legal_terms_btn)) {
+                    openLegal(context, LegalType.TERMS)
+                }
+
                 Spacer(Modifier.height(18.dp))
                 PrimaryButton(text = stringResource(R.string.rules_cta), onClick = onClose)
             }
@@ -198,5 +210,28 @@ private fun SheetRow(label: String, emoji: String, control: @Composable () -> Un
         Spacer(Modifier.width(8.dp))
         Text(label, style = TemproxType.bodyBold.copy(color = TemproxColors.Ink), modifier = Modifier.weight(1f))
         control()
+    }
+}
+
+@Composable
+private fun LegalLinkRow(emoji: String, label: String, onClick: () -> Unit) {
+    val context = LocalContext.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(TemproxColors.Background)
+            .clickable {
+                SoundManager.play(SoundManager.Sfx.CLICK)
+                onClick()
+            }
+            .padding(horizontal = 10.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(emoji, fontSize = 15.sp)
+        Spacer(Modifier.width(8.dp))
+        Text(label, style = TemproxType.bodyBold.copy(color = TemproxColors.Primary))
+        Spacer(Modifier.weight(1f))
+        Text("▸", color = TemproxColors.Muted)
     }
 }

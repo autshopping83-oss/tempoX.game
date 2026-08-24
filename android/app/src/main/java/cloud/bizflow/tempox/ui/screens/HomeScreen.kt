@@ -64,6 +64,7 @@ import cloud.bizflow.tempox.game.GameMode
 import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.game.PlayerStats
 import cloud.bizflow.tempox.game.Progression
+import cloud.bizflow.tempox.ui.LegalType
 import cloud.bizflow.tempox.ui.components.BottomNavigation
 import cloud.bizflow.tempox.ui.components.BrandedProgress
 import cloud.bizflow.tempox.ui.components.FloatingCard
@@ -73,6 +74,7 @@ import cloud.bizflow.tempox.ui.components.SectionLabel
 import cloud.bizflow.tempox.ui.components.StatCard
 import cloud.bizflow.tempox.ui.components.TemproxLogo
 import cloud.bizflow.tempox.ui.components.TrophyCard
+import cloud.bizflow.tempox.ui.openLegal
 import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
@@ -421,12 +423,18 @@ private fun PlayTab(
             onPlay(GameMode.ARCADE, seedText)
         }
         Spacer(Modifier.height(14.dp))
-        // Build fingerprint for beta testers; privacy route lives on the
-        // biz-flow.cloud legal subdomain per store listing requirements.
+        // Build fingerprint for beta testers; the privacy route opens the
+        // official legal page in Chrome Custom Tabs.
+        val homeCtx = LocalContext.current
         Text(
-            "v" + BuildConfig.VERSION_NAME + "  ·  biz-flow.cloud/privacy",
-            style = TemproxType.micro.copy(color = TemproxColors.Muted),
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            "v" + BuildConfig.VERSION_NAME + "  ·  " + stringResource(R.string.legal_privacy_btn),
+            style = TemproxType.micro.copy(color = TemproxColors.Primary),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .clickable {
+                    SoundManager.play(SoundManager.Sfx.CLICK)
+                    openLegal(homeCtx, LegalType.PRIVACY)
+                },
         )
     }
 }
