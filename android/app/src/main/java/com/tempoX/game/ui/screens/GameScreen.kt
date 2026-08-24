@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -198,7 +199,14 @@ fun GameScreen(
             GlobalTimeBar(engine)
 
             Spacer(Modifier.height(12.dp))
-            ChallengeBanner(engine.challenge, combo = engine.combo)
+            val reflexInstr = (engine.challenge as? Challenge.Reflex)?.let { r ->
+                stringResource(
+                    R.string.reflex_find_fmt,
+                    stringResource(REFLEX_SHAPE_NAMES[r.targetShape]),
+                    stringResource(REFLEX_COLOR_NAMES[r.targetColor]),
+                )
+            }
+            ChallengeBanner(engine.challenge, combo = engine.combo, instrOverride = reflexInstr)
             Spacer(Modifier.height(16.dp))
 
             key(engine.challenge) {
@@ -257,7 +265,7 @@ fun GameScreen(
 // ---------------------------------------------------------------------
 
 @Composable
-private fun ChallengeBanner(challenge: Challenge, combo: Int) {
+private fun ChallengeBanner(challenge: Challenge, combo: Int, instrOverride: String? = null) {
     val tint = TemproxColors.challengeColor(challenge.type)
     val nameRes = when (challenge.type) {
         ChallengeType.MEMORY -> R.string.challenge_memory_name
@@ -283,7 +291,7 @@ private fun ChallengeBanner(challenge: Challenge, combo: Int) {
         ) {
             Text(stringResource(nameRes), style = TemproxType.bodyBold.copy(color = tint), maxLines = 1)
             Spacer(Modifier.size(10.dp))
-            Text(stringResource(instrRes), style = TemproxType.caption.copy(color = Color(0xFF334155)), maxLines = 1)
+            Text(instrOverride ?: stringResource(instrRes), style = TemproxType.caption.copy(color = Color(0xFF334155)), maxLines = 1)
         }
         if (combo >= 2) {
             Spacer(Modifier.size(8.dp))
@@ -507,53 +515,70 @@ private fun MemFlipSlot(
 // REFLEX — tap the golden target, avoid decoys.
 // ---------------------------------------------------------------------
 
+// Localized names for the visual-search instruction banner.
+private val REFLEX_SHAPE_NAMES = listOf(
+    R.string.mem_shape_triangle, R.string.mem_shape_square, R.string.mem_shape_star,
+    R.string.mem_shape_circle, R.string.mem_shape_diamond, R.string.mem_shape_donut,
+)
+private val REFLEX_COLOR_NAMES = listOf(
+    R.string.mem_color_red, R.string.mem_color_blue, R.string.mem_color_yellow,
+    R.string.mem_color_green, R.string.mem_color_orange, R.string.mem_color_purple,
+)
+
 @Composable
 private fun ReflexHost(
     challenge: Challenge.Reflex,
     onTarget: (perfect: Boolean) -> Unit,
     onDecoy: () -> Unit,
 ) {
-    var startAt by remember { mutableStateOf(System.currentTimeMillis()) }
+    var startAt by remember(challenge) { mutableStateOf(System.currentTimeMillis()) }
+    var wrongTap by remember { mutableIntStateOf(-1) }
+    val shakeX = remember { Animatable(0f) }
+    LaunchedEffect(wrongTap) {
+        if (wrongTap >= 0) {
+            repeat(2) {
+                shakeX.animateTo(-5f, tween(40))
+                shakeX.animateTo(5f, tween(40))
+            }
+            shakeX.animateTo(0f, tween(40))
+        }
+    }
 
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(TemproxShapes.Card)
-            .background(Color.White.copy(alpha = 0.03f)),
-    ) {
-        LaunchedEffect(Unit) { startAt = System.currentTimeMillis() }
-        Column(Modifier.fillMaxSize()) {
-            repeat(3) { r ->
-                Row(Modifier.weight(1f)) {
-                    repeat(3) { c ->
-                        val index = r * 3 + c
-                        val isTarget = index == challenge.targetCell
-                        val isDecoy = index in challenge.decoyCells
-                        Box(
-                            Modifier
-                                .weight(1f)
-                                .aspectRatio(1f)
-                                .padding(5.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(
-                                    when {
-                                        isTarget -> Brush.radialGradient(listOf(Color(0xFFFFC93D), Color(0xFFF59E0B)))
-                                        isDecoy -> Brush.radialGradient(listOf(Color(0xFFF87171), Color(0xFFDC2626)))
-                                        else -> Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
-                                    }
-                                )
-                                .clickable {
-                                    when {
-                                        isTarget -> onTarget(System.currentTimeMillis() - startAt < 250)
-                                        isDecoy -> onDecoy()
-                                    }
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (isTarget) Text("🎯", fontSize = 30.sp)
-                            if (isDecoy) Text("💥", fontSize = 24.sp)
-                        }
+    // Dense visual-search grid: one unique shape+color combo hidden in noise.
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        challenge.cells.chunked(challenge.cols).forEachIndexed { r, row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                row.forEachIndexed { c, cell ->
+                    val index = r * challenge.cols + c
+                    val isTarget = index == challenge.targetIndex
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .graphicsLayer { translationX = if (wrongTap == index) shakeX.value else 0f }
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White.copy(alpha = 0.55f))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                if (isTarget) {
+                                    SoundManager.vibrate(longArrayOf(0, 18))
+                                    onTarget(System.currentTimeMillis() - startAt < 900)
+                                } else {
+                                    SoundManager.vibrate(longArrayOf(0, 45, 60, 45))
+                                    wrongTap = index
+                                    onDecoy()
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(
+                            painterResource(MEMORY_ICONS[cell.shape]),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(0.72f),
+                            colorFilter = ColorFilter.tint(MEMORY_TINTS[cell.color]),
+                        )
                     }
                 }
             }

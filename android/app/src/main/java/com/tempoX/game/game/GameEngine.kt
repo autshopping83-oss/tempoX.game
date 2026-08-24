@@ -21,6 +21,9 @@ data class MatchSummary(
 /** The four TEMPOX challenge types. */
 enum class ChallengeType { MEMORY, REFLEX, MATH, ATTENTION }
 
+/** One visual-search element: index into the shared shape and color palettes. */
+data class ReflexCell(val shape: Int, val color: Int)
+
 /** A single quick-test presented during a match. */
 sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     /** Watch a flashing sequence, then tap the shapes in order. */
@@ -29,9 +32,16 @@ sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
         limitMillis = 8000L + sequence.size * 400L // answer window (watch phase is untimed)
     )
 
-    /** Tap the golden target fast; avoid red decoys. */
-    class Reflex(val targetCell: Int, val decoyCells: List<Int>, val cols: Int, val rows: Int, limit: Long) :
-        Challenge(ChallengeType.REFLEX, limit)
+    /** Visual-search grid: exactly one cell matches the instructed shape+color. */
+    class Reflex(
+        val cells: List<ReflexCell>,
+        val targetIndex: Int,
+        val cols: Int,
+        limit: Long,
+    ) : Challenge(ChallengeType.REFLEX, limit) {
+        val targetShape: Int get() = cells[targetIndex].shape
+        val targetColor: Int get() = cells[targetIndex].color
+    }
 
     /** Multiple-choice equation. */
     class Math(val question: String, val options: List<Int>, val correctIndex: Int, limit: Long) :
@@ -178,11 +188,26 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
         Challenge.Memory(List(min(9, 3 + (difficultyLevel + 1) / 2)) { rng.nextInt(6) })
 
     private fun genReflex(): Challenge.Reflex {
-        val target = rng.nextInt(9)
-        val decoys = (0 until 9).filter { it != target }.shuffled(rng)
-            .take(min(3, 1 + difficultyLevel / 3))
+        // Grid density scales with difficulty: 15 elements at level 1 -> 35 at cap.
+        val count = min(35, 15 + (difficultyLevel - 1) * 3)
+        val cols = if (count <= 20) 5 else if (count <= 30) 6 else 7
+
+        // The single unique combo; distractors share EITHER its shape or its
+        // color (never both), so it stays findable yet camouflaged in the noise.
+        val ts = rng.nextInt(6); val tc = rng.nextInt(6)
+        val target = ReflexCell(ts, tc)
+        val sameShape = ReflexCell(ts, (tc + 1 + rng.nextInt(5)) % 6)
+        val sameColor = ReflexCell((ts + 1 + rng.nextInt(5)) % 6, tc)
+        var wild = ReflexCell(rng.nextInt(6), rng.nextInt(6))
+        while (wild == target) wild = ReflexCell(rng.nextInt(6), rng.nextInt(6))
+        val noise = listOf(sameShape, sameColor, wild)
+
+        val cells = buildList {
+            repeat(count - 1) { add(noise[it % noise.size]) }
+            add(target)
+        }.shuffled(rng)
         val limit = max(1200L, 2600L - 160L * difficultyLevel)
-        return Challenge.Reflex(target, decoys, cols = 3, rows = 3, limit = limit)
+        return Challenge.Reflex(cells, cells.indexOf(target), cols, limit)
     }
 
     private fun genMath(): Challenge.Math {
