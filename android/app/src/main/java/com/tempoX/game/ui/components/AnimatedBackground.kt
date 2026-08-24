@@ -108,7 +108,13 @@ private class ShapePaths {
 }
 
 @Composable
-fun AnimatedBackground(modifier: Modifier = Modifier) {
+fun AnimatedBackground(
+    modifier: Modifier = Modifier,
+    // Ambient gradient is parameterized so each screen can set its own mood
+    // (home goes violet-arcade; other screens keep the classic ice tones).
+    topColor: Color = Color(0xFFEEF2FF),
+    bottomColor: Color = Color(0xFFF8FAFC),
+) {
     val transition = rememberInfiniteTransition(label = "temproxBg")
     // Master clock: one full loop every 16s; every shape period divides it.
     val t by transition.animateFloat(
@@ -125,7 +131,7 @@ fun AnimatedBackground(modifier: Modifier = Modifier) {
         // --- soft light gradient -----------------------------------------
         drawRect(
             brush = Brush.verticalGradient(
-                colors = listOf(Color(0xFFEEF2FF), Color(0xFFF8FAFC)),
+                colors = listOf(topColor, bottomColor),
                 startY = 0f,
                 endY = size.height,
             ),

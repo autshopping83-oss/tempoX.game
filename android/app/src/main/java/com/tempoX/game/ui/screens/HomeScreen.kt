@@ -30,13 +30,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Shadow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tempoX.game.R
@@ -97,7 +112,12 @@ fun HomeScreen(
         Modifier
             .fillMaxSize(),
     ) {
-        com.tempoX.game.ui.components.AnimatedBackground(Modifier.fillMaxSize())
+        // Violet-arcade ambient: this screen owns a warmer, more saturated mood.
+        com.tempoX.game.ui.components.AnimatedBackground(
+            Modifier.fillMaxSize(),
+            topColor = Color(0xFFF4F3FF),
+            bottomColor = Color(0xFFE4E0FF),
+        )
         com.tempoX.game.ui.components.FormulaLayer(Modifier.fillMaxSize())
         Column(
             Modifier
@@ -310,7 +330,7 @@ private fun PlayTab(
                 header = stringResource(R.string.card_pattern_header),
                 caption = stringResource(R.string.card_pattern_caption),
                 flow = "🧠  ▸  △ ▢ ◯  ▸  ⊘  ▸  ● ■ ▲ ✓",
-                tint = Color(0xFF22C55E),
+                tint = Color(0xFF10B981),
                 glyph = "🧠",
                 locked = GameMode.SHAPE !in economy.unlockedModes,
                 modifier = Modifier.weight(1f),
@@ -328,27 +348,14 @@ private fun PlayTab(
         Spacer(Modifier.height(16.dp))
 
         // Premium / Remove-Ads card (ARCADE PREMIUM spot)
-        Box(
-            Modifier
-                .clip(RoundedCornerShape(999.dp))
-                .background(TemproxColors.Accent.copy(alpha = if (adFree) 0.22f else 0.15f))
-                .border(
-                    1.dp,
-                    TemproxColors.Accent.copy(alpha = if (adFree) 0.6f else 0.45f),
-                    RoundedCornerShape(999.dp),
-                )
-                .clickable(enabled = !adFree, onClick = onRemoveAdsClick)
-                .padding(horizontal = 12.dp, vertical = 5.dp),
-        ) {
-            Text(
-                stringResource(if (adFree) R.string.premium_vip_badge else R.string.premium_remove_btn),
-                style = TemproxType.micro.copy(color = TemproxColors.Accent),
-            )
-        }
+        VipStatusBadge(active = adFree, onClick = onRemoveAdsClick)
         Spacer(Modifier.height(16.dp))
 
-        // Best score hero card
-        FloatingCard(accent = TemproxColors.Accent) {
+        // Best score hero card — floats above the ambient with real depth.
+        FloatingCard(
+            accent = TemproxColors.Accent,
+            modifier = Modifier.shadow(6.dp, RoundedCornerShape(24.dp)),
+        ) {
             Text(stringResource(R.string.home_best_score), style = TemproxType.caption.copy(color = Color(0xFFB45309)))
             Text("${stats.highScore}", style = TemproxType.score.copy(color = TemproxColors.Ink))
             Spacer(Modifier.height(10.dp))
@@ -409,7 +416,102 @@ private fun PlayTab(
         )
 
         Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = stringResource(R.string.home_play_now), onClick = { onPlay(GameMode.ARCADE, seedText) })
+        ArcadePlayButton(text = stringResource(R.string.home_play_now)) {
+            onPlay(GameMode.ARCADE, seedText)
+        }
+    }
+}
+
+/**
+ * VIP / Remove-ads status. Active subscribers get the metallic gold treatment
+ * — the badge must feel like a trophy, since it proves the $4.99 purchase.
+ */
+@Composable
+private fun VipStatusBadge(active: Boolean, onClick: () -> Unit) {
+    if (!active) {
+        Box(
+            Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color.White.copy(alpha = 0.7f))
+                .border(1.dp, TemproxColors.Accent.copy(alpha = 0.5f), RoundedCornerShape(999.dp))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 7.dp),
+        ) {
+            Text(
+                stringResource(R.string.premium_remove_btn),
+                style = TemproxType.bodyBold.copy(color = TemproxColors.Accent),
+            )
+        }
+    } else {
+        Box(
+            Modifier
+                .shadow(4.dp, RoundedCornerShape(999.dp), ambientColor = Color(0xFFFFD700), spotColor = Color(0xFFFF8C00))
+                .clip(RoundedCornerShape(999.dp))
+                .background(Brush.horizontalGradient(listOf(Color(0xFFFFD700), Color(0xFFFF9800))))
+                .border(1.dp, Color(0xFFFFE082), RoundedCornerShape(999.dp))
+                .padding(horizontal = 14.dp, vertical = 7.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Crown pops with a soft white halo against the gold fill.
+                Text(
+                    "👑",
+                    fontSize = 14.sp,
+                    style = TextStyle(shadow = Shadow(color = Color.White, blurRadius = 6f)),
+                )
+                Spacer(Modifier.size(6.dp))
+                Text(
+                    stringResource(R.string.premium_vip_badge).removePrefix("👑 "),
+                    style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Black),
+                    color = Color(0xFF3E2723),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Arcade-cabinet CTA: electric purple gradient riding on a solid dark block
+ * (the classic 4dp "physical key" depth) plus a gentle attention pulse.
+ * The pulse is a single graphicsLayer scale — GPU-cheap by design.
+ */
+@Composable
+private fun ArcadePlayButton(text: String, onClick: () -> Unit) {
+    val pulse by rememberInfiniteTransition(label = "playPulse").animateFloat(
+        initialValue = 1f,
+        targetValue = 1.03f,
+        animationSpec = infiniteRepeatable(tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "playPulseScale",
+    )
+    val shape = RoundedCornerShape(20.dp)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .graphicsLayer { scaleX = pulse; scaleY = pulse }
+            // Solid #4C1D95 block shifted 4dp down peeks out under the gradient
+            // cap — reads as a pressable arcade button without nested layouts.
+            .drawBehind {
+                drawRoundRect(
+                    color = Color(0xFF4C1D95),
+                    topLeft = Offset(0f, 4.dp.toPx()),
+                    cornerRadius = CornerRadius(20.dp.toPx()),
+                )
+            }
+            .clip(shape)
+            .background(Brush.verticalGradient(listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9))))
+            .clickable {
+                SoundManager.play(SoundManager.Sfx.CLICK)
+                SoundManager.vibrate(longArrayOf(0, 18))
+                onClick()
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text.uppercase(),
+            style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp),
+            color = Color.White,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -594,9 +696,16 @@ private fun TaskCard(
     androidx.compose.foundation.layout.Row(
         modifier = modifier
             .height(112.dp)
+            // Depth first: unlocked cards float above the violet ambient.
+            .shadow(if (locked) 2.dp else 6.dp, RoundedCornerShape(18.dp))
+            .alpha(if (locked) 0.75f else 1f)
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White.copy(alpha = if (locked) 0.72f else 1f))
-            .border(1.dp, tint.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
+            .background(lerp(Color.White, tint, 0.09f))
+            .border(
+                if (locked) 1.dp else 2.dp,
+                tint.copy(alpha = if (locked) 0.45f else 1f),
+                RoundedCornerShape(18.dp),
+            )
             .clickable {
                 SoundManager.play(SoundManager.Sfx.CLICK)
                 SoundManager.vibrate(longArrayOf(0, 18))
@@ -604,14 +713,19 @@ private fun TaskCard(
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            Modifier
-                .width(46.dp)
-                .fillMaxHeight()
-                .background(tint.copy(alpha = 0.16f)),
-            contentAlignment = Alignment.Center,
-        ) { Text(glyph, fontSize = 22.sp) }
-        Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
+        // Amplified mode glyph inside a white contrast disc — recognizable
+        // from peripheral vision before any text is parsed.
+        Box(Modifier.width(58.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.White)
+                    .border(1.dp, tint.copy(alpha = 0.35f), RoundedCornerShape(999.dp)),
+                contentAlignment = Alignment.Center,
+            ) { Text(glyph, fontSize = 24.sp) }
+        }
+        Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
             Text(
                 header,
                 style = TemproxType.micro.copy(color = tint, letterSpacing = 1.6.sp),
@@ -624,10 +738,10 @@ private fun TaskCard(
         Box(
             Modifier
                 .padding(end = 10.dp)
-                .size(30.dp)
+                .size(34.dp)
                 .clip(RoundedCornerShape(999.dp))
-                .background(tint.copy(alpha = 0.15f)),
+                .background(if (locked) Color.White else tint),
             contentAlignment = Alignment.Center,
-        ) { Text(if (locked) "🔒" else "▶", fontSize = 12.sp, color = tint) }
+        ) { Text(if (locked) "🔒" else "▶", fontSize = 13.sp, color = if (locked) tint else Color.White) }
     }
 }
