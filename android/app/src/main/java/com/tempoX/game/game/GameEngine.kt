@@ -38,9 +38,11 @@ private val ATTENTION_FIGURES =
 /** A single quick-test presented during a match. */
 sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     /** Watch a flashing sequence, then tap the shapes in order. */
-    class Memory(val sequence: List<Int>) : Challenge(
+    class Memory(val sequence: List<Int>, limit: Long = 0L) : Challenge(
         ChallengeType.MEMORY,
-        limitMillis = 8000L + sequence.size * 400L // answer window (watch phase is untimed)
+        // Default answer window (watch phase is untimed); Shape Lab passes a
+        // tighter survival budget scaled by sequence length.
+        limitMillis = if (limit > 0L) limit else 8000L + sequence.size * 400L
     )
 
     /** Visual-search grid: exactly one cell matches the instructed shape+color. */
@@ -155,10 +157,6 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
     var sessionCoins: Int by mutableStateOf(0)
         private set
 
-    /** Specialized-mode mistake counter; 3 mistakes pause the run for ad recovery. */
-    var strikes: Int by mutableStateOf(0)
-        private set
-
     /** True while the recovery modal is up: every clock is frozen. */
     var awaitingRecovery: Boolean by mutableStateOf(false)
         private set
@@ -173,10 +171,21 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
     var lastPenalty: Int by mutableStateOf(0)
         private set
 
-    /** Speed Math runs on per-round clocks only — the 60s global timer is off. */
-    val survival: Boolean get() = mode == GameMode.MATH
+    /** Speed Math AND Shape Lab run on per-round clocks — the 60s global timer is Arcade-only. */
+    val survival: Boolean get() = mode != GameMode.ARCADE
 
     private fun isSpecialized(): Boolean = mode != GameMode.ARCADE
+
+    /**
+     * Visual Difficulty Scaling for Shape Lab survival rounds: the round
+     * budget shrinks as the hit streak grows (3.5s -> 3.0s -> 2.5s), while
+     * grid density keeps rising via difficultyLevel.
+     */
+    private fun shapeRoundLimit(): Long = when {
+        combo < 6 -> 3500L
+        combo < 12 -> 3000L
+        else -> 2500L
+    }
 
     /** Events consumed by the UI layer to fire sounds/animations. */
     enum class Event { CORRECT, WRONG, COMBO_MILESTONE }
@@ -237,13 +246,7 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
             score = max(0, score - lastPenalty)
             penaltyFlashKey++
             onEvent?.invoke(Event.WRONG)
-            when {
-                survival -> enterRecoveryOrFail()
-                isSpecialized() -> {
-                    strikes++
-                    if (strikes >= 3) awaitingRecovery = true
-                }
-            }
+            if (survival) enterRecoveryOrFail()
         }
         if (!finished && !awaitingRecovery && timeLeftMillis > 0) {
             challenge = generate()
@@ -251,29 +254,21 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
         }
     }
 
-    /** Survival Speed Math: first failure offers one ad revival; after that, game over. */
+    /** Survival Speed Math / Shape Lab: first failure offers one ad revival; after that, game over. */
     private fun enterRecoveryOrFail() {
         if (!recoveryUsed) awaitingRecovery = true else finish()
     }
 
     /**
-     * Simulated rewarded-ad recovery: clears strikes, refreshes the current
-     * round clock (+10s window in timed modes) and doubles coins earned once.
+     * Simulated rewarded-ad recovery: refreshes the round clock and doubles
+     * the coins earned so far — once per run.
      */
     fun recoverWithAd() {
         if (!awaitingRecovery) return
         awaitingRecovery = false
-        strikes = 0
-        challengeElapsedMillis = 0 // fresh round bar in survival; fair resume elsewhere
-        if (survival) {
-            recoveryUsed = true
-        } else {
-            timeLeftMillis += 10_000
-            if (!recoveryUsed) {
-                sessionCoins *= 2
-                recoveryUsed = true
-            }
-        }
+        challengeElapsedMillis = 0 // fresh round bar
+        recoveryUsed = true
+        sessionCoins *= 2
     }
 
     fun giveUpRecovery() {
@@ -306,10 +301,12 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
         }
     }
 
-    private fun genMemory(): Challenge.Memory =
+    private fun genMemory(): Challenge.Memory {
+        val seq = List(min(9, 3 + (difficultyLevel + 1) / 2)) { rng.nextInt(6) }
         // Sequence order is gameplay semantics — never shuffled. The answer
         // palette layout is re-shuffled UI-side on every new challenge.
-        Challenge.Memory(List(min(9, 3 + (difficultyLevel + 1) / 2)) { rng.nextInt(6) })
+        return Challenge.Memory(seq, if (mode == GameMode.SHAPE) shapeRoundLimit() + seq.size * 250 else 0)
+    }
 
     private fun genReflex(): Challenge.Reflex {
         // Grid density scales with difficulty: 15 elements at level 1 -> 35 at cap.
@@ -335,7 +332,9 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
         // Visual-search pacing: base/floor run ~35-50% above the other drills
         // so the player gets time for instruction reading plus an eye sweep,
         // while the steeper per-level decay keeps the urgency alive.
-        val limit = max(1800L, 3600L - 200L * difficultyLevel)
+        val limit =
+            if (mode == GameMode.SHAPE) shapeRoundLimit()
+            else max(1800L, 3600L - 200L * difficultyLevel)
         return Challenge.Reflex(cells, target.id, cols, limit)
     }
 
@@ -394,7 +393,9 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
         val oddAt = rng.nextInt(count)
         val slots = List(count) { AttentionSlot(nextUid(), it == oddAt) }
             .toShuffledGrid(ChallengeType.ATTENTION) { it.odd }
-        val limit = max(2000L, 4500L - 280L * difficultyLevel)
+        val limit =
+            if (mode == GameMode.SHAPE) shapeRoundLimit()
+            else max(2000L, 4500L - 280L * difficultyLevel)
         return Challenge.Attention(cols, slots, symbol, mut, limit)
     }
 }
