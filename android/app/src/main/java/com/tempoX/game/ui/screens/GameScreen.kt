@@ -629,30 +629,67 @@ private fun MathHost(challenge: Challenge.Math, onAnswer: (Boolean) -> Unit) {
 
 @Composable
 private fun AttentionHost(challenge: Challenge.Attention, onAnswer: (Boolean) -> Unit) {
+    var wrongTap by remember { mutableIntStateOf(-1) }
+    val shakeX = remember { Animatable(0f) }
+    LaunchedEffect(wrongTap) {
+        if (wrongTap >= 0) {
+            repeat(2) {
+                shakeX.animateTo(-4f, tween(40))
+                shakeX.animateTo(4f, tween(40))
+            }
+            shakeX.animateTo(0f, tween(40))
+        }
+    }
+
+    // Dense sea of identical figures; the odd one differs only by a subtle
+    // programmatic transform (rotation/scale/alpha/offset) set once per round.
     Column(
         Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
             .clip(TemproxShapes.Card)
             .background(Color.White.copy(alpha = 0.03f))
-            .padding(8.dp),
+            .padding(4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        repeat(challenge.rows) { r ->
-            Row(Modifier.weight(1f)) {
-                repeat(challenge.cols) { c ->
-                    val index = r * challenge.cols + c
+        List(challenge.count) { it }.chunked(challenge.cols).forEach { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                row.forEach { index ->
                     val odd = index == challenge.oddIndex
                     Box(
                         Modifier
                             .weight(1f)
-                            .padding(2.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable { onAnswer(odd) },
+                            .aspectRatio(1f)
+                            .graphicsLayer { translationX = if (wrongTap == index) shakeX.value else 0f }
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                if (odd) {
+                                    SoundManager.vibrate(longArrayOf(0, 18))
+                                    onAnswer(true)
+                                } else {
+                                    SoundManager.vibrate(longArrayOf(0, 45, 60, 45))
+                                    wrongTap = index
+                                    onAnswer(false)
+                                }
+                            },
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            if (odd) challenge.oddSymbol else challenge.baseSymbol,
-                            fontSize = 26.sp,
+                            challenge.symbol,
+                            fontSize = if (challenge.cols >= 9) 17.sp else 20.sp,
+                            modifier = Modifier.graphicsLayer {
+                                if (!odd) return@graphicsLayer
+                                when (challenge.mut.kind) {
+                                    0 -> rotationZ = challenge.mut.amount
+                                    1 -> {
+                                        scaleX = challenge.mut.amount
+                                        scaleY = challenge.mut.amount
+                                    }
+                                    2 -> alpha = challenge.mut.amount
+                                    else -> translationY = challenge.mut.amount * density
+                                }
+                            },
                         )
                     }
                 }

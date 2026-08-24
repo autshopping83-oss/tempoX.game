@@ -24,6 +24,13 @@ enum class ChallengeType { MEMORY, REFLEX, MATH, ATTENTION }
 /** One visual-search element: index into the shared shape and color palettes. */
 data class ReflexCell(val shape: Int, val color: Int)
 
+/** Procedural odd-one-out mutation. kind: 0=rotation deg, 1=scale factor, 2=alpha, 3=offset dp. */
+data class AttentionMut(val kind: Int, val amount: Float)
+
+/** Figure pool for the attention challenge (existing repository, flattened). */
+private val ATTENTION_FIGURES =
+    listOf("🔺", "🔻", "⭐", "🌟", "🔵", "🟣", "🟥", "🟧", "🌙", "🌛", "⚡", "🔥")
+
 /** A single quick-test presented during a match. */
 sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     /** Watch a flashing sequence, then tap the shapes in order. */
@@ -47,10 +54,14 @@ sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     class Math(val question: String, val options: List<Int>, val correctIndex: Int, limit: Long) :
         Challenge(ChallengeType.MATH, limit)
 
-    /** Grid of identical symbols with one odd-one-out. */
+    /** Grid of identical figures where ONE carries a subtle procedural mutation. */
     class Attention(
-        val cols: Int, val rows: Int, val oddIndex: Int,
-        val baseSymbol: String, val oddSymbol: String, limit: Long
+        val cols: Int,
+        val count: Int,
+        val oddIndex: Int,
+        val symbol: String,
+        val mut: AttentionMut,
+        limit: Long,
     ) : Challenge(ChallengeType.ATTENTION, limit)
 }
 
@@ -248,13 +259,21 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
     }
 
     private fun genAttention(): Challenge.Attention {
-        val side = min(6, 3 + difficultyLevel / 2)
-        val pairs = listOf(
-            "🔺" to "🔻", "⭐" to "🌟", "🔵" to "🟣",
-            "🟥" to "🟧", "🌙" to "🌛", "⚡" to "🔥"
-        )
-        val (base, odd) = pairs[rng.nextInt(pairs.size)]
+        // Density grows 40 -> 100 cells; the mutation gets subtler as difficulty rises.
+        val count = min(100, 40 + (difficultyLevel - 1) * 7)
+        val cols = if (count <= 56) 8 else if (count <= 81) 9 else 10
+        val t = (difficultyLevel - 1) / 9f // 0 at lv1 -> 1 at lv10
+        fun lerp(a: Float, b: Float) = a + (b - a) * t
+        val mut = when (rng.nextInt(4)) {
+            0 -> AttentionMut(0, lerp(18f, 8f)) // rotation, always >= 8deg
+            1 -> // scale within +/-8..12%
+                if (rng.nextBoolean()) AttentionMut(1, lerp(1.12f, 1.08f))
+                else AttentionMut(1, lerp(0.88f, 0.92f))
+            2 -> AttentionMut(2, lerp(0.72f, 0.86f)) // alpha
+            else -> AttentionMut(3, lerp(5f, 2f)) // micro offset dp
+        }
+        val symbol = ATTENTION_FIGURES[rng.nextInt(ATTENTION_FIGURES.size)]
         val limit = max(2000L, 4500L - 280L * difficultyLevel)
-        return Challenge.Attention(side, side, rng.nextInt(side * side), base, odd, limit)
+        return Challenge.Attention(cols, count, rng.nextInt(count), symbol, mut, limit)
     }
 }
