@@ -106,6 +106,7 @@
     <string name="legal_privacy_btn">Política de Privacidade</string>
     <string name="legal_terms_btn">Termos de Uso</string>
     <string name="legal_offline">Sem conexão com a internet</string>
+    <string name="legal_no_browser">Não foi possível abrir o navegador.</string>
     <string name="premium_remove_btn">⭐ Remover Anúncios · US$ 4,99</string>
     <string name="premium_vip_badge">👑 VIP · REMOVEDOR DE ANÚNCIOS ATIVO</string>
     <string name="purchase_title">Google Play — compra simulada</string>
