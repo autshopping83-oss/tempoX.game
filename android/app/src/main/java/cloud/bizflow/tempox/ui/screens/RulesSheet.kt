@@ -52,6 +52,7 @@ fun RulesSheet(
 ) {
     var soundOn by remember { mutableStateOf(SoundManager.isEnabled()) }
     var hapticsOn by remember { mutableStateOf(SoundManager.isHapticsEnabled()) }
+    val context = LocalContext.current
     val items = listOf(
         RuleItem("🧠", R.string.rules_memory_title, R.string.rules_memory_desc, TemproxColors.Pink),
         RuleItem("⚡", R.string.rules_reflex_title, R.string.rules_reflex_desc, TemproxColors.Warning),
