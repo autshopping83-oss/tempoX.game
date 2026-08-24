@@ -21,11 +21,14 @@ data class MatchSummary(
 /** The four TEMPOX challenge types. */
 enum class ChallengeType { MEMORY, REFLEX, MATH, ATTENTION }
 
-/** One visual-search element: index into the shared shape and color palettes. */
-data class ReflexCell(val shape: Int, val color: Int)
+/** One visual-search element: unique id plus indices into the shape/color palettes. */
+data class ReflexCell(val id: Long, val shape: Int, val color: Int)
 
 /** Procedural odd-one-out mutation. kind: 0=rotation deg, 1=scale factor, 2=alpha, 3=offset dp. */
 data class AttentionMut(val kind: Int, val amount: Float)
+
+/** One attention-grid cell; identity rides on uid, oddness on the flag — never on position. */
+data class AttentionSlot(val uid: Long, val odd: Boolean)
 
 /** Figure pool for the attention challenge (existing repository, flattened). */
 private val ATTENTION_FIGURES =
@@ -42,12 +45,13 @@ sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     /** Visual-search grid: exactly one cell matches the instructed shape+color. */
     class Reflex(
         val cells: List<ReflexCell>,
-        val targetIndex: Int,
+        val targetId: Long,
         val cols: Int,
         limit: Long,
     ) : Challenge(ChallengeType.REFLEX, limit) {
-        val targetShape: Int get() = cells[targetIndex].shape
-        val targetColor: Int get() = cells[targetIndex].color
+        private val target get() = cells.first { it.id == targetId }
+        val targetShape: Int get() = target.shape
+        val targetColor: Int get() = target.color
     }
 
     /** Multiple-choice equation. */
@@ -57,8 +61,7 @@ sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     /** Grid of identical figures where ONE carries a subtle procedural mutation. */
     class Attention(
         val cols: Int,
-        val count: Int,
-        val oddIndex: Int,
+        val slots: List<AttentionSlot>,
         val symbol: String,
         val mut: AttentionMut,
         limit: Long,
@@ -91,7 +94,29 @@ object Progression {
  */
 class GameEngine(private val seed: Long = System.currentTimeMillis()) {
 
-    private val rng = Random(seed)
+    private val rng = Random(seed) // wall-clock seeded per match — never a static seed
+
+    /** Monotonic element ids handed to the UI so grids never identify items by index. */
+    private var uidSeq = 0L
+    private fun nextUid(): Long = ++uidSeq
+
+    /** Last grid spot taken by each challenge type's target (anti-repeat guard). */
+    private val lastTargetSpot = HashMap<ChallengeType, Int>()
+
+    /**
+     * Global position shuffler: every emitted round grid passes through here so
+     * element placement is re-randomized each round and the target never sits
+     * on the same spot two rounds of the same type in a row.
+     */
+    private fun <T> List<T>.toShuffledGrid(type: ChallengeType, isTarget: (T) -> Boolean): List<T> {
+        var out = shuffled(rng)
+        var tries = 0
+        while (tries++ < 8 && out.indexOfFirst(isTarget) == lastTargetSpot[type]) {
+            out = shuffled(rng)
+        }
+        lastTargetSpot[type] = out.indexOfFirst(isTarget)
+        return out
+    }
 
     // All gameplay fields are Compose-observable so the UI recomposes
     // every time the tick loop advances the match.
@@ -196,6 +221,8 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
     }
 
     private fun genMemory(): Challenge.Memory =
+        // Sequence order is gameplay semantics — never shuffled. The answer
+        // palette layout is re-shuffled UI-side on every new challenge.
         Challenge.Memory(List(min(9, 3 + (difficultyLevel + 1) / 2)) { rng.nextInt(6) })
 
     private fun genReflex(): Challenge.Reflex {
@@ -206,19 +233,24 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
         // The single unique combo; distractors share EITHER its shape or its
         // color (never both), so it stays findable yet camouflaged in the noise.
         val ts = rng.nextInt(6); val tc = rng.nextInt(6)
-        val target = ReflexCell(ts, tc)
-        val sameShape = ReflexCell(ts, (tc + 1 + rng.nextInt(5)) % 6)
-        val sameColor = ReflexCell((ts + 1 + rng.nextInt(5)) % 6, tc)
-        var wild = ReflexCell(rng.nextInt(6), rng.nextInt(6))
-        while (wild == target) wild = ReflexCell(rng.nextInt(6), rng.nextInt(6))
+        val target = ReflexCell(nextUid(), ts, tc)
+        val sameShape = ReflexCell(nextUid(), ts, (tc + 1 + rng.nextInt(5)) % 6)
+        val sameColor = ReflexCell(nextUid(), (ts + 1 + rng.nextInt(5)) % 6, tc)
+        var wild = ReflexCell(nextUid(), rng.nextInt(6), rng.nextInt(6))
+        while (wild.shape == target.shape && wild.color == target.color) {
+            wild = ReflexCell(nextUid(), rng.nextInt(6), rng.nextInt(6))
+        }
         val noise = listOf(sameShape, sameColor, wild)
 
         val cells = buildList {
             repeat(count - 1) { add(noise[it % noise.size]) }
             add(target)
-        }.shuffled(rng)
-        val limit = max(1200L, 2600L - 160L * difficultyLevel)
-        return Challenge.Reflex(cells, cells.indexOf(target), cols, limit)
+        }.toShuffledGrid(ChallengeType.REFLEX) { it.id == target.id }
+        // Visual-search pacing: base/floor run ~35-50% above the other drills
+        // so the player gets time for instruction reading plus an eye sweep,
+        // while the steeper per-level decay keeps the urgency alive.
+        val limit = max(1800L, 3600L - 200L * difficultyLevel)
+        return Challenge.Reflex(cells, target.id, cols, limit)
     }
 
     private fun genMath(): Challenge.Math {
@@ -253,9 +285,9 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
             val delta = rng.nextInt(9) + 1
             opts.add(answer + if (rng.nextBoolean()) delta else -delta)
         }
-        val shuffled = opts.toList().shuffled(rng)
+        val options = opts.toList().toShuffledGrid(ChallengeType.MATH) { it == answer }
         val limit = max(3000L, 6000L - 250L * lv)
-        return Challenge.Math(question, shuffled, shuffled.indexOf(answer), limit)
+        return Challenge.Math(question, options, options.indexOf(answer), limit)
     }
 
     private fun genAttention(): Challenge.Attention {
@@ -273,7 +305,10 @@ class GameEngine(private val seed: Long = System.currentTimeMillis()) {
             else -> AttentionMut(3, lerp(5f, 2f)) // micro offset dp
         }
         val symbol = ATTENTION_FIGURES[rng.nextInt(ATTENTION_FIGURES.size)]
+        val oddAt = rng.nextInt(count)
+        val slots = List(count) { AttentionSlot(nextUid(), it == oddAt) }
+            .toShuffledGrid(ChallengeType.ATTENTION) { it.odd }
         val limit = max(2000L, 4500L - 280L * difficultyLevel)
-        return Challenge.Attention(cols, count, rng.nextInt(count), symbol, mut, limit)
+        return Challenge.Attention(cols, slots, symbol, mut, limit)
     }
 }

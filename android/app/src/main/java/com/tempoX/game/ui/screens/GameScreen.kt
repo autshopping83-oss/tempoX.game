@@ -199,14 +199,21 @@ fun GameScreen(
             GlobalTimeBar(engine)
 
             Spacer(Modifier.height(12.dp))
-            val reflexInstr = (engine.challenge as? Challenge.Reflex)?.let { r ->
+            val reflex = engine.challenge as? Challenge.Reflex
+            val reflexInstr = reflex?.let {
                 stringResource(
                     R.string.reflex_find_fmt,
-                    stringResource(REFLEX_SHAPE_NAMES[r.targetShape]),
-                    stringResource(REFLEX_COLOR_NAMES[r.targetColor]),
+                    stringResource(REFLEX_SHAPE_NAMES[it.targetShape]),
+                    stringResource(REFLEX_COLOR_NAMES[it.targetColor]),
                 )
             }
-            ChallengeBanner(engine.challenge, combo = engine.combo, instrOverride = reflexInstr)
+            ChallengeBanner(
+                engine.challenge,
+                combo = engine.combo,
+                instrOverride = reflexInstr,
+                iconRes = reflex?.let { MEMORY_ICONS[it.targetShape] },
+                iconTint = reflex?.let { MEMORY_TINTS[it.targetColor] },
+            )
             Spacer(Modifier.height(16.dp))
 
             key(engine.challenge) {
@@ -265,7 +272,13 @@ fun GameScreen(
 // ---------------------------------------------------------------------
 
 @Composable
-private fun ChallengeBanner(challenge: Challenge, combo: Int, instrOverride: String? = null) {
+private fun ChallengeBanner(
+    challenge: Challenge,
+    combo: Int,
+    instrOverride: String? = null,
+    iconRes: Int? = null,
+    iconTint: Color? = null,
+) {
     val tint = TemproxColors.challengeColor(challenge.type)
     val nameRes = when (challenge.type) {
         ChallengeType.MEMORY -> R.string.challenge_memory_name
@@ -289,6 +302,17 @@ private fun ChallengeBanner(challenge: Challenge, combo: Int, instrOverride: Str
                 .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Target preview: kills the reading dependency for look-alike
+            // shapes (solid disc vs ring) — see icon, then scan the grid.
+            if (iconRes != null && iconTint != null) {
+                Image(
+                    painterResource(iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    colorFilter = ColorFilter.tint(iconTint),
+                )
+                Spacer(Modifier.size(8.dp))
+            }
             Text(stringResource(nameRes), style = TemproxType.bodyBold.copy(color = tint), maxLines = 1)
             Spacer(Modifier.size(10.dp))
             Text(instrOverride ?: stringResource(instrRes), style = TemproxType.caption.copy(color = Color(0xFF334155)), maxLines = 1)
@@ -404,11 +428,14 @@ private fun MemoryHost(
         Spacer(Modifier.height(20.dp))
 
         // Answer grid — dimmed and inert until the reveal/hide cycle completes.
+        // Tile layout is re-shuffled every round to break position muscle memory;
+        // taps are matched by icon value, never by slot position.
+        val tileOrder = remember(challenge) { MEMORY_ICONS.indices.shuffled() }
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.alpha(if (inputPhase) 1f else 0.35f),
         ) {
-            MEMORY_ICONS.indices.chunked(3).forEach { rowIdx ->
+            tileOrder.chunked(3).forEach { rowIdx ->
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     rowIdx.forEach { i ->
                         val isWrongTile = wrongFlash > 0 && i == wrongFlash - 1
@@ -532,7 +559,7 @@ private fun ReflexHost(
     onDecoy: () -> Unit,
 ) {
     var startAt by remember(challenge) { mutableStateOf(System.currentTimeMillis()) }
-    var wrongTap by remember { mutableIntStateOf(-1) }
+    var wrongTap by remember { mutableStateOf(-1L) } // uid of the distractor that was hit
     val shakeX = remember { Animatable(0f) }
     LaunchedEffect(wrongTap) {
         if (wrongTap >= 0) {
@@ -545,17 +572,17 @@ private fun ReflexHost(
     }
 
     // Dense visual-search grid: one unique shape+color combo hidden in noise.
+    // Cells are matched by id, never by grid position.
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        challenge.cells.chunked(challenge.cols).forEachIndexed { r, row ->
+        challenge.cells.chunked(challenge.cols).forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                row.forEachIndexed { c, cell ->
-                    val index = r * challenge.cols + c
-                    val isTarget = index == challenge.targetIndex
+                row.forEach { cell ->
+                    val isTarget = cell.id == challenge.targetId
                     Box(
                         Modifier
                             .weight(1f)
                             .aspectRatio(1f)
-                            .graphicsLayer { translationX = if (wrongTap == index) shakeX.value else 0f }
+                            .graphicsLayer { translationX = if (wrongTap == cell.id) shakeX.value else 0f }
                             .clip(RoundedCornerShape(10.dp))
                             .background(Color.White.copy(alpha = 0.55f))
                             .clickable(
@@ -567,7 +594,7 @@ private fun ReflexHost(
                                     onTarget(System.currentTimeMillis() - startAt < 900)
                                 } else {
                                     SoundManager.vibrate(longArrayOf(0, 45, 60, 45))
-                                    wrongTap = index
+                                    wrongTap = cell.id
                                     onDecoy()
                                 }
                             },
@@ -629,7 +656,7 @@ private fun MathHost(challenge: Challenge.Math, onAnswer: (Boolean) -> Unit) {
 
 @Composable
 private fun AttentionHost(challenge: Challenge.Attention, onAnswer: (Boolean) -> Unit) {
-    var wrongTap by remember { mutableIntStateOf(-1) }
+    var wrongTap by remember { mutableStateOf(-1L) } // uid of the cell that was hit
     val shakeX = remember { Animatable(0f) }
     LaunchedEffect(wrongTap) {
         if (wrongTap >= 0) {
@@ -643,6 +670,7 @@ private fun AttentionHost(challenge: Challenge.Attention, onAnswer: (Boolean) ->
 
     // Dense sea of identical figures; the odd one differs only by a subtle
     // programmatic transform (rotation/scale/alpha/offset) set once per round.
+    // Cells are matched by uid, never by grid position.
     Column(
         Modifier
             .fillMaxWidth()
@@ -651,15 +679,15 @@ private fun AttentionHost(challenge: Challenge.Attention, onAnswer: (Boolean) ->
             .padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        List(challenge.count) { it }.chunked(challenge.cols).forEach { row ->
+        challenge.slots.chunked(challenge.cols).forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                row.forEach { index ->
-                    val odd = index == challenge.oddIndex
+                row.forEach { slot ->
+                    val odd = slot.odd
                     Box(
                         Modifier
                             .weight(1f)
                             .aspectRatio(1f)
-                            .graphicsLayer { translationX = if (wrongTap == index) shakeX.value else 0f }
+                            .graphicsLayer { translationX = if (wrongTap == slot.uid) shakeX.value else 0f }
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -669,7 +697,7 @@ private fun AttentionHost(challenge: Challenge.Attention, onAnswer: (Boolean) ->
                                     onAnswer(true)
                                 } else {
                                     SoundManager.vibrate(longArrayOf(0, 45, 60, 45))
-                                    wrongTap = index
+                                    wrongTap = slot.uid
                                     onAnswer(false)
                                 }
                             },
@@ -883,7 +911,10 @@ private fun GlobalTimeBar(engine: GameEngine) {
 }
 
 /** Fast per-question urgency bar below the interaction zone — vibrant
- *  orange fill, red under 20% remaining. */
+ *  orange fill with a live seconds badge riding the fill tip; turns red
+ *  under 30% remaining. Mirrors GlobalTimeBar's zero-recomposition model:
+ *  the fraction is only read during layout (fill width) and draw (badge
+ *  offset); the badge text flips at most once per second. */
 @Composable
 private fun QuestionTimeBar(engine: GameEngine) {
     val limit = engine.challenge.limitMillis.coerceAtLeast(1L).toFloat()
@@ -891,21 +922,37 @@ private fun QuestionTimeBar(engine: GameEngine) {
         derivedStateOf { (1f - engine.challengeElapsedMillis / limit).coerceIn(0f, 1f) }
     }
     val low by remember(engine.challenge) {
-        derivedStateOf { engine.challengeElapsedMillis / limit >= 0.8f }
+        derivedStateOf { engine.challengeElapsedMillis / limit >= 0.7f }
     }
+    val secondsLeft by remember(engine.challenge) {
+        derivedStateOf {
+            ceil((limit - engine.challengeElapsedMillis) / 1000f).toInt().coerceAtLeast(0)
+        }
+    }
+    // Animated off-composition. Keyed per challenge so each round restarts
+    // the gauge full (no backward refill sweep between questions).
+    val anim = remember { Animatable(1f) }
+    LaunchedEffect(engine.challenge) {
+        anim.snapTo(1f)
+        snapshotFlow { remain.value }
+            .collectLatest { anim.animateTo(it, tween(100)) }
+    }
+
+    var barWidthPx by remember { mutableFloatStateOf(0f) }
     Box(
         Modifier
             .fillMaxWidth()
-            .height(15.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .height(16.dp)
+            .onSizeChanged { barWidthPx = it.width.toFloat() }
+            .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFE2E8F0))
-            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(12.dp)),
+            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(8.dp)),
     ) {
         Box(
             Modifier
                 .fillMaxHeight()
-                .fillFraction { remain.value }
-                .clip(RoundedCornerShape(12.dp))
+                .fillFraction { anim.value }
+                .clip(RoundedCornerShape(8.dp))
                 .background(
                     if (low) {
                         Brush.horizontalGradient(listOf(Color(0xFFEF4444), TemproxColors.Danger))
@@ -913,6 +960,25 @@ private fun QuestionTimeBar(engine: GameEngine) {
                         Brush.horizontalGradient(listOf(Color(0xFFFB923C), Color(0xFFF97316)))
                     },
                 ),
+        )
+        Text(
+            "${secondsLeft}s",
+            style = TemproxType.micro.copy(color = Color.White),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .graphicsLayer {
+                    if (barWidthPx > 0f && size.width > 0f) {
+                        alpha = 1f
+                        // Ride the fill tip, clamped inside bar bounds near 0%/100%.
+                        translationX = (barWidthPx * anim.value - size.width / 2f)
+                            .coerceIn(6.dp.toPx(), (barWidthPx - size.width - 6.dp.toPx()).coerceAtLeast(6.dp.toPx()))
+                    } else {
+                        alpha = 0f
+                    }
+                }
+                .shadow(2.dp, RoundedCornerShape(999.dp), spotColor = Color(0x33475569))
+                .background(if (low) TemproxColors.Danger else Color(0xFFF97316), RoundedCornerShape(999.dp))
+                .padding(horizontal = 8.dp, vertical = 1.dp),
         )
     }
 }
