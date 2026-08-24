@@ -35,6 +35,13 @@ data class AttentionSlot(val uid: Long, val odd: Boolean)
 private val ATTENTION_FIGURES =
     listOf("🔺", "🔻", "⭐", "🌟", "🔵", "🟣", "🟥", "🟧", "🌙", "🌛", "⚡", "🔥")
 
+/**
+ * Glyphs whose silhouette makes any tilt read clearly as a difference.
+ * Symmetric shapes (circles, squares, stars) would turn a rotation mutation
+ * into an invisible change — an unsolvable puzzle — so they are excluded.
+ */
+private val ROTATION_VISIBLE = setOf("🔺", "🔻", "🌙", "🌛", "⚡")
+
 /** A single quick-test presented during a match. */
 sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
     /** Watch a flashing sequence, then tap the shapes in order. */
@@ -376,23 +383,36 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
     }
 
     private fun genAttention(): Challenge.Attention {
-        // Density grows 40 -> 100 cells; the mutation gets subtler as difficulty rises.
+        // Density grows 40 -> 100 cells; the mutation gets subtler as difficulty rises,
+        // but every parameter keeps a visibility floor so the odd cell stays legible
+        // on low-quality or night-mode-dimmed screens (contrast over subtlety).
         val count = min(100, 40 + (difficultyLevel - 1) * 7)
         val cols = if (count <= 56) 8 else if (count <= 81) 9 else 10
         val t = (difficultyLevel - 1) / 9f // 0 at lv1 -> 1 at lv10
         fun lerp(a: Float, b: Float) = a + (b - a) * t
-        val mut = when (rng.nextInt(4)) {
-            0 -> AttentionMut(0, lerp(18f, 8f)) // rotation, always >= 8deg
-            1 -> // scale within +/-8..12%
-                if (rng.nextBoolean()) AttentionMut(1, lerp(1.12f, 1.08f))
-                else AttentionMut(1, lerp(0.88f, 0.92f))
-            2 -> AttentionMut(2, lerp(0.72f, 0.86f)) // alpha
-            else -> AttentionMut(3, lerp(5f, 2f)) // micro offset dp
+        var mut = when (rng.nextInt(4)) {
+            0 -> AttentionMut(0, lerp(18f, 10f)) // tilt >= 10deg, asymmetric glyphs only
+            1 -> // scale within +/-10..14%
+                if (rng.nextBoolean()) AttentionMut(1, lerp(1.14f, 1.10f))
+                else AttentionMut(1, lerp(0.90f, 0.86f))
+            2 -> AttentionMut(2, lerp(0.78f, 0.70f)) // always >= 20% dim
+            else -> AttentionMut(3, lerp(5f, 3f)) // offset >= 3dp
         }
         val symbol = ATTENTION_FIGURES[rng.nextInt(ATTENTION_FIGURES.size)]
+        if (mut.kind == 0 && symbol !in ROTATION_VISIBLE) {
+            // A tilt on a symmetric glyph is invisible — force a fill-strength
+            // difference instead so the round always has exactly one real answer.
+            mut = AttentionMut(2, lerp(0.78f, 0.70f))
+        }
+        check(mut.kind != 0 || symbol in ROTATION_VISIBLE) {
+            "Odd item must differ visibly from base items"
+        }
         val oddAt = rng.nextInt(count)
         val slots = List(count) { AttentionSlot(nextUid(), it == oddAt) }
             .toShuffledGrid(ChallengeType.ATTENTION) { it.odd }
+        check(slots.size == count && slots.count { it.odd } == 1) {
+            "Attention grid must hold exactly $count base cells and exactly one odd item"
+        }
         val limit =
             if (mode == GameMode.SHAPE) shapeRoundLimit()
             else max(2000L, 4500L - 280L * difficultyLevel)
