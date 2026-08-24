@@ -26,6 +26,11 @@ li{margin-bottom:6px}
 strong{font-weight:800}
 footer{text-align:center;padding:26px 16px 34px;color:var(--muted);font-size:13px}
 footer a{color:var(--accent);font-weight:700;text-decoration:none}
+.cta-row{display:flex;flex-direction:column;gap:10px;max-width:340px;margin:0 auto}
+.btn{display:block;padding:13px 16px;border-radius:14px;font-weight:800;font-size:14.5px;text-decoration:none;color:#fff}
+.btn-mail{background:#6D28D9}
+.btn-wa{background:#25D366;color:#06301b}
+.btn:active{transform:scale(.98)}
 </style>
 </head>
 <body>
@@ -89,11 +94,22 @@ footer a{color:var(--accent);font-weight:700;text-decoration:none}
     <h2>6. Alterações nesta política</h2>
     <p>Mudanças relevantes serão refletidas nesta página com nova data de atualização. O uso continuado do app após alterações implica ciência da versão vigente.</p>
   </section>
+  <section>
+    <h2>7. Canais oficiais de suporte</h2>
+    <p>Pedidos de exclusão de dados, revogação de consentimento ou qualquer dúvida de privacidade podem ser enviados pelos canais oficiais:</p>
+    <ul>
+      <li><strong>E-mail:</strong> <a href="mailto:bizflow.cloud@gmail.com?subject=TEMPOX%20-%20Privacidade">bizflow.cloud@gmail.com</a></li>
+      <li><strong>WhatsApp:</strong> +258 840636794</li>
+    </ul>
+  </section>
 </main>
 
 <footer>
-  <p>Suporte e privacidade: <a href="mailto:suporte@biz-flow.cloud?subject=TEMPOX%20-%20Privacidade">suporte@biz-flow.cloud</a></p>
-  <p>Elias Chanisso / Biz-Flow · tempox.biz-flow.cloud</p>
+  <div class="cta-row">
+    <a class="btn btn-mail" href="mailto:bizflow.cloud@gmail.com?subject=TEMPOX%20-%20Privacidade">✉️ Falar por E-mail</a>
+    <a class="btn btn-wa" href="https://wa.me/258840636794" rel="noopener">💬 Falar no WhatsApp</a>
+  </div>
+  <p style="margin-top:12px">Elias Chanisso / Biz-Flow · tempox.biz-flow.cloud</p>
 </footer>
 </body>
 </html>
