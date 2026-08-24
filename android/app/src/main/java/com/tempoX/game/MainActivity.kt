@@ -83,7 +83,7 @@ fun AppRoot(
     val econRepo = remember { EconomyRepository(context) }
     val billingRepo = remember { MockBillingRepositoryImpl(context) }
     remember { MockAdManager.billing = billingRepo as BillingRepository; true } // wire once
-    var adFree by billingRepo.isAdFreeUser.collectAsState()
+    val adFree by billingRepo.isAdFreeUser.collectAsState()
     var economy by remember { mutableStateOf(econRepo.load()) }
 
     var showSplash by remember { mutableStateOf(true) }

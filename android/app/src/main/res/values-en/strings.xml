@@ -103,6 +103,14 @@
     <string name="stat_max_combo">Max Combo</string>
     <string name="result_reward_pool">Reward pool</string>
     <string name="recovery_title">Save your run!</string>
+    <string name="premium_remove_btn">⭐ Remove Ads · US$ 4.99</string>
+    <string name="premium_vip_badge">👑 VIP · ADS REMOVED — ACTIVE</string>
+    <string name="purchase_title">Google Play — simulated purchase</string>
+    <string name="purchase_body">Test account · Product: Remove Ads — US$ 4.99. No ads forever and instant match continue.</string>
+    <string name="purchase_confirm">CONFIRM PURCHASE</string>
+    <string name="purchase_cancel">Cancel</string>
+    <string name="purchase_error">Purchase could not be completed. Please try again.</string>
+    <string name="recovery_vip_btn">Continue Match · VIP</string>
     <string name="recovery_body">Watch a video to continue: strikes cleared, clock refreshed and coins doubled.</string>
     <string name="recovery_watch_btn">Watch and recover</string>
     <string name="recovery_decline">Give up</string>

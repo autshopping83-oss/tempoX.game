@@ -103,6 +103,14 @@
     <string name="stat_max_combo">Combo Máx</string>
     <string name="result_reward_pool">Pool de recompensas</string>
     <string name="recovery_title">Recupere a partida!</string>
+    <string name="premium_remove_btn">⭐ Remover Anúncios · US$ 4,99</string>
+    <string name="premium_vip_badge">👑 VIP · REMOVEDOR DE ANÚNCIOS ATIVO</string>
+    <string name="purchase_title">Google Play — compra simulada</string>
+    <string name="purchase_body">Conta de teste · Produto: Remover Anúncios (Remove Ads) — US$ 4,99. Sem anúncios para sempre e continuação instantânea de partida.</string>
+    <string name="purchase_confirm">CONFIRMAR COMPRA</string>
+    <string name="purchase_cancel">Cancelar</string>
+    <string name="purchase_error">Não foi possível concluir a compra. Tente novamente.</string>
+    <string name="recovery_vip_btn">Continuar Partida · VIP</string>
     <string name="recovery_body">Assista a um vídeo para continuar: erros zerados, relógio renovado e moedas em dobro.</string>
     <string name="recovery_watch_btn">Assistir e recuperar</string>
     <string name="recovery_decline">Desistir</string>

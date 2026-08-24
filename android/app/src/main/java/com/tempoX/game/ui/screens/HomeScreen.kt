@@ -149,6 +149,12 @@ fun HomeScreen(
                         level = level,
                         levelProgress = levelProgress,
                         economy = economy,
+                        adFree = adFree,
+                        onRemoveAdsClick = {
+                            SoundManager.play(SoundManager.Sfx.CLICK)
+                            purchaseError = false
+                            showPurchaseSheet = true
+                        },
                         seedText = seedText,
                         onSeedChange = { seedText = it },
                         onPlay = { mode, seed ->
@@ -291,6 +297,8 @@ private fun PlayTab(
     level: Int,
     levelProgress: Float,
     economy: EconomyState,
+    adFree: Boolean,
+    onRemoveAdsClick: () -> Unit,
     seedText: String,
     onSeedChange: (String) -> Unit,
     onPlay: (GameMode, String) -> Unit,
@@ -329,11 +337,7 @@ private fun PlayTab(
                     TemproxColors.Accent.copy(alpha = if (adFree) 0.6f else 0.45f),
                     RoundedCornerShape(999.dp),
                 )
-                .clickable(enabled = !adFree) {
-                    SoundManager.play(SoundManager.Sfx.CLICK)
-                    purchaseError = false
-                    showPurchaseSheet = true
-                }
+                .clickable(enabled = !adFree, onClick = onRemoveAdsClick)
                 .padding(horizontal = 12.dp, vertical = 5.dp),
         ) {
             Text(
