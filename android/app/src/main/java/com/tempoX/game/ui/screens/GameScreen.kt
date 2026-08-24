@@ -128,6 +128,12 @@ fun GameScreen(
         }
     }
 
+    // Leaving the screen (menu, back, process death) must tear down the
+    // lookahead producers so no coroutine outlives the match.
+    DisposableEffect(engine) {
+        onDispose { engine.dispose() }
+    }
+
     // Reset the watch flag whenever a new challenge appears.
     LaunchedEffect(engine.challenge, sessionId) {
         memoryWatching = engine.challenge is Challenge.Memory

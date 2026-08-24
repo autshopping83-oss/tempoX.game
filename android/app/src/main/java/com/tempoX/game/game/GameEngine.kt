@@ -106,6 +106,97 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
 
     private val rng = Random(seed) // wall-clock seeded per match — never a static seed
 
+    /**
+     * Lookahead buffer: the next rounds are pre-generated and validated off
+     * the main thread, so tapping never waits on layout math. All generation
+     * (shared rng, uidSeq, anti-repeat maps) is confined by [genLock] whether
+     * it runs on main (synchronous underflow fallback) or in background.
+     */
+    private val genLock = Any()
+    private var lookahead: LookaheadSessionQueue? = null
+
+    /** Recent odd-cell spots across attention rounds (spatial anti-repeat). */
+    private val recentOddSpots = ArrayDeque<Int>()
+
+    /**
+     * Lazily starts the lookahead buffer on first use — never in a constructor
+     * init block, so background producers can only run against a fully built
+     * engine (all Compose state fields already initialized).
+     */
+    private fun ensureLookahead(): LookaheadSessionQueue =
+        lookahead ?: LookaheadSessionQueue(
+            produce = { synchronized(genLock) { generate() } },
+            isValid = { candidate, buffered -> isValidNext(candidate, buffered) },
+            onConsume = { rememberSpatialHistory(it) },
+        ).also {
+            lookahead = it
+            it.prime()
+        }
+
+    /** Next round for the UI: buffered when available, synchronous fallback otherwise. */
+    private fun nextRound(): Challenge {
+        val queue = ensureLookahead()
+        val ready = queue.poll()
+        return if (ready != null) {
+            queue.refill() // keep the buffer full behind the consumed slot
+            ready
+        } else {
+            synchronized(genLock) { generate() }
+        }
+    }
+
+    /** Validation pipeline applied before any generated round enters the buffer. */
+    private fun isValidNext(candidate: Challenge, buffered: List<Challenge>): Boolean {
+        if (!isVisuallySolvable(candidate)) return false
+        if (candidate is Challenge.Attention) {
+            val spot = candidate.slots.indexOfFirst { it.odd }
+            if (spot in recentOddSpots) return false // not where the last odd cells sat
+        }
+        return buffered.all { differsVisually(candidate, it) }
+    }
+
+    /** Contrast guarantee mirrored from the generator as an independent re-check. */
+    private fun isVisuallySolvable(c: Challenge) = when (c) {
+        is Challenge.Attention -> c.mut.kind != 0 || c.symbol in ROTATION_VISIBLE
+        else -> true
+    }
+
+    /** Buffered rounds must never repeat the incoming round's visual signature. */
+    private fun differsVisually(a: Challenge, b: Challenge): Boolean = when (a) {
+        is Challenge.Attention ->
+            b !is Challenge.Attention ||
+                a.symbol != b.symbol ||
+                a.mut.kind != b.mut.kind ||
+                a.slots.indexOfFirst { it.odd } != b.slots.indexOfFirst { it.odd }
+        is Challenge.Reflex -> {
+            if (b !is Challenge.Reflex) true
+            else {
+                val ta = a.cells.first { it.id == a.targetId }
+                val tb = b.cells.first { it.id == b.targetId }
+                ta.shape != tb.shape || ta.color != tb.color
+            }
+        }
+        is Challenge.Memory ->
+            b !is Challenge.Memory || a.sequence.firstOrNull() != b.sequence.firstOrNull() ||
+                a.sequence.size != b.sequence.size
+        is Challenge.Math -> b !is Challenge.Math || a.question != b.question
+    }
+
+    /** Spatial history ring fed on every consumption of an attention round. */
+    private fun rememberSpatialHistory(c: Challenge) {
+        if (c !is Challenge.Attention) return
+        synchronized(genLock) {
+            recentOddSpots.addLast(c.slots.indexOfFirst { it.odd })
+            while (recentOddSpots.size > 3) recentOddSpots.removeFirst()
+        }
+    }
+
+    /** Stop all background producers and drop buffered rounds (mode switch / exit). */
+    fun dispose() {
+        lookahead?.clear()
+        lookahead = null
+    }
+
     /** Monotonic element ids handed to the UI so grids never identify items by index. */
     private var uidSeq = 0L
     private fun nextUid(): Long = ++uidSeq
@@ -256,7 +347,7 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
             if (survival) enterRecoveryOrFail()
         }
         if (!finished && !awaitingRecovery && timeLeftMillis > 0) {
-            challenge = generate()
+            challenge = nextRound()
             challengeElapsedMillis = 0
         }
     }
@@ -284,6 +375,7 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
 
     fun finish() {
         finished = true
+        lookahead?.clear() // match over — stop producers, drop stale rounds
     }
 
     // ------------------------------------------------------------------
