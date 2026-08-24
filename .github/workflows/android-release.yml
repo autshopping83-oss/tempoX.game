@@ -34,8 +34,10 @@ jobs:
           fi
           # Strip newlines/CR/spaces: multiline base64 pastes corrupt the key silently.
           echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 --decode > android/app/release.keystore
-          echo "KEYSTORE_PATH=android/app/release.keystore" >> "$GITHUB_ENV"
-          echo "KEYSTORE_FILE=android/app/release.keystore" >> "$GITHUB_ENV"
+          # ABSOLUTE path: Gradle runs with workdir android/, so a repo-relative
+          # value would resolve to android/android/app/... and silently miss.
+          echo "KEYSTORE_PATH=$GITHUB_WORKSPACE/android/app/release.keystore" >> "$GITHUB_ENV"
+          echo "KEYSTORE_FILE=$GITHUB_WORKSPACE/android/app/release.keystore" >> "$GITHUB_ENV"
           test -s android/app/release.keystore || { echo "::error::Decoded keystore is empty — check KEYSTORE_BASE64."; exit 1; }
           file android/app/release.keystore
 
