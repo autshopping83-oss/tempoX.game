@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -73,6 +74,7 @@ import com.tempoX.game.ui.theme.TemproxColors
 import com.tempoX.game.ui.theme.TemproxShapes
 import com.tempoX.game.ui.theme.TemproxType
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -318,10 +320,11 @@ private fun MemoryHost(
     onWatchingChange: (Boolean) -> Unit,
     onResolve: (correct: Boolean, length: Int) -> Unit,
 ) {
-    var cursor by remember { mutableIntStateOf(0) } // flash position during WATCHING
-    var inputCursor by remember { mutableIntStateOf(0) }
+    var upTo by remember { mutableIntStateOf(0) } // slots flipped face-up during WATCH
+    var inputCursor by remember { mutableIntStateOf(0) } // slots confirmed by the player
+    var inputPhase by remember { mutableStateOf(false) }
     var wrongFlash by remember { mutableIntStateOf(0) }
-    val watching = cursor < challenge.sequence.size
+    val watching = !inputPhase
 
     // Micro-interactions: scale pop on correct tap, horizontal shake on wrong.
     var pulseIdx by remember { mutableIntStateOf(-1) }
@@ -347,12 +350,19 @@ private fun MemoryHost(
     LaunchedEffect(Unit) { onWatchingChange(true) }
     DisposableEffect(Unit) { onDispose { onWatchingChange(false) } }
 
-    // Advance the flash sequence while watching.
-    LaunchedEffect(watching) {
-        while (cursor < challenge.sequence.size) {
-            delay(700)
-            cursor++
+    // Progressive in-slot reveal -> full-row hold -> simultaneous hide -> input.
+    // The engine clock stays frozen (memoryWatching) until the flip-back ends.
+    LaunchedEffect(challenge) {
+        delay(400) // let the stage settle
+        challenge.sequence.forEachIndexed { i, _ ->
+            upTo = i + 1 // flips slot i face-up with its own pop pulse
+            SoundManager.play(SoundManager.Sfx.FLIP)
+            delay(560) // reveal pacing
         }
+        delay(1700) // memorize window with every figure visible side-by-side
+        upTo = 0 // simultaneous flip back to "?"
+        delay(320)
+        inputPhase = true // grid goes live, per-question clock resumes
         onWatchingChange(false)
     }
 
@@ -366,98 +376,128 @@ private fun MemoryHost(
         )
         Spacer(Modifier.height(18.dp))
 
-        if (watching) {
-            val idx = challenge.sequence[cursor]
-            val flashScale = remember { Animatable(1f) }
-            LaunchedEffect(cursor) {
-                if (watching) {
-                    flashScale.snapTo(0.9f)
-                    flashScale.animateTo(1f, tween(200))
-                }
-            }
-            Box(
-                Modifier
-                    .size(150.dp)
-                    .shadow(6.dp, TemproxShapes.Card, spotColor = Color(0x33475569))
-                    .clip(TemproxShapes.Card)
-                    .background(Color.White)
-                    .border(3.dp, MEMORY_TINTS[idx], TemproxShapes.Card),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painterResource(MEMORY_ICONS[idx]),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(104.dp)
-                        .graphicsLayer {
-                            scaleX = flashScale.value
-                            scaleY = flashScale.value
-                        },
+        // Sequence stage: the slots themselves present the figures (no central card).
+        // Repeated shapes stay distinct because each slot flips individually.
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            val shown = if (inputPhase) inputCursor else upTo
+            challenge.sequence.forEachIndexed { i, seqIdx ->
+                MemFlipSlot(
+                    iconRes = MEMORY_ICONS[seqIdx],
+                    tint = MEMORY_TINTS[seqIdx],
+                    faceUp = i < shown,
+                    modifier = Modifier.weight(1f),
                 )
             }
-        } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                challenge.sequence.forEachIndexed { i, seqIdx ->
-                    Box(
-                        Modifier
-                            .size(if (i < inputCursor) 34.dp else 28.dp)
-                            .clip(RoundedCornerShape(9.dp))
-                            .background(if (i < inputCursor) MEMORY_TINTS[seqIdx] else Color(0xFF1E1B2E).copy(alpha = 0.08f)),
-                        contentAlignment = Alignment.Center,
-                    ) { Text(if (i < inputCursor) "✓" else "?", color = if (i < inputCursor) Color.White else Color(0xFF475569), fontSize = 12.sp) }
-                }
-            }
-            Spacer(Modifier.height(22.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                MEMORY_ICONS.indices.chunked(3).forEach { rowIdx ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                        rowIdx.forEach { i ->
-                            val isWrongTile = wrongFlash > 0 && i == wrongFlash - 1
-                            val isPulseTile = pulseKey > 0 && pulseIdx == i
-                            Box(
-                                Modifier
-                                    .size(64.dp)
-                                    .shadow(4.dp, RoundedCornerShape(16.dp), spotColor = Color(0x33475569))
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(if (isWrongTile) MEMORY_TINTS[i].copy(alpha = 0.25f) else Color.White)
-                                    .border(2.dp, MEMORY_TINTS[i], RoundedCornerShape(16.dp))
-                                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                                        if (inputCursor < challenge.sequence.size) {
-                                            if (challenge.sequence[inputCursor] == i) {
-                                                pulseIdx = i
-                                                pulseKey++
-                                                SoundManager.vibrate(longArrayOf(0, 18))
-                                                inputCursor++
-                                                if (inputCursor == challenge.sequence.size) {
-                                                    onResolve(true, challenge.sequence.size)
-                                                }
-                                            } else {
-                                                pulseIdx = i
-                                                pulseKey++ // shake rides on wrongFlash effect
-                                                SoundManager.vibrate(longArrayOf(0, 40, 60, 40))
-                                                wrongFlash = i + 1
-                                                onResolve(false, 0)
-                                            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // Answer grid — dimmed and inert until the reveal/hide cycle completes.
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.alpha(if (inputPhase) 1f else 0.35f),
+        ) {
+            MEMORY_ICONS.indices.chunked(3).forEach { rowIdx ->
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    rowIdx.forEach { i ->
+                        val isWrongTile = wrongFlash > 0 && i == wrongFlash - 1
+                        val isPulseTile = pulseKey > 0 && pulseIdx == i
+                        Box(
+                            Modifier
+                                .size(64.dp)
+                                .shadow(4.dp, RoundedCornerShape(16.dp), spotColor = Color(0x33475569))
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (isWrongTile) MEMORY_TINTS[i].copy(alpha = 0.25f) else Color.White)
+                                .border(2.dp, MEMORY_TINTS[i], RoundedCornerShape(16.dp))
+                                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                    if (!inputPhase || inputCursor >= challenge.sequence.size) return@clickable
+                                    if (challenge.sequence[inputCursor] == i) {
+                                        pulseIdx = i
+                                        pulseKey++
+                                        SoundManager.vibrate(longArrayOf(0, 18))
+                                        inputCursor++
+                                        if (inputCursor == challenge.sequence.size) {
+                                            onResolve(true, challenge.sequence.size)
                                         }
+                                    } else {
+                                        pulseIdx = i
+                                        pulseKey++ // shake rides on wrongFlash effect
+                                        SoundManager.vibrate(longArrayOf(0, 40, 60, 40))
+                                        wrongFlash = i + 1
+                                        onResolve(false, 0)
+                                    }
+                                },
+                        ) {
+                            Image(
+                                painterResource(MEMORY_ICONS[i]),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .align(Alignment.Center)
+                                    .graphicsLayer {
+                                        val s = if (isPulseTile) pulse.value else 1f
+                                        scaleX = s
+                                        scaleY = s
+                                        translationX = if (isWrongTile) shakeX.value else 0f
                                     },
-                            ) {
-                                Image(
-                                    painterResource(MEMORY_ICONS[i]),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(34.dp)
-                                        .align(Alignment.Center)
-                                        .graphicsLayer {
-                                            val s = if (isPulseTile) pulse.value else 1f
-                                            scaleX = s
-                                            scaleY = s
-                                            translationX = if (isWrongTile) shakeX.value else 0f
-                                        },
-                                )
-                            }
+                            )
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * One card of the sequence stage. Flips around Y via graphicsLayer (draw-phase
+ * value reads — zero recomposition per frame) and pops on every reveal so
+ * repeated figures are unambiguous.
+ */
+@Composable
+private fun MemFlipSlot(
+    iconRes: Int,
+    tint: Color,
+    faceUp: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val rot = remember { Animatable(0f) }
+    val pop = remember { Animatable(1f) }
+    val showFace by remember { derivedStateOf { rot.value >= 90f } }
+
+    LaunchedEffect(faceUp) {
+        if (faceUp) {
+            launch {
+                pop.snapTo(1.25f)
+                pop.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+            }
+        }
+        rot.animateTo(if (faceUp) 180f else 0f, tween(280))
+    }
+
+    Box(modifier.aspectRatio(1f), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    rotationY = if (showFace) rot.value - 180f else rot.value
+                    cameraDistance = 16f * density
+                    scaleX = pop.value
+                    scaleY = pop.value
+                }
+                .shadow(3.dp, RoundedCornerShape(12.dp), spotColor = Color(0x33475569))
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .border(2.dp, if (faceUp) tint else Color(0xFFCBD5E1), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (showFace && faceUp) {
+                Image(painterResource(iconRes), contentDescription = null, modifier = Modifier.fillMaxSize(0.62f))
+            } else {
+                Text("?", style = TemproxType.titleLg.copy(color = TemproxColors.Muted))
             }
         }
     }
@@ -759,7 +799,7 @@ private fun GlobalTimeBar(engine: GameEngine) {
         )
         Text(
             "${secondsLeft}s",
-            style = TemproxType.bodyBold.copy(fontSize = 13.sp, color = if (urgent) Color.White else TemproxColors.Ink),
+            style = TemproxType.bodyBold.copy(fontSize = 13.sp, color = Color.White),
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .graphicsLayer {
@@ -774,8 +814,7 @@ private fun GlobalTimeBar(engine: GameEngine) {
                     }
                 }
                 .shadow(3.dp, RoundedCornerShape(999.dp), spotColor = Color(0x33475569))
-                .background(if (urgent) TemproxColors.Danger else Color.White, RoundedCornerShape(999.dp))
-                .border(1.dp, if (urgent) Color.Transparent else Color(0xFF94A3B8), RoundedCornerShape(999.dp))
+                .background(if (urgent) TemproxColors.Danger else Color(0xFF7C3AED), RoundedCornerShape(999.dp))
                 .padding(horizontal = 10.dp, vertical = 3.dp),
         )
     }

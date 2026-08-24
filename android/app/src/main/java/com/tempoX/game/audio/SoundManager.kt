@@ -21,7 +21,7 @@ import com.tempoX.game.R
  */
 object SoundManager {
 
-    enum class Sfx { CLICK, CONFIRM, CORRECT, WRONG, COMBO, TICK, RECORD, TROPHY, GAME_OVER }
+    enum class Sfx { CLICK, CONFIRM, CORRECT, WRONG, COMBO, TICK, RECORD, TROPHY, GAME_OVER, FLIP }
 
     private var soundPool: SoundPool? = null
     private var audioManager: AudioManager? = null
@@ -66,6 +66,7 @@ object SoundManager {
         sampleIds[Sfx.RECORD] = pool.load(app, R.raw.record, 1)
         sampleIds[Sfx.TROPHY] = pool.load(app, R.raw.trophy, 1)
         sampleIds[Sfx.GAME_OVER] = pool.load(app, R.raw.game_over, 1)
+        sampleIds[Sfx.FLIP] = pool.load(app, R.raw.flip, 1)
     }
 
     /** Silent mode (RINGER_MODE_SILENT / VIBRATE) mutes game sounds. */
