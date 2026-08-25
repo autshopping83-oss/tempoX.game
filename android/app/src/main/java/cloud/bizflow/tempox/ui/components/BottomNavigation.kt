@@ -41,7 +41,7 @@ fun BottomNavigation(
     onSelect: (HomeTab) -> Unit,
     labels: Map<HomeTab, String>,
     icons: Map<HomeTab, String> = mapOf(HomeTab.PLAY to "🎮", HomeTab.STATS to "📊", HomeTab.TROPHIES to "🏆"),
-    dark: Boolean = true,
+    dark: Boolean = false,
 ) {
     val bgColor = if (dark) Color(0xE6140B27) else Color(0xF7FFFFFF)
     val borderColor = if (dark) Color(0xFF3B2D54) else TemproxColors.BorderLight

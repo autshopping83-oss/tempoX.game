@@ -73,16 +73,19 @@ import cloud.bizflow.tempox.ui.components.FloatingCard
 import cloud.bizflow.tempox.ui.components.HomeTab
 import cloud.bizflow.tempox.ui.components.SectionLabel
 import cloud.bizflow.tempox.ui.components.StatCard
-import cloud.bizflow.tempox.ui.components.TempoxCyberBackground
+import cloud.bizflow.tempox.ui.components.TempoxStudioBackground
+import cloud.bizflow.tempox.ui.components.TempoxThemeColors
 import cloud.bizflow.tempox.ui.components.TrophyCard
 import cloud.bizflow.tempox.ui.openLegal
 import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
 
-// ── Dark-card palette (Cyber-Arcade elevated surfaces) ──────────────
-private val CardDarkBg = Color(0xFF1A1528)
-private val CardDarkBorder = Color(0xFF3B2D54)
+// ── Floating Light Studio palette (centralized in TempoxThemeColors) ───
+private val CardBg = TempoxThemeColors.CardSurface
+private val CardBorder = TempoxThemeColors.CardBorder
+private val InkText = TempoxThemeColors.TextPrimary
+private val MutedText = TempoxThemeColors.TextSecondary
 private val NeonYellow = Color(0xFFFACC15)
 
 /** Home hub: play / stats / trophies + rules modal + optional match seed. */
@@ -117,8 +120,8 @@ fun HomeScreen(
         else (stats.totalXp - currentLevelFloor).toFloat() / (nextLevelCost - currentLevelFloor)
 
     Box(Modifier.fillMaxSize()) {
-        // ── Cyber-Arcade night backdrop replaces the old light AnimatedBackground ──
-        TempoxCyberBackground(Modifier.fillMaxSize()) {
+        // ── Floating Light Studio backdrop (radial vignette, zero assets) ──
+        TempoxStudioBackground(Modifier.fillMaxSize()) {
             Column(
                 Modifier
                     .fillMaxSize()
@@ -133,12 +136,13 @@ fun HomeScreen(
                     Box(
                         Modifier
                             .size(44.dp)
+                            .shadow(TempoxThemeColors.ElevationInfo, RoundedCornerShape(14.dp))
                             .clip(RoundedCornerShape(14.dp))
-                            .background(CardDarkBg.copy(alpha = 0.85f))
-                            .border(1.dp, CardDarkBorder, RoundedCornerShape(14.dp))
+                            .background(CardBg)
+                            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
                             .clickable { showRules = true },
                         contentAlignment = Alignment.Center,
-                    ) { Text("☰", fontSize = 19.sp, color = Color.White) }
+                    ) { Text("☰", fontSize = 19.sp, color = InkText) }
 
                     Spacer(Modifier.width(10.dp))
 
@@ -146,12 +150,12 @@ fun HomeScreen(
                     Column(Modifier.weight(1f)) {
                         Text(
                             stringResource(R.string.home_title),
-                            style = TemproxType.title.copy(color = Color.White),
+                            style = TemproxType.title.copy(color = InkText),
                             maxLines = 1,
                         )
                         Text(
                             stringResource(R.string.tagline),
-                            style = TemproxType.micro.copy(color = Color(0xFF94A3B8)),
+                            style = TemproxType.micro.copy(color = MutedText),
                         )
                     }
 
@@ -173,14 +177,15 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.width(8.dp))
 
-                    // VIP Crown — neon yellow beacon that opens the paywall
+                    // VIP Crown — gold beacon that opens the paywall
                     IconButton(
                         onClick = { showPaywallSheet = true },
                         modifier = Modifier
                             .size(44.dp)
+                            .shadow(TempoxThemeColors.ElevationInfo, RoundedCornerShape(14.dp))
                             .clip(RoundedCornerShape(14.dp))
-                            .background(CardDarkBg.copy(alpha = 0.85f))
-                            .border(1.5.dp, NeonYellow.copy(alpha = 0.7f), RoundedCornerShape(14.dp)),
+                            .background(CardBg)
+                            .border(1.5.dp, NeonYellow.copy(alpha = 0.9f), RoundedCornerShape(14.dp)),
                     ) {
                         Text("👑", fontSize = 20.sp)
                     }
@@ -287,8 +292,8 @@ private fun PremiumPaywallBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF140B27),
-        contentColor = Color.White,
+        containerColor = TempoxThemeColors.CardSurface,
+        contentColor = InkText,
         dragHandle = null,
     ) {
         Column(
@@ -303,14 +308,14 @@ private fun PremiumPaywallBottomSheet(
             Text(
                 stringResource(R.string.paywall_title),
                 style = TemproxType.title.copy(
-                    color = Color.White,
+                    color = InkText,
                     textAlign = TextAlign.Center,
                 ),
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(R.string.paywall_subtitle),
-                style = TemproxType.caption.copy(color = Color(0xFF94A3B8)),
+                style = TemproxType.caption.copy(color = MutedText),
             )
 
             Spacer(Modifier.height(24.dp))
@@ -318,15 +323,15 @@ private fun PremiumPaywallBottomSheet(
             // Benefits column
             listOf(
                 Triple("🚫", stringResource(R.string.paywallBenefit1), Color(0xFF10B981)),
-                Triple("⚡", stringResource(R.string.paywallBenefit2), NeonYellow),
-                Triple("🎮", stringResource(R.string.paywallBenefit3), Color(0xFF8B5CF6)),
+                Triple("⚡", stringResource(R.string.paywallBenefit2), Color(0xFFB45309)),
+                Triple("🎮", stringResource(R.string.paywallBenefit3), Color(0xFF7C3AED)),
             ).forEach { (icon, text, tint) ->
                 Row(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(CardDarkBg.copy(alpha = 0.85f))
-                        .border(1.dp, CardDarkBorder, RoundedCornerShape(14.dp))
+                        .background(CardBg)
+                        .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -405,7 +410,7 @@ private fun PremiumPaywallBottomSheet(
             // Restore purchases
             Text(
                 stringResource(R.string.paywall_restore),
-                style = TemproxType.caption.copy(color = Color(0xFF94A3B8)),
+                style = TemproxType.caption.copy(color = MutedText),
                 modifier = Modifier
                     .clickable {
                         SoundManager.play(SoundManager.Sfx.CLICK)
@@ -419,7 +424,7 @@ private fun PremiumPaywallBottomSheet(
             // Close
             Text(
                 stringResource(R.string.paywall_close),
-                style = TemproxType.caption.copy(color = Color(0xFF64748B)),
+                style = TemproxType.caption.copy(color = MutedText),
                 modifier = Modifier
                     .clickable {
                         SoundManager.play(SoundManager.Sfx.CLICK)
@@ -469,17 +474,16 @@ private fun PlayTab(
         }
         Spacer(Modifier.height(16.dp))
 
-        // ── Profile Level card (dark elevated surface) ────────────────────────
+        // ── Profile Level card (floating white surface) ───────────────────────
         FloatingCard(
             accent = TemproxColors.Pink,
-            dark = true,
-            modifier = Modifier.shadow(6.dp, RoundedCornerShape(24.dp)),
+            modifier = Modifier.shadow(TempoxThemeColors.ElevationInfo, RoundedCornerShape(24.dp)),
         ) {
-            Text(stringResource(R.string.home_best_score), style = TemproxType.caption.copy(color = NeonYellow))
-            Text("${stats.highScore}", style = TemproxType.score.copy(color = Color.White))
+            Text(stringResource(R.string.home_best_score), style = TemproxType.caption.copy(color = Color(0xFFB45309)))
+            Text("${stats.highScore}", style = TemproxType.score.copy(color = InkText))
             Spacer(Modifier.height(10.dp))
 
-            Text(stringResource(R.string.home_level_profile), style = TemproxType.micro.copy(color = Color(0xFF94A3B8)))
+            Text(stringResource(R.string.home_level_profile), style = TemproxType.micro.copy(color = MutedText))
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -493,14 +497,14 @@ private fun PlayTab(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     stringResource(R.string.home_xp_accumulated, stats.totalXp),
-                    style = TemproxType.micro.copy(color = Color(0xFF94A3B8)),
+                    style = TemproxType.micro.copy(color = MutedText),
                 )
                 val floor = Progression.xpForLevel(level)
                 val cost = Progression.xpForLevel(level + 1)
                 val pct = if (cost <= floor) 100 else ((stats.totalXp - floor) * 100 / (cost - floor)).toInt().coerceIn(0, 100)
                 Text(
                     stringResource(R.string.home_percent_to_level, pct, level + 1),
-                    style = TemproxType.micro.copy(color = Color(0xFF94A3B8)),
+                    style = TemproxType.micro.copy(color = MutedText),
                 )
             }
         }
@@ -508,25 +512,25 @@ private fun PlayTab(
         Spacer(Modifier.height(14.dp))
 
         // ── Optional seed ─────────────────────────────────────────────────────
-        SectionLabel(stringResource(R.string.home_seed_label), NeonYellow)
+        SectionLabel(stringResource(R.string.home_seed_label), TemproxColors.Accent)
         Spacer(Modifier.height(8.dp))
         BasicTextField(
             value = seedText,
             onValueChange = onSeedChange,
             singleLine = true,
-            textStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White),
+            textStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = InkText),
             decorationBox = { inner ->
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(CardDarkBg.copy(alpha = 0.85f))
-                        .border(1.dp, CardDarkBorder, RoundedCornerShape(14.dp))
+                        .background(CardBg)
+                        .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
                         .padding(horizontal = 14.dp, vertical = 13.dp),
                 ) {
                     if (seedText.isEmpty()) Text(
                         stringResource(R.string.home_seed_placeholder),
-                        style = TemproxType.body.copy(color = Color(0xFF64748B)),
+                        style = TemproxType.body.copy(color = MutedText),
                     )
                     inner()
                 }
@@ -570,6 +574,13 @@ private fun ArcadePlayButton(text: String, onClick: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .height(64.dp)
+            // 12dp hero shadow — the "floating above the studio floor" accent.
+            .shadow(
+                elevation = TempoxThemeColors.ElevationCta,
+                shape = shape,
+                ambientColor = Color(0xFF7C3AED),
+                spotColor = Color(0xFF6D28D9),
+            )
             .graphicsLayer { scaleX = pulse; scaleY = pulse }
             .drawBehind {
                 drawRoundRect(
@@ -709,20 +720,20 @@ private fun StatsTab(stats: PlayerStats) {
         SectionLabel(stringResource(R.string.stats_historical_title), TemproxColors.Info)
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard(stringResource(R.string.stats_matches), "${stats.gamesPlayed}", Modifier.weight(1f), TemproxColors.Primary, dark = true)
-            StatCard(stringResource(R.string.stats_record), "${stats.highScore}", Modifier.weight(1f), TemproxColors.Warning, dark = true)
+            StatCard(stringResource(R.string.stats_matches), "${stats.gamesPlayed}", Modifier.weight(1f), TemproxColors.Primary)
+            StatCard(stringResource(R.string.stats_record), "${stats.highScore}", Modifier.weight(1f), TemproxColors.Warning)
         }
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard(stringResource(R.string.stats_total_xp), "${stats.totalXp}", Modifier.weight(1f), TemproxColors.Success, dark = true)
-            StatCard(stringResource(R.string.stats_max_combo), "x${stats.maxComboEver}", Modifier.weight(1f), TemproxColors.Pink, dark = true)
+            StatCard(stringResource(R.string.stats_total_xp), "${stats.totalXp}", Modifier.weight(1f), TemproxColors.Success)
+            StatCard(stringResource(R.string.stats_max_combo), "x${stats.maxComboEver}", Modifier.weight(1f), TemproxColors.Pink)
         }
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard(stringResource(R.string.stats_answers), "${stats.totalCorrect + stats.totalIncorrect}", Modifier.weight(1f), TemproxColors.Info, dark = true)
+            StatCard(stringResource(R.string.stats_answers), "${stats.totalCorrect + stats.totalIncorrect}", Modifier.weight(1f), TemproxColors.Info)
             val total = stats.totalCorrect + stats.totalIncorrect
             val acc = if (total == 0) 0 else stats.totalCorrect * 100 / total
-            StatCard(stringResource(R.string.stats_avg_accuracy), "$acc%", Modifier.weight(1f), TemproxColors.Green, dark = true)
+            StatCard(stringResource(R.string.stats_avg_accuracy), "$acc%", Modifier.weight(1f), TemproxColors.Green)
         }
     }
 }
@@ -740,7 +751,6 @@ private fun TrophiesTab(stats: PlayerStats) {
                 title = stringResource(cloud.bizflow.tempox.game.Achievements.titleRes(id)),
                 description = stringResource(cloud.bizflow.tempox.game.Achievements.descRes(id)),
                 unlocked = id in stats.achievements,
-                dark = true,
             )
             Spacer(Modifier.height(10.dp))
         }
@@ -748,7 +758,7 @@ private fun TrophiesTab(stats: PlayerStats) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Dark-themed top chips (crown / star) for the header
+// Studio-light top chips (crown / star) for the header
 // ──────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -756,19 +766,20 @@ private fun TopChip(glyph: String, value: String, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .shadow(TempoxThemeColors.ElevationInfo, RoundedCornerShape(14.dp))
             .clip(RoundedCornerShape(14.dp))
-            .background(CardDarkBg.copy(alpha = 0.85f))
-            .border(1.dp, CardDarkBorder, RoundedCornerShape(14.dp))
+            .background(CardBg)
+            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
             .clickable { SoundManager.play(SoundManager.Sfx.CLICK); onClick() }
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         Text(glyph, fontSize = 15.sp)
-        Text(value, style = TemproxType.micro.copy(color = Color(0xFF94A3B8)), maxLines = 1)
+        Text(value, style = TemproxType.micro.copy(color = MutedText), maxLines = 1)
     }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Dark-themed task card
+// Studio-light task card (selectable → 8dp elevation)
 // ──────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -785,14 +796,18 @@ private fun TaskCard(
     Row(
         modifier = modifier
             .height(112.dp)
-            .shadow(if (locked) 2.dp else 6.dp, RoundedCornerShape(18.dp))
+            // Shadow hierarchy: selectable mode cards float at 8dp (locked = informative 4dp).
+            .shadow(
+                if (locked) TempoxThemeColors.ElevationInfo else TempoxThemeColors.ElevationCard,
+                RoundedCornerShape(20.dp),
+            )
             .alpha(if (locked) 0.75f else 1f)
-            .clip(RoundedCornerShape(18.dp))
-            .background(CardDarkBg.copy(alpha = 0.85f))
+            .clip(RoundedCornerShape(20.dp))
+            .background(CardBg)
             .border(
-                if (locked) 1.dp else 2.dp,
-                tint.copy(alpha = if (locked) 0.45f else 0.7f),
-                RoundedCornerShape(18.dp),
+                1.dp,
+                if (locked) CardBorder else tint.copy(alpha = 0.45f),
+                RoundedCornerShape(20.dp),
             )
             .clickable {
                 SoundManager.play(SoundManager.Sfx.CLICK)
@@ -806,28 +821,30 @@ private fun TaskCard(
                 Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(999.dp))
-                    .background(CardDarkBorder)
-                    .border(1.dp, tint.copy(alpha = 0.35f), RoundedCornerShape(999.dp)),
+                    .background(tint.copy(alpha = 0.12f))
+                    .border(1.dp, CardBorder, RoundedCornerShape(999.dp)),
                 contentAlignment = Alignment.Center,
             ) { Text(glyph, fontSize = 24.sp) }
         }
         Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
             Text(
                 header,
-                style = TemproxType.micro.copy(color = tint, letterSpacing = 1.6.sp),
+                style = TemproxType.micro.copy(color = tint, letterSpacing = 1.2.sp, fontSize = 11.sp),
+                maxLines = 1,
+                softWrap = false,
             )
             Spacer(Modifier.height(3.dp))
-            Text(caption, style = TemproxType.bodyBold.copy(color = Color.White), maxLines = 1)
+            Text(caption, style = TemproxType.bodyBold.copy(color = InkText), maxLines = 1)
             Spacer(Modifier.height(5.dp))
-            Text(flow, style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.Medium, color = Color(0xFF94A3B8)), maxLines = 1)
+            Text(flow, style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.Medium, color = MutedText), maxLines = 1)
         }
         Box(
             Modifier
                 .padding(end = 10.dp)
                 .size(34.dp)
                 .clip(RoundedCornerShape(999.dp))
-                .background(if (locked) CardDarkBorder else tint),
+                .background(if (locked) CardBorder else tint),
             contentAlignment = Alignment.Center,
-        ) { Text(if (locked) "🔒" else "▶", fontSize = 13.sp, color = if (locked) tint else Color.White) }
+        ) { Text(if (locked) "🔒" else "▶", fontSize = 13.sp, color = if (locked) MutedText else Color.White) }
     }
 }
