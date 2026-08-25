@@ -3,6 +3,7 @@ package cloud.bizflow.tempox.ui
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import android.widget.Toast
 import cloud.bizflow.tempox.R
 import cloud.bizflow.tempox.utils.launchWebUrl
@@ -21,7 +22,7 @@ enum class LegalType { PRIVACY, TERMS }
  * error page.
  */
 fun openLegal(context: Context, type: LegalType) {
-    if (!isOnline(context)) {
+    if (!context.isOnline()) {
         Toast.makeText(context, R.string.legal_offline, Toast.LENGTH_SHORT).show()
         return
     }
@@ -32,9 +33,23 @@ fun openLegal(context: Context, type: LegalType) {
     launchWebUrl(context, url)
 }
 
-private fun isOnline(context: Context): Boolean {
-    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        ?: return true
-    val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
-    return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+/**
+ * Defensive connectivity probe. NEVER throws: a SecurityException (missing
+ * ACCESS_NETWORK_STATE) or vendor-ROM quirks (MIUI's ConnectivityService)
+ * fail OPEN so the click still reaches the browser, which natively handles
+ * offline navigation. Only an explicitly unvalidated network reports false.
+ */
+fun Context.isOnline(): Boolean {
+    return runCatching {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val network = connectivityManager?.activeNetwork ?: return@runCatching false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return@runCatching false
+
+        capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }.getOrElse { exception ->
+        // Em caso de erro de permissão ou falha de ROM, permite a tentativa de abertura
+        Log.w("LegalConstants", "Falha ao checar estado da rede", exception)
+        true
+    }
 }
