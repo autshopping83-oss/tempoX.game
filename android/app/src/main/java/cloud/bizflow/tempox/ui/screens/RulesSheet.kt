@@ -37,7 +37,6 @@ import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.ui.LegalType
 import cloud.bizflow.tempox.ui.components.PrimaryButton
-import cloud.bizflow.tempox.ui.openLegal
 import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxType
 
@@ -49,10 +48,10 @@ fun RulesSheet(
     language: LangMode,
     onLanguageChange: (LangMode) -> Unit,
     onClose: () -> Unit,
+    onOpenLegal: (LegalType) -> Unit = {},
 ) {
     var soundOn by remember { mutableStateOf(SoundManager.isEnabled()) }
     var hapticsOn by remember { mutableStateOf(SoundManager.isHapticsEnabled()) }
-    val context = LocalContext.current
     val items = listOf(
         RuleItem("🧠", R.string.rules_memory_title, R.string.rules_memory_desc, TemproxColors.Pink),
         RuleItem("⚡", R.string.rules_reflex_title, R.string.rules_reflex_desc, TemproxColors.Warning),
@@ -177,10 +176,10 @@ fun RulesSheet(
                 // ---- Legal pages -----------------------------------------
                 Spacer(Modifier.height(14.dp))
                 LegalLinkRow("🔒", stringResource(R.string.legal_privacy_btn)) {
-                    openLegal(context, LegalType.PRIVACY)
+                    onOpenLegal(LegalType.PRIVACY)
                 }
                 LegalLinkRow("📜", stringResource(R.string.legal_terms_btn)) {
-                    openLegal(context, LegalType.TERMS)
+                    onOpenLegal(LegalType.TERMS)
                 }
 
                 Spacer(Modifier.height(18.dp))
@@ -216,7 +215,6 @@ private fun SheetRow(label: String, emoji: String, control: @Composable () -> Un
 
 @Composable
 private fun LegalLinkRow(emoji: String, label: String, onClick: () -> Unit) {
-    val context = LocalContext.current
     Row(
         Modifier
             .fillMaxWidth()

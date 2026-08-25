@@ -67,16 +67,17 @@ import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.game.PlayerStats
 import cloud.bizflow.tempox.game.Progression
 import cloud.bizflow.tempox.ui.LegalType
+import cloud.bizflow.tempox.data.LegalTexts
 import cloud.bizflow.tempox.ui.components.BottomNavigation
 import cloud.bizflow.tempox.ui.components.BrandedProgress
 import cloud.bizflow.tempox.ui.components.FloatingCard
 import cloud.bizflow.tempox.ui.components.HomeTab
+import cloud.bizflow.tempox.ui.components.LegalScreen
 import cloud.bizflow.tempox.ui.components.SectionLabel
 import cloud.bizflow.tempox.ui.components.StatCard
 import cloud.bizflow.tempox.ui.components.TempoxStudioBackground
 import cloud.bizflow.tempox.ui.components.TempoxThemeColors
 import cloud.bizflow.tempox.ui.components.TrophyCard
-import cloud.bizflow.tempox.ui.openLegal
 import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxType
 import kotlinx.coroutines.delay
@@ -111,6 +112,8 @@ fun HomeScreen(
     var seedText by remember { mutableStateOf("") }
     var unlockFor by remember { mutableStateOf<GameMode?>(null) }
     var showPaywallSheet by remember { mutableStateOf(false) }
+    // Native legal reader — no browser, 100% offline.
+    var legalDoc by remember { mutableStateOf<LegalType?>(null) }
 
     val level = Progression.levelForXp(stats.totalXp)
     val currentLevelFloor = Progression.xpForLevel(level)
@@ -241,7 +244,21 @@ fun HomeScreen(
                     .edit().putBoolean("rules_seen", true).apply()
                 showRules = false
             },
+            onOpenLegal = { legalDoc = it },
         )
+
+        // ── Native legal reader (privacy / terms) ────────────────────────────────
+        legalDoc?.let { doc ->
+            val isPrivacy = doc == LegalType.PRIVACY
+            LegalScreen(
+                title = stringResource(
+                    if (isPrivacy) R.string.legal_privacy_btn else R.string.legal_terms_btn,
+                ),
+                updated = if (isPrivacy) LegalTexts.PRIVACY_UPDATED else LegalTexts.TERMS_UPDATED,
+                body = if (isPrivacy) LegalTexts.PRIVACY_POLICY else LegalTexts.TERMS_AND_CONDITIONS,
+                onDismiss = { legalDoc = null },
+            )
+        }
 
         // ── Unlock-mode dialog ───────────────────────────────────────────────────
         unlockFor?.let { mode ->
@@ -543,7 +560,6 @@ private fun PlayTab(
             onPlay(GameMode.ARCADE, seedText)
         }
         Spacer(Modifier.height(14.dp))
-        val homeCtx = LocalContext.current
         Text(
             "v" + BuildConfig.VERSION_NAME + "  ·  " + stringResource(R.string.legal_privacy_btn),
             style = TemproxType.micro.copy(color = TemproxColors.Primary),
@@ -551,7 +567,7 @@ private fun PlayTab(
                 .align(Alignment.CenterHorizontally)
                 .clickable {
                     SoundManager.play(SoundManager.Sfx.CLICK)
-                    openLegal(homeCtx, LegalType.PRIVACY)
+                    legalDoc = LegalType.PRIVACY
                 },
         )
     }
