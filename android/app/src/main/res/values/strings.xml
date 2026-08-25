@@ -153,9 +153,19 @@
     <string name="lang_pt">Português</string>
     <string name="lang_en">English</string>
 
-    <string name="home_title">MEMO &amp; MATH CHALLENGE</string>
+    <string name="home_title">TEMPOX</string>
     <string name="card_pattern_header">PATTERN TASK</string>
     <string name="card_pattern_caption">SHAPE MEMORY</string>
     <string name="card_calc_header">CALC TASK</string>
     <string name="card_calc_caption">SPEED MATH</string>
+
+    <!-- Premium Paywall -->
+    <string name="paywall_title">DESBLOQUEIE O TEMPOX PREMIUM</string>
+    <string name="paywall_subtitle">Remova limites e domine o jogo</string>
+    <string name="paywallBenefit1">Zero Anúncios Intermitentes</string>
+    <string name="paywallBenefit2">Dobro de XP por partida</string>
+    <string name="paywallBenefit3">Acesso a todos os modos futuros</string>
+    <string name="paywall_cta">REMOVER ANÚNCIOS — US$ 4,99</string>
+    <string name="paywall_restore">Já é premium? Restaurar compra</string>
+    <string name="paywall_close">Agora não</string>
 </resources>

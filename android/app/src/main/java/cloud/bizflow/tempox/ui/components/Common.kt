@@ -33,23 +33,22 @@ import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxShapes
 import cloud.bizflow.tempox.ui.theme.TemproxType
 
-/** Frosted light card used across the arcade UI (web parity: white + slate border). */
+/** Frosted card used across the arcade UI. Supports light (default) and dark modes. */
 @Composable
 fun FloatingCard(
     modifier: Modifier = Modifier,
     accent: Color? = null,
+    dark: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val bg = if (dark) Color(0xFF1A1528).copy(alpha = 0.85f) else Color.White
+    val border = if (dark) Color(0xFF3B2D54) else (accent?.copy(alpha = 0.45f) ?: TemproxColors.BorderLight)
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(TemproxShapes.Card)
-            .background(Color.White)
-            .border(
-                width = 1.dp,
-                color = accent?.copy(alpha = 0.45f) ?: TemproxColors.BorderLight,
-                shape = TemproxShapes.Card,
-            )
+            .background(bg)
+            .border(width = 1.dp, color = border, shape = TemproxShapes.Card)
             .padding(horizontal = 18.dp, vertical = 16.dp),
         content = content,
     )
@@ -107,34 +106,38 @@ fun SecondaryButton(
     }
 }
 
-/** Small stat tile (label + value). */
+/** Small stat tile (label + value). Supports dark mode. */
 @Composable
-fun StatCard(label: String, value: String, modifier: Modifier = Modifier, tint: Color = TemproxColors.Accent) {
-    FloatingCard(modifier = modifier, accent = tint) {
+fun StatCard(label: String, value: String, modifier: Modifier = Modifier, tint: Color = TemproxColors.Accent, dark: Boolean = false) {
+    FloatingCard(modifier = modifier, accent = tint, dark = dark) {
         Text(value, style = TemproxType.titleLg.copy(color = tint))
         Spacer(Modifier.height(2.dp))
-        Text(label, style = TemproxType.micro.copy(color = TemproxColors.Muted), maxLines = 1)
+        Text(label, style = TemproxType.micro.copy(color = if (dark) Color(0xFF94A3B8) else TemproxColors.Muted), maxLines = 1)
     }
 }
 
-/** Trophy row with unlocked / locked styling. */
+/** Trophy row with unlocked / locked styling. Supports dark mode. */
 @Composable
-fun TrophyCard(title: String, description: String, unlocked: Boolean) {
+fun TrophyCard(title: String, description: String, unlocked: Boolean, dark: Boolean = false) {
     val tint = if (unlocked) TemproxColors.Accent else Color(0xFFCBD5E1)
+    val bg = if (dark) Color(0xFF1A1528).copy(alpha = 0.85f) else Color.White
+    val borderColor = if (dark) Color(0xFF3B2D54) else (if (unlocked) tint.copy(alpha = 0.6f) else TemproxColors.BorderLight)
+    val titleColor = if (dark) Color.White else (if (unlocked) TemproxColors.Ink else TemproxColors.Muted)
+    val descColor = if (dark) Color(0xFF94A3B8) else Color(0xFF94A3B8)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .border(1.dp, if (unlocked) tint.copy(alpha = 0.6f) else TemproxColors.BorderLight, RoundedCornerShape(16.dp))
+            .background(bg)
+            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("🏆", fontSize = TemproxType.title.fontSize, fontWeight = FontWeight.Black)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, style = TemproxType.bodyBold.copy(color = if (unlocked) TemproxColors.Ink else TemproxColors.Muted))
-            Text(description, style = TemproxType.caption.copy(color = Color(0xFF94A3B8), fontWeight = FontWeight.Medium))
+            Text(title, style = TemproxType.bodyBold.copy(color = titleColor))
+            Text(description, style = TemproxType.caption.copy(color = descColor, fontWeight = FontWeight.Medium))
         }
         Spacer(Modifier.width(8.dp))
         Text(

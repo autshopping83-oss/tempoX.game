@@ -32,8 +32,8 @@ import cloud.bizflow.tempox.ui.theme.TemproxColors
 enum class HomeTab { PLAY, STATS, TROPHIES }
 
 /**
- * Floating pill bottom navigation — glassy white bar lifted above the
- * gesture area, active tab gets the brand gradient (light theme parity).
+ * Floating pill bottom navigation — dark glassy bar for Cyber-Arcade theme.
+ * Active tab gets the brand gradient; inactive tabs use muted grey text.
  */
 @Composable
 fun BottomNavigation(
@@ -41,16 +41,20 @@ fun BottomNavigation(
     onSelect: (HomeTab) -> Unit,
     labels: Map<HomeTab, String>,
     icons: Map<HomeTab, String> = mapOf(HomeTab.PLAY to "🎮", HomeTab.STATS to "📊", HomeTab.TROPHIES to "🏆"),
+    dark: Boolean = true,
 ) {
+    val bgColor = if (dark) Color(0xE6140B27) else Color(0xF7FFFFFF)
+    val borderColor = if (dark) Color(0xFF3B2D54) else TemproxColors.BorderLight
+    val inactiveText = if (dark) Color(0xFF64748B) else Color(0xFF94A3B8)
     Row(
         modifier = Modifier
             .navigationBarsPadding()
             .padding(horizontal = 24.dp)
             .fillMaxWidth()
-            .shadow(18.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.12f))
+            .shadow(18.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.25f))
             .clip(RoundedCornerShape(28.dp))
-            .background(Color(0xF7FFFFFF))
-            .border(1.dp, TemproxColors.BorderLight, RoundedCornerShape(28.dp))
+            .background(bgColor)
+            .border(1.dp, borderColor, RoundedCornerShape(28.dp))
             .height(68.dp)
             .padding(8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -81,7 +85,7 @@ fun BottomNavigation(
                     style = androidx.compose.ui.text.TextStyle(
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = if (selected) Color.White else Color(0xFF94A3B8),
+                        color = if (selected) Color.White else inactiveText,
                     ),
                 )
             }
