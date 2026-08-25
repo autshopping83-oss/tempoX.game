@@ -113,8 +113,15 @@ fun AnimatedBackground(
     // Ambient gradient is parameterized so each screen can set its own mood
     // (home goes violet-arcade; other screens keep the classic ice tones).
     topColor: Color = Color(0xFFEEF2FF),
-    bottomColor: Color = Color(0xFFF8FAFC),
+    bottomColor: Color = Color(0xFFE4E0FF),
+    // Night mode delegates to the native cyber-arcade backdrop. Only use on
+    // screens whose foreground elements are contrast-safe against dark.
+    dark: Boolean = false,
 ) {
+    if (dark) {
+        TempoxCyberBackground(modifier) { }
+        return
+    }
     val transition = rememberInfiniteTransition(label = "temproxBg")
     // Master clock: one full loop every 16s; every shape period divides it.
     val t by transition.animateFloat(

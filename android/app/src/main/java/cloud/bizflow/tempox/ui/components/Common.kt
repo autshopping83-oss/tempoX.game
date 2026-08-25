@@ -158,11 +158,11 @@ fun BrandedProgress(fraction: Float, tint: Color = TemproxColors.Accent, modifie
 
 /** TEMPOX wordmark: "TEMPO" white + accent X block. */
 @Composable
-fun TemproxLogo(heightText: Int = 30) {
+fun TemproxLogo(heightText: Int = 30, inkColor: Color = TemproxColors.Ink) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             "TEMPO",
-            style = TemproxType.display.copy(fontSize = heightText.sp, color = TemproxColors.Ink),
+            style = TemproxType.display.copy(fontSize = heightText.sp, color = inkColor),
         )
         Box(
             modifier = Modifier
