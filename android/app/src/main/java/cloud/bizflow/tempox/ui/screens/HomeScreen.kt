@@ -213,6 +213,7 @@ fun HomeScreen(
                                     unlockFor = mode
                                 }
                             },
+                            onOpenPrivacy = { legalDoc = LegalType.PRIVACY },
                         )
                         HomeTab.STATS -> StatsTab(stats)
                         HomeTab.TROPHIES -> TrophiesTab(stats)
@@ -466,6 +467,7 @@ private fun PlayTab(
     seedText: String,
     onSeedChange: (String) -> Unit,
     onPlay: (GameMode, String) -> Unit,
+    onOpenPrivacy: () -> Unit = {},
 ) {
     Column {
         // ── Mode cards ────────────────────────────────────────────────────────
@@ -567,7 +569,7 @@ private fun PlayTab(
                 .align(Alignment.CenterHorizontally)
                 .clickable {
                     SoundManager.play(SoundManager.Sfx.CLICK)
-                    legalDoc = LegalType.PRIVACY
+                    onOpenPrivacy()
                 },
         )
     }

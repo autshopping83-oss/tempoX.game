@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cloud.bizflow.tempox.audio.SoundManager
-import cloud.bizflow.tempox.ui.theme.TempoxType
+import cloud.bizflow.tempox.ui.theme.TemproxType
 
 /**
  * Fullscreen native legal reader ("Floating Light Studio" theme).
@@ -60,12 +60,12 @@ fun LegalScreen(
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp)) {
             Text(
                 title,
-                style = TempoxType.title.copy(color = TempoxThemeColors.TextPrimary),
+                style = TemproxType.title.copy(color = TempoxThemeColors.TextPrimary),
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 updated,
-                style = TempoxType.micro.copy(color = TempoxThemeColors.TextSecondary),
+                style = TemproxType.micro.copy(color = TempoxThemeColors.TextSecondary),
             )
         }
 
@@ -97,10 +97,13 @@ fun LegalScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PrimaryButton(text = "FECHAR") {
-                SoundManager.play(SoundManager.Sfx.CLICK)
-                onDismiss()
-            }
+            PrimaryButton(
+                text = "FECHAR",
+                onClick = {
+                    SoundManager.play(SoundManager.Sfx.CLICK)
+                    onDismiss()
+                },
+            )
         }
     }
 }
