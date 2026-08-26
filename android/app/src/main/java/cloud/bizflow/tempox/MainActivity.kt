@@ -153,16 +153,9 @@ fun AppRoot(
                     economy = econRepo.load()
                     finished = FinishedMatch(summary, isRecord, unlocked)
                     playing = false
-                    // Interstitial after match ends (non-VIP only).
-                    if (activity != null && !adFree) {
-                        MockAdManager.showInterstitialIfAllowed(activity) { }
-                    }
                 },
                 onQuit = {
                     playing = false
-                    if (activity != null && !adFree) {
-                        MockAdManager.showInterstitialIfAllowed(activity) { }
-                    }
                 },
             )
 

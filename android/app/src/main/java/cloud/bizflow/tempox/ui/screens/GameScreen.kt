@@ -79,7 +79,6 @@ import cloud.bizflow.tempox.game.GameEngine
 import cloud.bizflow.tempox.game.GameMode
 import cloud.bizflow.tempox.game.HapticManager
 import cloud.bizflow.tempox.game.MatchSummary
-import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.game.Progression
 import cloud.bizflow.tempox.ui.components.AdMobBanner
 import cloud.bizflow.tempox.ui.components.FloatingCard
@@ -315,25 +314,18 @@ fun GameScreen(
         // Strike/timeout recovery — topmost layer, freezes every clock while up.
         if (engine.awaitingRecovery) {
             var adWatching by remember { mutableStateOf(false) }
-            val activity = LocalContext.current as? Activity
 
-            // VIP: instant revive. Non-VIP: show real RewardedAd.
+            // VIP: instant revive. Non-VIP: banner popup ~3s then recover.
             LaunchedEffect(adWatching) {
                 if (adWatching) {
                     if (vipInstant) {
                         adWatching = false
                         SoundManager.play(SoundManager.Sfx.TROPHY)
                         engine.recoverWithAd()
-                    } else if (activity != null) {
-                        AdMobManager.showRewarded(
-                            activity = activity,
-                            onRewardEarned = {
-                                SoundManager.play(SoundManager.Sfx.TROPHY)
-                                engine.recoverWithAd()
-                            },
-                            onAdDismissed = { adWatching = false },
-                        )
                     } else {
+                        delay(3200)
+                        SoundManager.play(SoundManager.Sfx.TROPHY)
+                        engine.recoverWithAd()
                         adWatching = false
                     }
                 }
@@ -464,9 +456,10 @@ private fun RecoveryOverlay(
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                 )
             } else {
-                Text(
-                    stringResource(R.string.recovery_ad_loading),
-                    style = TemproxType.bodyBold.copy(color = Color(0xFFB45309)),
+                AdMobBanner(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
                 )
             }
         }
