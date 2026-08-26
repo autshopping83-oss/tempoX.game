@@ -1,6 +1,9 @@
 package cloud.bizflow.tempox
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
+import android.app.Activity
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.res.LocalResources
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,20 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
 
     private lateinit var billingManager: BillingManager
+
+    override fun attachBaseContext(newBase: Context) {
+        val langMode = LanguageManager.load(newBase)
+        if (langMode != LangMode.SYSTEM) {
+            val locale = if (langMode == LangMode.PT)
+                java.util.Locale.forLanguageTag("pt-BR") else java.util.Locale.ENGLISH
+            val config = Configuration(newBase.resources.configuration)
+            config.setLocale(locale)
+            config.setLocales(android.os.LocaleList(locale))
+            super.attachBaseContext(newBase.createConfigurationContext(config))
+        } else {
+            super.attachBaseContext(newBase)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -76,10 +92,7 @@ fun AppRootHost(billing: BillingRepository) {
     var langMode by remember { mutableStateOf(LanguageManager.load(sysContext)) }
     val localized = remember(langMode) { LanguageManager.wrap(sysContext, langMode) }
 
-    CompositionLocalProvider(
-        LocalContext provides localized,
-        LocalResources provides localized.resources,
-    ) {
+    CompositionLocalProvider(LocalContext provides localized) {
         AppRoot(
             billing = billing,
             langMode = langMode,
@@ -87,6 +100,7 @@ fun AppRootHost(billing: BillingRepository) {
                 LanguageManager.save(sysContext, next)
                 langMode = next
                 SoundManager.play(SoundManager.Sfx.CLICK)
+                (sysContext as? Activity)?.recreate()
             },
         )
     }
