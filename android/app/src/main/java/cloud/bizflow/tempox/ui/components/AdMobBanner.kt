@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import cloud.bizflow.tempox.monetization.AdConstants
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -54,8 +55,7 @@ fun AdMobBanner(modifier: Modifier = Modifier) {
 
 private fun createAdView(context: Context): AdView {
     return AdView(context).apply {
-        // Official Google TEST banner ID — safe for development.
-        adUnitId = "ca-app-pub-3940256099942544/6300978111"
+        adUnitId = AdConstants.BANNER_AD_UNIT_ID
         setAdSize(AdSize.BANNER)
         adListener = object : AdListener() {
             override fun onAdFailedToLoad(error: LoadAdError) {

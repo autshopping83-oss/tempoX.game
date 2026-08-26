@@ -1,6 +1,7 @@
 package cloud.bizflow.tempox.monetization
 
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,10 +9,14 @@ import kotlinx.coroutines.launch
 
 /**
  * Bootstraps the Google Mobile Ads SDK fully OFF the main thread so app
- * startup never janks. Uses the official Google TEST application ID while in
- * development (see AndroidManifest meta-data) to avoid invalid-traffic bans.
+ * startup never janks.
+ *
+ * Debug builds automatically receive the official Google TEST ad IDs via
+ * AdConstants — no production traffic is ever sent during development.
  */
 object MonetizationManager {
+    private const val TAG = "MonetizationManager"
+
     @Volatile
     private var initialized = false
 
@@ -21,12 +26,11 @@ object MonetizationManager {
             if (initialized) return
             CoroutineScope(Dispatchers.IO).launch {
                 runCatching {
-                    MobileAds.initialize(context) { status ->
-                        // Adapter status map — logged for diagnostics only.
-                        android.util.Log.i("MonetizationManager", "AdMob init: ${status.adapterStatusMap.keys}")
+                    MobileAds.initialize(context) { initializationStatus ->
+                        Log.i(TAG, "SDK pronto — adapters: ${initializationStatus.adapterStatusMap.keys}")
                     }
                 }.onFailure { e ->
-                    android.util.Log.w("MonetizationManager", "AdMob init failed: ${e.message}")
+                    Log.w(TAG, "AdMob init failed: ${e.message}")
                 }
                 initialized = true
             }

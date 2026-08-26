@@ -17,11 +17,12 @@
         android:theme="@style/Theme.TEMPOX"
         tools:targetApi="33">
 
-        <!-- AdMob Application ID — official Google TEST id for development.
-             Replace with the real production ID before public release. -->
+        <!-- AdMob Application ID — production for release builds.
+             Debug builds resolve the Google TEST ID via AdConstants, but the
+             manifest value MUST always be present or the SDK will crash. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-5925121782414544~6622937999" />
 
         <activity
             android:name=".MainActivity"
