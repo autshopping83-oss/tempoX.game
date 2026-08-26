@@ -136,8 +136,9 @@
     <string name="result_ad_note">Earn double XP at the end of the promotional ad.</string>
     <string name="settings_language">Language</string>
     <string name="lang_auto">Automatic</string>
-    <string name="lang_pt">Português</string>
+    <string name="lang_pt">Português (BR)</string>
     <string name="lang_en">English</string>
+    <string name="lang_ptpt">Português (PT)</string>
     <string name="home_title">TEMPOX</string>
     <string name="card_pattern_header">PATTERN TASK</string>
     <string name="card_pattern_caption">SHAPE MEMORY</string>

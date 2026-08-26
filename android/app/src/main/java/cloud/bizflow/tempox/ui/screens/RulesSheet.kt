@@ -154,8 +154,9 @@ fun RulesSheet(
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf(
                             LangMode.SYSTEM to stringResource(R.string.lang_auto),
-                            LangMode.PT to stringResource(R.string.lang_pt),
                             LangMode.EN to stringResource(R.string.lang_en),
+                            LangMode.PT_PT to stringResource(R.string.lang_ptpt),
+                            LangMode.PT_BR to stringResource(R.string.lang_pt),
                         ).forEach { (mode, label) ->
                             val selected = mode == language
                             Text(

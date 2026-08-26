@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import java.util.Locale
 
 /** User-selectable app language, independent from the OS locale when forced. */
-enum class LangMode { SYSTEM, PT, EN }
+enum class LangMode { SYSTEM, PT_BR, PT_PT, EN }
 
 object LanguageManager {
 
@@ -16,7 +16,8 @@ object LanguageManager {
 
     fun load(context: Context): LangMode =
         when (prefs(context).getString(KEY, null)) {
-            "pt" -> LangMode.PT
+            "pt-BR" -> LangMode.PT_BR
+            "pt-PT" -> LangMode.PT_PT
             "en" -> LangMode.EN
             else -> LangMode.SYSTEM
         }
@@ -24,7 +25,8 @@ object LanguageManager {
     fun save(context: Context, mode: LangMode) {
         prefs(context).edit()
             .putString(KEY, when (mode) {
-                LangMode.PT -> "pt"
+                LangMode.PT_BR -> "pt-BR"
+                LangMode.PT_PT -> "pt-PT"
                 LangMode.EN -> "en"
                 LangMode.SYSTEM -> null
             })
@@ -34,7 +36,12 @@ object LanguageManager {
     /** Wrap [context] so Compose stringResource() resolves in the chosen language. */
     fun wrap(context: Context, mode: LangMode): Context {
         if (mode == LangMode.SYSTEM) return context
-        val locale = if (mode == LangMode.PT) Locale.forLanguageTag("pt-BR") else Locale.ENGLISH
+        val locale = when (mode) {
+            LangMode.PT_BR -> Locale.forLanguageTag("pt-BR")
+            LangMode.PT_PT -> Locale.forLanguageTag("pt-PT")
+            LangMode.EN -> Locale.ENGLISH
+            else -> return context
+        }
         Locale.setDefault(locale)
         val config = android.content.res.Configuration(context.resources.configuration)
         config.setLocale(locale)
@@ -43,8 +50,9 @@ object LanguageManager {
     }
 
     fun next(mode: LangMode): LangMode = when (mode) {
-        LangMode.SYSTEM -> LangMode.PT
-        LangMode.PT -> LangMode.EN
+        LangMode.SYSTEM -> LangMode.PT_BR
+        LangMode.PT_BR -> LangMode.PT_PT
+        LangMode.PT_PT -> LangMode.EN
         LangMode.EN -> LangMode.SYSTEM
     }
 }

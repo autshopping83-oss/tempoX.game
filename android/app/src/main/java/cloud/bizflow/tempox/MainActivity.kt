@@ -45,8 +45,12 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         val langMode = LanguageManager.load(newBase)
         if (langMode != LangMode.SYSTEM) {
-            val locale = if (langMode == LangMode.PT)
-                java.util.Locale.forLanguageTag("pt-BR") else java.util.Locale.ENGLISH
+            val locale = when (langMode) {
+                LangMode.PT_BR -> java.util.Locale.forLanguageTag("pt-BR")
+                LangMode.PT_PT -> java.util.Locale.forLanguageTag("pt-PT")
+                LangMode.EN -> java.util.Locale.ENGLISH
+                else -> return super.attachBaseContext(newBase)
+            }
             val config = Configuration(newBase.resources.configuration)
             config.setLocale(locale)
             config.setLocales(android.os.LocaleList(locale))
