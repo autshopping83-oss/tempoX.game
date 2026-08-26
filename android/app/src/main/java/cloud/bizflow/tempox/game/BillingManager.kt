@@ -8,8 +8,8 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
-import com.android.billingclient.api.ProductDetailsResponseListener
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Real Google Play Billing implementation (Billing Library v8+).
+ * Real Google Play Billing implementation (Billing Library v8.2.1).
  *
  * Implements [BillingRepository] so the UI layer is completely decoupled from
  * the underlying billing SDK.  Call [startConnection] during app launch and
@@ -51,7 +51,10 @@ class BillingManager(private val context: Context) : BillingRepository,
 
     private val billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases(true)
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
+        )
+        .enableAutoServiceReconnection()
         .build()
 
     // ── Connection lifecycle ──────────────────────────────────────────────────
@@ -79,11 +82,7 @@ class BillingManager(private val context: Context) : BillingRepository,
     }
 
     override fun onBillingServiceDisconnected() {
-        Log.w(TAG, "Billing disconnected — scheduling reconnect")
-        scope.launch {
-            delay(5_000L)
-            startConnection()
-        }
+        Log.w(TAG, "Billing disconnected — reconnect handled by enableAutoServiceReconnection")
     }
 
     // ── Purchase queries ──────────────────────────────────────────────────────
@@ -110,12 +109,15 @@ class BillingManager(private val context: Context) : BillingRepository,
             .setProductList(listOf(product))
             .build()
 
-        billingClient.queryProductDetailsAsync(params, ProductDetailsResponseListener { result, details ->
-            if (result.responseCode == BillingClient.BillingResponseCode.OK && details.isNotEmpty()) {
-                productDetails = details.first()
-                Log.d(TAG, "Product resolved: ${details.first().title}")
+        billingClient.queryProductDetailsAsync(params) { result, queryResult ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                val details = queryResult.productDetailsList
+                if (details.isNotEmpty()) {
+                    productDetails = details.first()
+                    Log.d(TAG, "Product resolved: ${details.first().title}")
+                }
             }
-        })
+        }
     }
 
     // ── PurchasesUpdatedListener ──────────────────────────────────────────────
