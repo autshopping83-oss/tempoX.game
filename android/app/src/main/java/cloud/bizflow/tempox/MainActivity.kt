@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.res.LocalResources
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,7 +76,10 @@ fun AppRootHost(billing: BillingRepository) {
     var langMode by remember { mutableStateOf(LanguageManager.load(sysContext)) }
     val localized = remember(langMode) { LanguageManager.wrap(sysContext, langMode) }
 
-    CompositionLocalProvider(LocalContext provides localized) {
+    CompositionLocalProvider(
+        LocalContext provides localized,
+        LocalResources provides localized.resources,
+    ) {
         AppRoot(
             billing = billing,
             langMode = langMode,
