@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import cloud.bizflow.tempox.audio.SoundManager
+import cloud.bizflow.tempox.game.BillingManager
 import cloud.bizflow.tempox.game.BillingRepository
 import cloud.bizflow.tempox.game.EconomyRepository
 import cloud.bizflow.tempox.game.GameEngine
@@ -25,7 +26,6 @@ import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.game.LanguageManager
 import cloud.bizflow.tempox.game.MatchSummary
 import cloud.bizflow.tempox.game.MockAdManager
-import cloud.bizflow.tempox.game.MockBillingRepositoryImpl
 import cloud.bizflow.tempox.game.PlayerStats
 import cloud.bizflow.tempox.game.StatsRepository
 import cloud.bizflow.tempox.ui.screens.GameScreen
@@ -37,17 +37,28 @@ import cloud.bizflow.tempox.ui.theme.TemproxTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var billingManager: BillingManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         SoundManager.init(applicationContext)
         // Async AdMob bootstrap — never blocks the UI thread.
         MonetizationManager.initialize(applicationContext)
+        // Real Google Play Billing — must be started early and destroyed in onDestroy.
+        billingManager = BillingManager(applicationContext)
+        billingManager.startConnection()
         setContent {
             TemproxTheme {
-                AppRootHost()
+                AppRootHost(billing = billingManager)
             }
         }
+    }
+
+    override fun onDestroy() {
+        billingManager.endConnection()
+        super.onDestroy()
     }
 }
 
@@ -59,13 +70,14 @@ private data class FinishedMatch(
 )
 
 @Composable
-fun AppRootHost() {
+fun AppRootHost(billing: BillingRepository) {
     val sysContext = LocalContext.current
     var langMode by remember { mutableStateOf(LanguageManager.load(sysContext)) }
     val localized = remember(langMode) { LanguageManager.wrap(sysContext, langMode) }
 
     CompositionLocalProvider(LocalContext provides localized) {
         AppRoot(
+            billing = billing,
             langMode = langMode,
             onLanguageChange = { next ->
                 LanguageManager.save(sysContext, next)
@@ -78,20 +90,20 @@ fun AppRootHost() {
 
 @Composable
 fun AppRoot(
+    billing: BillingRepository,
     langMode: LangMode,
     onLanguageChange: (LangMode) -> Unit,
 ) {
     val context = LocalContext.current
     val statsRepo = remember { StatsRepository(context) }
     val econRepo = remember { EconomyRepository(context) }
-    val billingRepo = remember { MockBillingRepositoryImpl(context) }
-    remember { MockAdManager.billing = billingRepo as BillingRepository; true } // wire once
-    val adFree by billingRepo.isAdFreeUser.collectAsState()
+    remember { MockAdManager.billing = billing; true } // wire once
+    val adFree by billing.isAdFreeUser.collectAsState()
     var economy by remember { mutableStateOf(econRepo.load()) }
 
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        billingRepo.restorePurchases() // Play compliance: revalidate on every launch
+        billing.restorePurchases() // Play compliance: revalidate on every launch
         delay(2400)
         showSplash = false
     }
@@ -139,7 +151,7 @@ fun AppRoot(
             else -> HomeScreen(
                 stats = statsRepo.load(),
                 economy = economy,
-                billing = billingRepo,
+                billing = billing,
                 language = langMode,
                 onLanguageChange = onLanguageChange,
                 onStartMatch = { mode, seed ->
