@@ -648,7 +648,7 @@ private fun UnlockModeDialog(
 ) {
     var adLoading by remember { mutableStateOf(false) }
     var adFailed by remember { mutableStateOf(false) }
-    val activity = context as? Activity
+    val activity = LocalContext.current as? Activity
     val modeName = stringResource(
         if (mode == GameMode.MATH) R.string.card_calc_header else R.string.card_pattern_header,
     )
