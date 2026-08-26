@@ -57,8 +57,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         SoundManager.init(applicationContext)
         // Async AdMob bootstrap — never blocks the UI thread.
         MonetizationManager.initialize(applicationContext)

@@ -28,7 +28,7 @@ object LanguageManager {
                 LangMode.EN -> "en"
                 LangMode.SYSTEM -> null
             })
-            .apply()
+            .commit()
     }
 
     /** Wrap [context] so Compose stringResource() resolves in the chosen language. */
