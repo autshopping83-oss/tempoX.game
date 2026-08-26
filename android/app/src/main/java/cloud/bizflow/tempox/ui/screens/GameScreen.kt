@@ -79,6 +79,7 @@ import cloud.bizflow.tempox.game.HapticManager
 import cloud.bizflow.tempox.game.MatchSummary
 import cloud.bizflow.tempox.game.MockAdManager
 import cloud.bizflow.tempox.game.Progression
+import cloud.bizflow.tempox.ui.components.AdMobBanner
 import cloud.bizflow.tempox.ui.components.FloatingCard
 import cloud.bizflow.tempox.ui.components.PrimaryButton
 import cloud.bizflow.tempox.ui.components.SecondaryButton
@@ -325,6 +326,14 @@ fun GameScreen(
                 onDecline = { SoundManager.play(CLICK); engine.giveUpRecovery() },
             )
         }
+
+        // ── AdMob banner — fixed at the very bottom, 16dp clear of game content ──
+        AdMobBanner(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+        )
     }
 }
 
