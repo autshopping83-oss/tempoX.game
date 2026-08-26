@@ -36,7 +36,7 @@ class BillingManager(private val context: Context) : BillingRepository,
 
     companion object {
         private const val TAG = "BillingManager"
-        private const val PRODUCT_REMOVE_ADS = "remove_ads"
+        private const val PRODUCT_REMOVE_ADS = "tempox_no_ads"
     }
 
     // ── BillingRepository contract ────────────────────────────────────────────
