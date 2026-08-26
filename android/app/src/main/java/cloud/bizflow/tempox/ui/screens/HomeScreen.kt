@@ -1,5 +1,6 @@
 package cloud.bizflow.tempox.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -63,6 +64,7 @@ import cloud.bizflow.tempox.game.BillingRepository
 import cloud.bizflow.tempox.game.EconomyRepository
 import cloud.bizflow.tempox.game.EconomyState
 import cloud.bizflow.tempox.game.GameMode
+import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.game.PlayerStats
 import cloud.bizflow.tempox.game.Progression
@@ -646,14 +648,26 @@ private fun UnlockModeDialog(
 ) {
     var adLoading by remember { mutableStateOf(false) }
     var adFailed by remember { mutableStateOf(false) }
+    val activity = context as? Activity
     val modeName = stringResource(
         if (mode == GameMode.MATH) R.string.card_calc_header else R.string.card_pattern_header,
     )
     LaunchedEffect(adLoading) {
-        if (adLoading) {
-            delay(1600)
+        if (adLoading && activity != null) {
+            AdMobManager.showRewarded(
+                activity = activity,
+                onRewardEarned = {
+                    adLoading = false
+                    onWatchAd()
+                },
+                onAdDismissed = {
+                    adLoading = false
+                    adFailed = true
+                },
+            )
+        } else if (adLoading) {
             adLoading = false
-            if ((0..99).random() < 20) adFailed = true else onWatchAd()
+            adFailed = true
         }
     }
     Box(

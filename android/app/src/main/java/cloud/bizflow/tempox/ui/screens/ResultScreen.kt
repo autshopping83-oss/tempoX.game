@@ -1,5 +1,6 @@
 package cloud.bizflow.tempox.ui.screens
 
+import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -38,6 +39,7 @@ import cloud.bizflow.tempox.R
 import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.game.Achievements
 import cloud.bizflow.tempox.game.MatchSummary
+import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.ui.components.FloatingCard
 import cloud.bizflow.tempox.ui.components.PrimaryButton
 import cloud.bizflow.tempox.ui.components.SecondaryButton
@@ -192,11 +194,23 @@ fun ResultScreen(
                                     Text(stringResource(R.string.result_ad_video), style = TemproxType.micro.copy(color = TemproxColors.Muted))
                                 }
                             }
+                            val activity = context as? Activity
                             LaunchedEffect(Unit) {
-                                delay(1600)
-                                bonusXp = summary.xpGained
-                                doubleState = 2
-                                SoundManager.play(SoundManager.Sfx.RECORD)
+                                if (vipInstant || activity == null) {
+                                    bonusXp = summary.xpGained
+                                    doubleState = 2
+                                    SoundManager.play(SoundManager.Sfx.RECORD)
+                                } else {
+                                    AdMobManager.showRewarded(
+                                        activity = activity,
+                                        onRewardEarned = {
+                                            bonusXp = summary.xpGained
+                                            doubleState = 2
+                                            SoundManager.play(SoundManager.Sfx.RECORD)
+                                        },
+                                        onAdDismissed = { doubleState = 0 },
+                                    )
+                                }
                             }
                         }
                         else -> {

@@ -1,9 +1,11 @@
 package cloud.bizflow.tempox.game
 
+import android.app.Activity
+import cloud.bizflow.tempox.monetization.AdMobManager
+
 /**
- * Single gate shared by every simulated ad placement. Reads the billing
- * abstraction so VIP players skip waits and overlays automatically — and so
- * a future real AdManager can replace this object without touching UI code.
+ * Single gate shared by every ad placement. Reads the billing abstraction so
+ * VIP players skip ads — and delegates to [AdMobManager] for real ad display.
  */
 object MockAdManager {
 
@@ -12,17 +14,15 @@ object MockAdManager {
 
     val isAdFree: Boolean get() = billing?.isAdFreeUser?.value == true
 
-    /**
-     * Interstitial seam. VIP users are dismissed instantly, never seeing an
-     * overlay; non-VIP currently gets a no-op until real interstitials land.
-     */
-    fun showInterstitialIfAllowed(onDismiss: () -> Unit) {
-        if (!isAdFree) {
-            // Simulated interstitial placement — intentionally empty for now.
-        }
-        onDismiss()
+    /** Show a real interstitial ad if the user is not ad-free. */
+    fun showInterstitialIfAllowed(activity: Activity, onDismiss: () -> Unit) {
+        if (isAdFree) { onDismiss(); return }
+        AdMobManager.showInterstitial(activity, onDismiss)
     }
 
-    /** Rewarded wait: VIP revives/doubles resolve instantly. */
-    fun rewardedWaitMillis(): Long = if (isAdFree) 0L else 1600L
+    /** Preload both rewarded + interstitial ads (call when Activity is available). */
+    fun preloadAds(activity: Activity) {
+        AdMobManager.loadRewarded(activity)
+        AdMobManager.loadInterstitial(activity)
+    }
 }

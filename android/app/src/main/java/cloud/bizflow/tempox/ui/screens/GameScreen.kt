@@ -1,5 +1,6 @@
 package cloud.bizflow.tempox.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -58,6 +59,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -77,7 +79,7 @@ import cloud.bizflow.tempox.game.GameEngine
 import cloud.bizflow.tempox.game.GameMode
 import cloud.bizflow.tempox.game.HapticManager
 import cloud.bizflow.tempox.game.MatchSummary
-import cloud.bizflow.tempox.game.MockAdManager
+import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.game.Progression
 import cloud.bizflow.tempox.ui.components.AdMobBanner
 import cloud.bizflow.tempox.ui.components.FloatingCard
@@ -313,12 +315,27 @@ fun GameScreen(
         // Strike/timeout recovery — topmost layer, freezes every clock while up.
         if (engine.awaitingRecovery) {
             var adWatching by remember { mutableStateOf(false) }
+            val activity = LocalContext.current as? Activity
+
+            // VIP: instant revive. Non-VIP: show real RewardedAd.
             LaunchedEffect(adWatching) {
                 if (adWatching) {
-                    delay(MockAdManager.rewardedWaitMillis()) // VIP: instant revive
-                    adWatching = false
-                    SoundManager.play(SoundManager.Sfx.TROPHY)
-                    engine.recoverWithAd()
+                    if (vipInstant) {
+                        adWatching = false
+                        SoundManager.play(SoundManager.Sfx.TROPHY)
+                        engine.recoverWithAd()
+                    } else if (activity != null) {
+                        AdMobManager.showRewarded(
+                            activity = activity,
+                            onRewardEarned = {
+                                SoundManager.play(SoundManager.Sfx.TROPHY)
+                                engine.recoverWithAd()
+                            },
+                            onAdDismissed = { adWatching = false },
+                        )
+                    } else {
+                        adWatching = false
+                    }
                 }
             }
             RecoveryOverlay(

@@ -23,7 +23,6 @@ import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.game.BillingManager
 import cloud.bizflow.tempox.game.BillingRepository
 import cloud.bizflow.tempox.game.EconomyRepository
-import cloud.bizflow.tempox.game.GameEngine
 import cloud.bizflow.tempox.game.GameMode
 import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.game.LanguageManager
@@ -113,17 +112,20 @@ fun AppRoot(
     onLanguageChange: (LangMode) -> Unit,
 ) {
     val context = LocalContext.current
+    val activity = context as? Activity
     val statsRepo = remember { StatsRepository(context) }
     val econRepo = remember { EconomyRepository(context) }
-    remember { MockAdManager.billing = billing; true } // wire once
+    remember { MockAdManager.billing = billing; true }
     val adFree by billing.isAdFreeUser.collectAsState()
     var economy by remember { mutableStateOf(econRepo.load()) }
 
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        billing.restorePurchases() // Play compliance: revalidate on every launch
+        billing.restorePurchases()
         delay(2400)
         showSplash = false
+        // Preload ads once the splash is done and Activity is available.
+        if (activity != null && !adFree) MockAdManager.preloadAds(activity)
     }
 
     var playing by remember { mutableStateOf(false) }
@@ -147,9 +149,16 @@ fun AppRoot(
                     economy = econRepo.load()
                     finished = FinishedMatch(summary, isRecord, unlocked)
                     playing = false
+                    // Interstitial after match ends (non-VIP only).
+                    if (activity != null && !adFree) {
+                        MockAdManager.showInterstitialIfAllowed(activity) { }
+                    }
                 },
                 onQuit = {
                     playing = false
+                    if (activity != null && !adFree) {
+                        MockAdManager.showInterstitialIfAllowed(activity) { }
+                    }
                 },
             )
 
