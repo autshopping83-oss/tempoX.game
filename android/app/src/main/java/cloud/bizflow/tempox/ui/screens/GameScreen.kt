@@ -347,12 +347,14 @@ fun GameScreen(
         }
 
         // ── AdMob banner — fixed at the very bottom, 16dp clear of game content ──
-        AdMobBanner(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-        )
+        if (!vipInstant) {
+            AdMobBanner(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            )
+        }
     }
 }
 

@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -105,6 +106,8 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val adFree by billing.isAdFreeUser.collectAsState()
+    val billingPrice by billing.formattedPrice.collectAsState()
+    val billingLoading by billing.isLoading.collectAsState()
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
     var showRules by remember {
         val prefs = context.getSharedPreferences("temprox_settings", android.content.Context.MODE_PRIVATE)
@@ -292,6 +295,8 @@ fun HomeScreen(
             PremiumPaywallBottomSheet(
                 isAdFree = adFree,
                 billing = billing,
+                formattedPrice = billingPrice,
+                isLoading = billingLoading,
                 onDismiss = { showPaywallSheet = false },
             )
         }
@@ -307,6 +312,8 @@ fun HomeScreen(
 private fun PremiumPaywallBottomSheet(
     isAdFree: Boolean,
     billing: BillingRepository,
+    formattedPrice: String,
+    isLoading: Boolean,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -395,7 +402,7 @@ private fun PremiumPaywallBottomSheet(
                                 listOf(TemproxColors.Primary, Color(0xFF8B5CF6)),
                             ),
                         )
-                        .clickable {
+                        .clickable(enabled = !isLoading) {
                             SoundManager.play(SoundManager.Sfx.CLICK)
                             SoundManager.vibrate(longArrayOf(0, 18))
                             billing.purchaseRemoveAds(
@@ -409,14 +416,27 @@ private fun PremiumPaywallBottomSheet(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        stringResource(R.string.paywall_cta),
-                        style = TemproxType.bodyBold.copy(
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
                             color = Color.White,
-                            letterSpacing = 0.8.sp,
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
+                            strokeWidth = 2.5.dp,
+                        )
+                    } else {
+                        val ctaText = if (formattedPrice.isNotEmpty()) {
+                            stringResource(R.string.paywall_cta_dynamic, formattedPrice)
+                        } else {
+                            stringResource(R.string.paywall_cta)
+                        }
+                        Text(
+                            ctaText,
+                            style = TemproxType.bodyBold.copy(
+                                color = Color.White,
+                                letterSpacing = 0.8.sp,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
 

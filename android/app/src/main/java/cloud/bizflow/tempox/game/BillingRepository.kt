@@ -3,14 +3,19 @@ package cloud.bizflow.tempox.game
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Purchase gateway abstraction. Swapping [MockBillingRepositoryImpl] for the
- * real Google Play Billing client must require zero changes in Compose
- * screens or view models — they only ever see this contract.
+ * Purchase gateway abstraction. The UI layer only sees this contract —
+ * the real Google Play Billing client lives in [BillingManager].
  */
 interface BillingRepository {
 
     /** True once the player owns the "Remove Ads" product. */
     val isAdFreeUser: StateFlow<Boolean>
+
+    /** Dynamically resolved price from Google Play (e.g. "US$ 4.99"). */
+    val formattedPrice: StateFlow<String>
+
+    /** True while the billing client is connecting / resolving product details. */
+    val isLoading: StateFlow<Boolean>
 
     /**
      * Launches the purchase flow for the Remove Ads product.

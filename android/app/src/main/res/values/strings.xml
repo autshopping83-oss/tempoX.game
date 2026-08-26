@@ -149,6 +149,7 @@
     <string name="paywallBenefit2">Double XP per match</string>
     <string name="paywallBenefit3">Access to all future modes</string>
     <string name="paywall_cta">REMOVE ADS — US$ 4.99</string>
+    <string name="paywall_cta_dynamic">UNLOCK PREMIUM — %1$s</string>
     <string name="paywall_restore">Already premium? Restore purchase</string>
     <string name="paywall_close">Not now</string>
     <string name="home_chip_level">LEVEL %1$d</string>

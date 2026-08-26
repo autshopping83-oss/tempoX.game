@@ -149,6 +149,7 @@
     <string name="paywallBenefit2">Dobro de XP por partida</string>
     <string name="paywallBenefit3">Acesso a todos os modos futuros</string>
     <string name="paywall_cta">REMOVER ANÚNCIOS — US$ 4,99</string>
+    <string name="paywall_cta_dynamic">DESBLOQUEAR PREMIUM — %1$s</string>
     <string name="paywall_restore">Já é premium? Restaurar compra</string>
     <string name="paywall_close">Agora não</string>
     <string name="home_chip_level">NÍVEL %1$d</string>

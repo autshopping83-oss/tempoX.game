@@ -17,11 +17,9 @@ import com.android.billingclient.api.QueryPurchasesParams
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 /**
  * Real Google Play Billing implementation (Billing Library v8.2.1).
@@ -45,9 +43,19 @@ class BillingManager(private val context: Context) : BillingRepository,
     private val _isAdFreeUser = MutableStateFlow(false)
     override val isAdFreeUser: StateFlow<Boolean> = _isAdFreeUser.asStateFlow()
 
+    private val _formattedPrice = MutableStateFlow("")
+    override val formattedPrice: StateFlow<String> = _formattedPrice.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(true)
+    override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     // ── Internal state ────────────────────────────────────────────────────────
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var productDetails: ProductDetails? = null
+
+    private val prefs by lazy {
+        context.getSharedPreferences("temprox_billing", Context.MODE_PRIVATE)
+    }
 
     private val billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
@@ -60,6 +68,7 @@ class BillingManager(private val context: Context) : BillingRepository,
     // ── Connection lifecycle ──────────────────────────────────────────────────
 
     fun startConnection() {
+        _isAdFreeUser.value = prefs.getBoolean("adFree", false)
         if (!billingClient.isReady) {
             Log.d(TAG, "Starting billing connection…")
             billingClient.startConnection(this)
@@ -94,7 +103,11 @@ class BillingManager(private val context: Context) : BillingRepository,
 
         billingClient.queryPurchasesAsync(params) { result, purchases ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                purchases.forEach { handlePurchase(it) }
+                val hasPremium = purchases.any {
+                    it.products.contains(PRODUCT_REMOVE_ADS) &&
+                        it.purchaseState == Purchase.PurchaseState.PURCHASED
+                }
+                setPremiumUnlocked(hasPremium)
             }
         }
     }
@@ -114,9 +127,11 @@ class BillingManager(private val context: Context) : BillingRepository,
                 val details = queryResult.productDetailsList
                 if (details.isNotEmpty()) {
                     productDetails = details.first()
-                    Log.d(TAG, "Product resolved: ${details.first().title}")
+                    _formattedPrice.value = details.first().oneTimePurchaseOfferDetails?.formattedPrice ?: ""
+                    Log.d(TAG, "Product resolved: ${details.first().title} — ${_formattedPrice.value}")
                 }
             }
+            _isLoading.value = false
         }
     }
 
@@ -142,14 +157,19 @@ class BillingManager(private val context: Context) : BillingRepository,
                     .build()
                 billingClient.acknowledgePurchase(params) { result ->
                     if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                        _isAdFreeUser.value = true
+                        setPremiumUnlocked(true)
                         Log.i(TAG, "Purchase acknowledged")
                     }
                 }
             } else {
-                _isAdFreeUser.value = true
+                setPremiumUnlocked(true)
             }
         }
+    }
+
+    private fun setPremiumUnlocked(unlocked: Boolean) {
+        _isAdFreeUser.value = unlocked
+        prefs.edit().putBoolean("adFree", unlocked).apply()
     }
 
     // ── BillingRepository implementation ──────────────────────────────────────
