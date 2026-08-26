@@ -1,171 +1,240 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Português (idioma padrão) -->
+<!-- English (default / global fallback) -->
 <resources>
     <string name="app_name">TEMPOX</string>
     <string name="title_activity_main">TEMPOX</string>
-
-    <string name="nav_home">Início</string>
-    <string name="nav_rules">Regras</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_rules">Rules</string>
     <string name="nav_start">START</string>
-
-    <string name="rules_title">COMO JOGAR</string>
-    <string name="rules_subtitle">REGRAS DO TEMPOX</string>
-    <string name="rules_intro">TEMPOX é um jogo rápido de agilidade mental extrema. Você tem exatamente um minuto para resolver uma sequência sem fim de testes rápidos:</string>
-    <string name="rules_memory_title">Memória</string>
-    <string name="rules_memory_desc">Decore e repita a sequência exibida de formas coloridas.</string>
-    <string name="rules_reflex_title">Reflexo</string>
-    <string name="rules_reflex_desc">Um mar de formas repetidas esconde o alvo único da instrução. Toque nele e ignore os distratores!</string>
-    <string name="rules_math_title">Matemática</string>
-    <string name="rules_math_desc">Faça cálculos de múltipla escolha sob pressão extrema.</string>
-    <string name="rules_attention_title">Atenção</string>
-    <string name="rules_attention_desc">Localize instantaneamente o símbolo que é diferente dos outros.</string>
-    <string name="rules_combo_tip">🔥 Acertos consecutivos geram COMBOS de pontos e aceleram os desafios! Erros quebram o combo.</string>
-    <string name="rules_cta">ENTENDI, VAMOS LÁ</string>
-
-    <string name="home_premium_badge">ARCADE PREMIUM</string>
-    <string name="home_seed_label">Seed da Partida</string>
-    <string name="home_seed_placeholder">Opcional</string>
-    <string name="home_level_profile">Nível de Perfil</string>
-    <string name="home_level">Nível %1$d</string>
-    <string name="home_best_score">★ MELHOR PONTUAÇÃO</string>
-    <string name="home_xp_accumulated">%1$d XP acumulados</string>
-    <string name="home_percent_to_level">%1$d%% para Nível %2$d</string>
-    <string name="home_play_now">JOGAR AGORA</string>
+    <string name="rules_title">HOW TO PLAY</string>
+    <string name="rules_subtitle">TEMPOX RULES</string>
+    <string name="rules_intro">TEMPOX is a fast extreme mental agility game. You have exactly one minute to solve an endless sequence of quick tests:</string>
+    <string name="rules_memory_title">Memory</string>
+    <string name="rules_memory_desc">Memorize and repeat the displayed sequence of colored shapes.</string>
+    <string name="rules_reflex_title">Reflex</string>
+    <string name="rules_reflex_desc">A sea of repeating shapes hides the one target from the instruction. Tap it and ignore the distractors!</string>
+    <string name="rules_math_title">Math</string>
+    <string name="rules_math_desc">Solve multiple choice equations under extreme pressure.</string>
+    <string name="rules_attention_title">Attention</string>
+    <string name="rules_attention_desc">Instantly spot the symbol that differs from the others.</string>
+    <string name="rules_combo_tip">🔥 Consecutive hits build COMBOS for extra points and speed challenges up! Misses break the combo.</string>
+    <string name="rules_cta">GOT IT, LET\\'S GO</string>
+    <string name="home_premium_badge">PREMIUM ARCADE</string>
+    <string name="home_seed_label">Match Seed</string>
+    <string name="home_seed_placeholder">Optional</string>
+    <string name="home_level_profile">Profile Level</string>
+    <string name="home_level">Level %1$d</string>
+    <string name="home_best_score">★ BEST SCORE</string>
+    <string name="home_xp_accumulated">%1$d XP accumulated</string>
+    <string name="home_percent_to_level">%1$d%% to Level %2$d</string>
+    <string name="home_play_now">PLAY NOW</string>
     <string name="tagline">THINK FAST. REACT FASTER.</string>
-
-    <string name="tab_play">Jogar</string>
-    <string name="tab_stats">Estatísticas</string>
-    <string name="tab_trophies">Troféus</string>
-
-    <string name="stats_historical_title">Estatísticas Históricas</string>
-    <string name="stats_matches">Partidas</string>
-    <string name="stats_record">Recorde</string>
+    <string name="tab_play">Play</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_trophies">Trophies</string>
+    <string name="stats_historical_title">Historical Stats</string>
+    <string name="stats_matches">Matches</string>
+    <string name="stats_record">Record</string>
     <string name="stats_total_xp">Total XP</string>
-    <string name="stats_max_combo">Combo Máximo</string>
-    <string name="stats_answers">Respostas</string>
-    <string name="stats_avg_accuracy">Precisão Média</string>
-
-    <string name="trophies_title">Troféus e Conquistas (%1$d/5)</string>
-    <string name="status_unlocked">✓ LIBERADO</string>
-    <string name="status_locked">BLOQUEADO</string>
-
-    <string name="ach_elephant_title">Memória de Elefante</string>
-    <string name="ach_elephant_desc">Completar sequência de 7 ou mais símbolos na Memória.</string>
-    <string name="ach_reflex_title">Reflexo Perfeito</string>
-    <string name="ach_reflex_desc">Resolver uma busca visual de reflexo em menos de 1 segundo.</string>
-    <string name="ach_unstoppable_title">Imparável</string>
-    <string name="ach_unstoppable_desc">Alcançar Combo x10 durante uma partida.</string>
-    <string name="ach_survivor_title">Sobrevivente</string>
-    <string name="ach_survivor_desc">Completar uma partida inteira de 60 segundos.</string>
-    <string name="ach_recordist_title">Recordista</string>
-    <string name="ach_recordist_desc">Superar o seu próprio recorde histórico de pontuação.</string>
-
-    <string name="challenge_memory_name">Memória</string>
-    <string name="challenge_memory_instruction">Decore e repita a sequência</string>
-    <string name="challenge_reflex_name">Reflexo</string>
-    <string name="challenge_reflex_instruction">Encontre o elemento único entre os distratores</string>
-    <string name="reflex_find_fmt">Encontre: %1$s %2$s</string>
-    <string name="mem_shape_triangle">Triângulo</string>
-    <string name="mem_shape_square">Quadrado</string>
-    <string name="mem_shape_star">Estrela</string>
-    <string name="mem_shape_circle">Círculo</string>
-    <string name="mem_shape_diamond">Losango</string>
-    <string name="mem_shape_donut">Anel</string>
-    <string name="mem_color_red">Vermelho</string>
-    <string name="mem_color_blue">Azul</string>
-    <string name="mem_color_yellow">Amarelo</string>
-    <string name="mem_color_green">Verde</string>
-    <string name="mem_color_orange">Laranja</string>
-    <string name="mem_color_purple">Roxo</string>
-    <string name="challenge_math_name">Matemática</string>
-    <string name="challenge_math_instruction">Resolva a equação o mais rápido</string>
-    <string name="challenge_attention_name">Atenção</string>
-    <string name="challenge_fallback_name">Desafio</string>
-    <string name="challenge_fallback_instruction">Reaja rápido!</string>
+    <string name="stats_max_combo">Max Combo</string>
+    <string name="stats_answers">Answers</string>
+    <string name="stats_avg_accuracy">Avg Accuracy</string>
+    <string name="trophies_title">Trophies &amp; Achievements (%1$d/5)</string>
+    <string name="status_unlocked">✓ UNLOCKED</string>
+    <string name="status_locked">LOCKED</string>
+    <string name="ach_elephant_title">Elephant Memory</string>
+    <string name="ach_elephant_desc">Complete a sequence of 7+ symbols in Memory.</string>
+    <string name="ach_reflex_title">Perfect Reflex</string>
+    <string name="ach_reflex_desc">Solve a reflex visual search in under 1 second.</string>
+    <string name="ach_unstoppable_title">Unstoppable</string>
+    <string name="ach_unstoppable_desc">Reach Combo x10 during a match.</string>
+    <string name="ach_survivor_title">Survivor</string>
+    <string name="ach_survivor_desc">Complete an entire 60-second match.</string>
+    <string name="ach_recordist_title">Record Breaker</string>
+    <string name="ach_recordist_desc">Beat your own all-time high score.</string>
+    <string name="challenge_memory_name">Memory</string>
+    <string name="challenge_memory_instruction">Memorize and repeat the sequence</string>
+    <string name="challenge_reflex_name">Reflex</string>
+    <string name="challenge_reflex_instruction">Find the one unique element among the distractors</string>
+    <string name="reflex_find_fmt">Find: %2$s %1$s</string>
+    <string name="mem_shape_triangle">Triangle</string>
+    <string name="mem_shape_square">Square</string>
+    <string name="mem_shape_star">Star</string>
+    <string name="mem_shape_circle">Circle</string>
+    <string name="mem_shape_diamond">Diamond</string>
+    <string name="mem_shape_donut">Donut</string>
+    <string name="mem_color_red">Red</string>
+    <string name="mem_color_blue">Blue</string>
+    <string name="mem_color_yellow">Yellow</string>
+    <string name="mem_color_green">Green</string>
+    <string name="mem_color_orange">Orange</string>
+    <string name="mem_color_purple">Purple</string>
+    <string name="challenge_math_name">Math</string>
+    <string name="challenge_math_instruction">Solve the equation as fast as you can</string>
+    <string name="challenge_attention_name">Attention</string>
+    <string name="challenge_fallback_name">Challenge</string>
+    <string name="challenge_fallback_instruction">React fast!</string>
     <string name="memory_watch_phase">Memorize…</string>
-    <string name="memory_input_phase">Repita a sequência!</string>
-
-    <string name="pause_badge">JOGO EM PAUSA</string>
-    <string name="pause_heading">PAUSADO</string>
-    <string name="pause_subtitle">Respire fundo. Retorne quando estiver pronto!</string>
-    <string name="settings_sound">Efeitos de Som</string>
-    <string name="settings_vibration">Vibração Háptica</string>
-    <string name="settings_volume">Volume dos Efeitos</string>
-    <string name="pause_resume">RETOMAR PARTIDA</string>
-    <string name="pause_restart">REINICIAR PARTIDA</string>
-    <string name="pause_quit">Abandonar Partida</string>
-
-    <string name="result_time_up">TEMPO ESGOTADO!</string>
-    <string name="result_final_score">Pontuação Final</string>
-    <string name="result_new_record">🏆 NOVO RECORDE REGISTRADO!</string>
-    <string name="stat_challenges">Desafios</string>
-    <string name="stat_accuracy">Precisão</string>
-    <string name="stat_max_combo">Combo Máx</string>
-    <string name="result_reward_pool">Pool de recompensas</string>
-    <string name="recovery_title">Recupere a partida!</string>
-    <string name="legal_privacy_btn">Política de Privacidade</string>
-    <string name="legal_terms_btn">Termos de Uso</string>
-    <string name="legal_offline">Sem conexão com a internet</string>
-    <string name="legal_no_browser">Não foi possível abrir o navegador.</string>
-    <string name="premium_remove_btn">⭐ Remover Anúncios · US$ 4,99</string>
-    <string name="premium_vip_badge">👑 VIP · REMOVEDOR DE ANÚNCIOS ATIVO</string>
-    <string name="purchase_title">Google Play — compra simulada</string>
-    <string name="purchase_body">Conta de teste · Produto: Remover Anúncios (Remove Ads) — US$ 4,99. Sem anúncios para sempre e continuação instantânea de partida.</string>
-    <string name="purchase_confirm">CONFIRMAR COMPRA</string>
-    <string name="purchase_cancel">Cancelar</string>
-    <string name="purchase_error">Não foi possível concluir a compra. Tente novamente.</string>
-    <string name="recovery_vip_btn">Continuar Partida · VIP</string>
-    <string name="recovery_body">Assista a um vídeo para continuar: erros zerados, relógio renovado e moedas em dobro.</string>
-    <string name="recovery_watch_btn">Assistir e recuperar</string>
-    <string name="recovery_decline">Desistir</string>
-    <string name="recovery_ad_loading">Carregando vídeo…</string>
-    <string name="unlock_title">Desbloquear %1$s</string>
-    <string name="unlock_body">Saldo atual: %1$d moedas. Use 150 moedas ou assista a 1 vídeo para liberar este modo para sempre.</string>
-    <string name="unlock_coins_btn">Usar %1$d moedas</string>
-    <string name="unlock_ad_btn">Assistir ao vídeo</string>
-    <string name="unlock_ad_loading">Carregando vídeo…</string>
-    <string name="unlock_ad_fail">Vídeo indisponível agora. Tente novamente ou use suas moedas.</string>
-    <string name="unlock_close">Fechar</string>
-    <string name="result_coins_stat">Moedas da partida</string>
-    <string name="result_double_hint">Dobre seus ganhos assistindo a um vídeo curto!</string>
-    <string name="result_double_btn">🎬 DOBRAR RECOMPENSA</string>
-    <string name="result_doubled_ok">✓ DOBRADO COM SUCESSO!</string>
-    <string name="result_new_trophies">NOVOS TROFÉUS CONQUISTADOS!</string>
-    <string name="result_play_again">JOGAR NOVAMENTE</string>
-    <string name="action_share">COMPARTILHAR</string>
-    <string name="result_main_menu">MENU PRINCIPAL</string>
-    <string name="share_text">Fiz %1$d pontos com combo x%2$d no TEMPOX! Consegue superar?</string>
-    <string name="share_alert">Pontuação compartilhada: %1$d pontos!</string>
-
+    <string name="memory_input_phase">Repeat the sequence!</string>
+    <string name="pause_badge">GAME PAUSED</string>
+    <string name="pause_heading">PAUSED</string>
+    <string name="pause_subtitle">Take a deep breath. Come back when ready!</string>
+    <string name="settings_sound">Sound Effects</string>
+    <string name="settings_vibration">Haptic Vibration</string>
+    <string name="settings_volume">Effects Volume</string>
+    <string name="pause_resume">RESUME MATCH</string>
+    <string name="pause_restart">RESTART MATCH</string>
+    <string name="pause_quit">Abandon Match</string>
+    <string name="result_time_up">TIME\\'S UP!</string>
+    <string name="result_final_score">Final Score</string>
+    <string name="result_new_record">🏆 NEW RECORD SET!</string>
+    <string name="stat_challenges">Challenges</string>
+    <string name="stat_accuracy">Accuracy</string>
+    <string name="stat_max_combo">Max Combo</string>
+    <string name="result_reward_pool">Reward pool</string>
+    <string name="recovery_title">Save your run!</string>
+    <string name="legal_privacy_btn">Privacy Policy</string>
+    <string name="legal_terms_btn">Terms of Service</string>
+    <string name="legal_offline">No internet connection</string>
+    <string name="legal_no_browser">Could not open a browser.</string>
+    <string name="premium_remove_btn">⭐ Remove Ads · US$ 4.99</string>
+    <string name="premium_vip_badge">👑 VIP · ADS REMOVED — ACTIVE</string>
+    <string name="purchase_title">Google Play — simulated purchase</string>
+    <string name="purchase_body">Test account · Product: Remove Ads — US$ 4.99. No ads forever and instant match continue.</string>
+    <string name="purchase_confirm">CONFIRM PURCHASE</string>
+    <string name="purchase_cancel">Cancel</string>
+    <string name="purchase_error">Purchase could not be completed. Please try again.</string>
+    <string name="recovery_vip_btn">Continue Match · VIP</string>
+    <string name="recovery_body">Watch a video to continue: strikes cleared, clock refreshed and coins doubled.</string>
+    <string name="recovery_watch_btn">Watch and recover</string>
+    <string name="recovery_decline">Give up</string>
+    <string name="recovery_ad_loading">Loading video…</string>
+    <string name="unlock_title">Unlock %1$s</string>
+    <string name="unlock_body">Current balance: %1$d coins. Use 150 coins or watch 1 video to unlock this mode forever.</string>
+    <string name="unlock_coins_btn">Use %1$d coins</string>
+    <string name="unlock_ad_btn">Watch video</string>
+    <string name="unlock_ad_loading">Loading video…</string>
+    <string name="unlock_ad_fail">Video unavailable right now. Try again or use your coins.</string>
+    <string name="unlock_close">Close</string>
+    <string name="result_coins_stat">Match coins</string>
+    <string name="result_double_hint">Double your earnings by watching a short video!</string>
+    <string name="result_double_btn">🎬 DOUBLE REWARD</string>
+    <string name="result_doubled_ok">✓ DOUBLED SUCCESSFULLY!</string>
+    <string name="result_new_trophies">NEW TROPHIES UNLOCKED!</string>
+    <string name="result_play_again">PLAY AGAIN</string>
+    <string name="action_share">SHARE</string>
+    <string name="result_main_menu">MAIN MENU</string>
+    <string name="share_text">I scored %1$d points with a x%2$d combo on TEMPOX! Can you beat it?</string>
+    <string name="share_alert">Score shared: %1$d points!</string>
     <string name="combo_chip">COMBO x%1$d</string>
-    <string name="vibrate_toggle_desc">Alternar vibração</string>
-    <string name="sound_toggle_desc">Alternar som</string>
-
-    <string name="challenge_attention_instruction">Encontre o símbolo diferente</string>
-    <string name="hud_points">PONTOS</string>
-
-    <string name="result_ad_loading">Carregando Anúncio...</string>
-    <string name="result_ad_video">Vídeo Premiado</string>
-    <string name="result_ad_note">Ganhe o dobro de XP ao fim do anúncio promocional.</string>
-
-    <string name="settings_language">Idioma</string>
-    <string name="lang_auto">Automático</string>
+    <string name="vibrate_toggle_desc">Toggle vibration</string>
+    <string name="sound_toggle_desc">Toggle sound</string>
+    <string name="challenge_attention_instruction">Find the odd symbol</string>
+    <string name="hud_points">SCORE</string>
+    <string name="result_ad_loading">Loading Ad...</string>
+    <string name="result_ad_video">Reward Video</string>
+    <string name="result_ad_note">Earn double XP at the end of the promotional ad.</string>
+    <string name="settings_language">Language</string>
+    <string name="lang_auto">Automatic</string>
     <string name="lang_pt">Português</string>
     <string name="lang_en">English</string>
-
     <string name="home_title">TEMPOX</string>
     <string name="card_pattern_header">PATTERN TASK</string>
     <string name="card_pattern_caption">SHAPE MEMORY</string>
     <string name="card_calc_header">CALC TASK</string>
     <string name="card_calc_caption">SPEED MATH</string>
+    <string name="paywall_title">UNLOCK TEMPOX PREMIUM</string>
+    <string name="paywall_subtitle">Remove limits and dominate the game</string>
+    <string name="paywallBenefit1">Zero Intrusive Ads</string>
+    <string name="paywallBenefit2">Double XP per match</string>
+    <string name="paywallBenefit3">Access to all future modes</string>
+    <string name="paywall_cta">REMOVE ADS — US$ 4.99</string>
+    <string name="paywall_restore">Already premium? Restore purchase</string>
+    <string name="paywall_close">Not now</string>
+    <string name="home_chip_level">LEVEL %1$d</string>
+    <string name="home_footer_version">v%1$s · %2$s</string>
+    <string name="legal_button_close">CLOSE</string>
+    <string name="launch_web_unavailable">Could not open a browser on this device.</string>
+    <string name="legal_privacy_updated">TEMPOX: Brain &amp; Reflex · Package cloud.bizflow.tempox · Last updated: August 2026</string>
+    <string name="legal_terms_updated">TEMPOX: Brain &amp; Reflex · Package cloud.bizflow.tempox · Last updated: August 2026</string>
+    <string name="legal_privacy_body">1. WHO IS THE RESPONSIBLE DEVELOPER
 
-    <!-- Premium Paywall -->
-    <string name="paywall_title">DESBLOQUEIE O TEMPOX PREMIUM</string>
-    <string name="paywall_subtitle">Remova limites e domine o jogo</string>
-    <string name="paywallBenefit1">Zero Anúncios Intermitentes</string>
-    <string name="paywallBenefit2">Dobro de XP por partida</string>
-    <string name="paywallBenefit3">Acesso a todos os modos futuros</string>
-    <string name="paywall_cta">REMOVER ANÚNCIOS — US$ 4,99</string>
-    <string name="paywall_restore">Já é premium? Restaurar compra</string>
-    <string name="paywall_close">Agora não</string>
+The TEMPOX: Brain &amp; Reflex app is developed and maintained by Elias Chanisso / Biz-Flow. For any privacy-related matter, use the support channel at the end of this policy.
+
+2. DATA COLLECTED BY THE APP
+
+TEMPOX was designed to work mostly offline. Whenever data processing happens, it is limited to:
+
+- Anonymous advertising identifiers: when ads are served via Google AdMob, device advertising identifiers may be used for ad selection and frequency capping. You can revoke this identifier in your Android settings (Privacy &gt; Ads &gt; Delete advertising ID).
+- In-app purchase verification: purchases (such as ad removal) are processed by Google Play Billing; purchase tokens are validated against the Google Play Store to guarantee delivery.
+- Basic crash and performance metrics: on failures, anonymous technical data (error type, device model, OS version) may be collected solely for fixes and stability.
+- Local data: score, XP, coins, records and unlocked modes are stored only on the device itself (local preferences), never sent to developer servers.
+
+We do not collect name, email, phone number, precise location or sensitive data.
+
+3. YOUR RIGHTS (LGPD / GDPR)
+
+Under the Brazilian General Data Protection Law (LGPD) and the EU General Data Protection Regulation (GDPR), you may request at any time:
+
+- Confirmation of processing and access to your data;
+- Correction of incomplete or outdated data;
+- Deletion of processed data;
+- Withdrawal of consent (for example by disabling ad personalization in the system or uninstalling the app, which erases local data).
+
+Just send a request to the support email below; we will reply within the legal deadline.
+
+4. CHILDREN PRIVACY
+
+TEMPOX does not target marketing at minors and declares compliance with child protection guidelines (COPPA/GDPR-K and Google Play Families policies). We do not knowingly collect data from children under 13. Guardians who identify any improper collection must contact support for immediate deletion.
+
+5. PERMISSIONS USED
+
+- Vibration: haptic feedback on hits and combos.
+- No access to camera, microphone, contacts, files or location.
+
+6. CHANGES TO THIS POLICY
+
+Relevant changes will be reflected on this page with a new update date. Continued use of the app after changes implies awareness of the current version.
+
+7. OFFICIAL SUPPORT CHANNELS
+
+Data deletion requests, consent withdrawal or any privacy question can be sent through the official channels:
+
+- Email: bizflow.cloud@gmail.com
+- WhatsApp: +258 840636794</string>
+    <string name="legal_terms_body">1. ACCEPTANCE OF TERMS
+
+By downloading, installing or using TEMPOX: Brain &amp; Reflex, you declare that you have read and agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the app.
+
+2. CONDITIONS OF USE
+
+- The game is intended for personal, non-commercial entertainment;
+- Reverse engineering, modifying, decompiling or distributing altered versions of the app is forbidden;
+- Automated methods to manipulate scores, coins or achievements are forbidden;
+- Misuse that harms other users experience or Google Play services may result in suspension of access to online features.
+
+3. INTELLECTUAL PROPERTY
+
+All rights over the source code, game mechanics, graphic art, sounds, visual identity and the TEMPOX brand belong to Elias Chanisso / Biz-Flow, protected by Brazilian and international intellectual property law. These terms grant only a limited, revocable and non-exclusive license for personal use of the app.
+
+4. IN-APP PURCHASES
+
+- Virtual products (such as permanent ad removal) are purchased exclusively through the Google Play Store, which processes payment;
+- The ad removal purchase is tied to your Google Account and can be restored inside the app via Restore purchases;
+- Refunds follow the Google Play Store policies; requests may also be filed through our support;
+- Coins and progression items are fictional, have no real monetary value, are non-convertible and non-transferable between accounts.
+
+5. LIMITATION OF LIABILITY AND WARRANTIES
+
+TEMPOX is provided as is. We do not guarantee uninterrupted or error-free operation on every device and Android version. To the extent permitted by law, the developer is not liable for:
+
+- Loss of local progress due to reinstalling, changing devices or clearing system data;
+- Temporary unavailability of features that depend on third-party services (ads, payments);
+- Indirect damages arising from app usage.
+
+6. CHANGES AND TERMINATION
+
+These terms may be updated to reflect new features or legal requirements; the current version will always be available with an updated date. The developer may discontinue the service, keeping the right of use of installed versions.
+
+Support: bizflow.cloud@gmail.com - WhatsApp +258 840636794</string>
 </resources>

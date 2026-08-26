@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Português de Portugal (pt-PT) -->
+<resources>
+    <string name="app_name">TEMPOX</string>
+    <string name="title_activity_main">TEMPOX</string>
+    <string name="nav_home">Início</string>
+    <string name="nav_rules">Regras</string>
+    <string name="nav_start">START</string>
+    <string name="rules_title">COMO JOGAR</string>
+    <string name="rules_subtitle">REGRAS DO TEMPOX</string>
+    <string name="rules_intro">O TEMPOX é um jogo rápido de agilidade mental extrema. Tem exatamente um minuto para resolver uma sequência sem fim de testes rápidos:</string>
+    <string name="rules_memory_title">Memória</string>
+    <string name="rules_memory_desc">Memorize e repita a sequência apresentada de formas coloridas.</string>
+    <string name="rules_reflex_title">Reflexo</string>
+    <string name="rules_reflex_desc">Um mar de formas repetidas esconde o alvo único da instrução. Toque nele e ignore os distratores!</string>
+    <string name="rules_math_title">Matemática</string>
+    <string name="rules_math_desc">Faça cálculos de múltipla escolha sob pressão extrema.</string>
+    <string name="rules_attention_title">Atenção</string>
+    <string name="rules_attention_desc">Localize de imediato o símbolo que é diferente dos outros.</string>
+    <string name="rules_combo_tip">🔥 Acertos consecutivos geram COMBOS de pontos e aceleram os desafios! Erros quebram o combo.</string>
+    <string name="rules_cta">COMBINADO, VAMOS A ISSO</string>
+    <string name="home_premium_badge">ARCADE PREMIUM</string>
+    <string name="home_seed_label">Seed da Partida</string>
+    <string name="home_seed_placeholder">Opcional</string>
+    <string name="home_level_profile">Nível de Perfil</string>
+    <string name="home_level">Nível %1$d</string>
+    <string name="home_best_score">★ MELHOR PONTUAÇÃO</string>
+    <string name="home_xp_accumulated">%1$d XP acumulado</string>
+    <string name="home_percent_to_level">%1$d%% até ao Nível %2$d</string>
+    <string name="home_play_now">JOGAR AGORA</string>
+    <string name="tagline">THINK FAST. REACT FASTER.</string>
+    <string name="tab_play">Jogar</string>
+    <string name="tab_stats">Estatísticas</string>
+    <string name="tab_trophies">Troféus</string>
+    <string name="stats_historical_title">Estatísticas Históricas</string>
+    <string name="stats_matches">Partidas</string>
+    <string name="stats_record">Recorde</string>
+    <string name="stats_total_xp">Total XP</string>
+    <string name="stats_max_combo">Combo Máximo</string>
+    <string name="stats_answers">Respostas</string>
+    <string name="stats_avg_accuracy">Precisão Média</string>
+    <string name="trophies_title">Troféus e Conquistas (%1$d/5)</string>
+    <string name="status_unlocked">✓ DESBLOQUEADO</string>
+    <string name="status_locked">BLOQUEADO</string>
+    <string name="ach_elephant_title">Memória de Elefante</string>
+    <string name="ach_elephant_desc">Completar sequência de 7 ou mais símbolos na Memória.</string>
+    <string name="ach_reflex_title">Reflexo Perfeito</string>
+    <string name="ach_reflex_desc">Resolver uma procura visual de reflexo em menos de 1 segundo.</string>
+    <string name="ach_unstoppable_title">Imparável</string>
+    <string name="ach_unstoppable_desc">Alcançar Combo x10 durante uma partida.</string>
+    <string name="ach_survivor_title">Sobrevivente</string>
+    <string name="ach_survivor_desc">Completar uma partida inteira de 60 segundos.</string>
+    <string name="ach_recordist_title">Recordista</string>
+    <string name="ach_recordist_desc">Superar o seu próprio recorde histórico de pontuação.</string>
+    <string name="challenge_memory_name">Memória</string>
+    <string name="challenge_memory_instruction">Decore e repita a sequência</string>
+    <string name="challenge_reflex_name">Reflexo</string>
+    <string name="challenge_reflex_instruction">Encontre o elemento único entre os distratores</string>
+    <string name="reflex_find_fmt">Encontre: %1$s %2$s</string>
+    <string name="mem_shape_triangle">Triângulo</string>
+    <string name="mem_shape_square">Quadrado</string>
+    <string name="mem_shape_star">Estrela</string>
+    <string name="mem_shape_circle">Círculo</string>
+    <string name="mem_shape_diamond">Losango</string>
+    <string name="mem_shape_donut">Anel</string>
+    <string name="mem_color_red">Vermelho</string>
+    <string name="mem_color_blue">Azul</string>
+    <string name="mem_color_yellow">Amarelo</string>
+    <string name="mem_color_green">Verde</string>
+    <string name="mem_color_orange">Laranja</string>
+    <string name="mem_color_purple">Roxo</string>
+    <string name="challenge_math_name">Matemática</string>
+    <string name="challenge_math_instruction">Resolva a equação o mais rápido possível</string>
+    <string name="challenge_attention_name">Atenção</string>
+    <string name="challenge_fallback_name">Desafio</string>
+    <string name="challenge_fallback_instruction">Reaja rápido!</string>
+    <string name="memory_watch_phase">Memorize…</string>
+    <string name="memory_input_phase">Repita a sequência!</string>
+    <string name="pause_badge">JOGO EM PAUSA</string>
+    <string name="pause_heading">PAUSADO</string>
+    <string name="pause_subtitle">Respire fundo. Regresse quando estiver pronto!</string>
+    <string name="settings_sound">Efeitos Sonoros</string>
+    <string name="settings_vibration">Vibração Háptica</string>
+    <string name="settings_volume">Volume dos Efeitos</string>
+    <string name="pause_resume">RETOMAR PARTIDA</string>
+    <string name="pause_restart">REINICIAR PARTIDA</string>
+    <string name="pause_quit">Abandonar Partida</string>
+    <string name="result_time_up">TEMPO ESGOTADO!</string>
+    <string name="result_final_score">Pontuação Final</string>
+    <string name="result_new_record">🏆 NOVO RECORDE REGISTADO!</string>
+    <string name="stat_challenges">Desafios</string>
+    <string name="stat_accuracy">Precisão</string>
+    <string name="stat_max_combo">Combo Máx</string>
+    <string name="result_reward_pool">Pool de recompensas</string>
+    <string name="recovery_title">Recupere a partida!</string>
+    <string name="legal_privacy_btn">Política de Privacidade</string>
+    <string name="legal_terms_btn">Termos de Utilização</string>
+    <string name="legal_offline">Sem ligação à internet</string>
+    <string name="legal_no_browser">Não foi possível abrir o navegador.</string>
+    <string name="premium_remove_btn">⭐ Remover Anúncios · US$ 4,99</string>
+    <string name="premium_vip_badge">👑 VIP · REMOÇÃO DE ANÚNCIOS ATIVA</string>
+    <string name="purchase_title">Google Play — compra simulada</string>
+    <string name="purchase_body">Conta de teste · Produto: Remover Anúncios (Remove Ads) — US$ 4,99. Sem anúncios para sempre e continuação instantânea de partida.</string>
+    <string name="purchase_confirm">CONFIRMAR COMPRA</string>
+    <string name="purchase_cancel">Cancelar</string>
+    <string name="purchase_error">Não foi possível concluir a compra. Tente novamente.</string>
+    <string name="recovery_vip_btn">Continuar Partida · VIP</string>
+    <string name="recovery_body">Veja um vídeo para continuar: erros anulados, relógio renovado e moedas duplicadas.</string>
+    <string name="recovery_watch_btn">Ver e recuperar</string>
+    <string name="recovery_decline">Desistir</string>
+    <string name="recovery_ad_loading">A carregar vídeo…</string>
+    <string name="unlock_title">Desbloquear %1$s</string>
+    <string name="unlock_body">Saldo atual: %1$d moedas. Use 150 moedas ou veja 1 vídeo para desbloquear este modo para sempre.</string>
+    <string name="unlock_coins_btn">Usar %1$d moedas</string>
+    <string name="unlock_ad_btn">Ver o vídeo</string>
+    <string name="unlock_ad_loading">A carregar vídeo…</string>
+    <string name="unlock_ad_fail">Vídeo indisponível neste momento. Tente novamente ou use as suas moedas.</string>
+    <string name="unlock_close">Fechar</string>
+    <string name="result_coins_stat">Moedas da partida</string>
+    <string name="result_double_hint">Duplique os seus ganhos vendo um vídeo curto!</string>
+    <string name="result_double_btn">🎬 DOBRAR RECOMPENSA</string>
+    <string name="result_doubled_ok">✓ DUPLICADO COM SUCESSO!</string>
+    <string name="result_new_trophies">NOVOS TROFÉUS CONQUISTADOS!</string>
+    <string name="result_play_again">JOGAR NOVAMENTE</string>
+    <string name="action_share">PARTILHAR</string>
+    <string name="result_main_menu">MENU PRINCIPAL</string>
+    <string name="share_text">Fiz %1$d pontos com combo x%2$d no TEMPOX! Consegue superar?</string>
+    <string name="share_alert">Pontuação partilhada: %1$d pontos!</string>
+    <string name="combo_chip">COMBO x%1$d</string>
+    <string name="vibrate_toggle_desc">Alternar vibração</string>
+    <string name="sound_toggle_desc">Alternar som</string>
+    <string name="challenge_attention_instruction">Encontre o símbolo diferente</string>
+    <string name="hud_points">PONTOS</string>
+    <string name="result_ad_loading">A carregar Anúncio...</string>
+    <string name="result_ad_video">Vídeo Premiado</string>
+    <string name="result_ad_note">Ganhe o dobro de XP no fim do anúncio promocional.</string>
+    <string name="settings_language">Idioma</string>
+    <string name="lang_auto">Automático</string>
+    <string name="lang_pt">Português</string>
+    <string name="lang_en">English</string>
+    <string name="home_title">TEMPOX</string>
+    <string name="card_pattern_header">PATTERN TASK</string>
+    <string name="card_pattern_caption">SHAPE MEMORY</string>
+    <string name="card_calc_header">CALC TASK</string>
+    <string name="card_calc_caption">SPEED MATH</string>
+    <string name="paywall_title">DESBLOQUEIE O TEMPOX PREMIUM</string>
+    <string name="paywall_subtitle">Remova limites e domine o jogo</string>
+    <string name="paywallBenefit1">Zero Anúncios Intermitentes</string>
+    <string name="paywallBenefit2">Dobro de XP por partida</string>
+    <string name="paywallBenefit3">Acesso a todos os modos futuros</string>
+    <string name="paywall_cta">REMOVER ANÚNCIOS — US$ 4,99</string>
+    <string name="paywall_restore">Já é premium? Restaurar compra</string>
+    <string name="paywall_close">Agora não</string>
+    <string name="home_chip_level">NÍVEL %1$d</string>
+    <string name="home_footer_version">v%1$s · %2$s</string>
+    <string name="legal_button_close">FECHAR</string>
+    <string name="launch_web_unavailable">Não foi possível abrir o navegador no dispositivo.</string>
+    <string name="legal_privacy_updated">TEMPOX: Brain &amp; Reflex · Pacote cloud.bizflow.tempox · Última atualização: agosto de 2026</string>
+    <string name="legal_terms_updated">TEMPOX: Brain &amp; Reflex · Pacote cloud.bizflow.tempox · Última atualização: agosto de 2026</string>
+    <string name="legal_privacy_body">1. QUEM É O DESENVOLVEDOR RESPONSÁVEL
+
+A aplicação TEMPOX: Brain &amp; Reflex é desenvolvido e mantido por Elias Chanisso / Biz-Flow. Para qualquer assunto relacionado a privacidade, utilize o canal de contato ao final desta política.
+
+2. DADOS QUE O APLICATIVO COLETA
+
+O TEMPOX foi projetado para funcionar majoritariamente offline. Quando há tratamento de dados, ele se limita a:
+
+- Identificadores de publicidade anônimos: quando anúncios são exibidos via Google AdMob, podem ser usados identificadores publicitários do dispositivo para seleção e frequência de anúncios. Pode revogar esse identificador nas definições do seu Android (Privacidade &gt; Anúncios &gt; Excluir identificador de publicidade).
+- Verificação de compras in-app: compras realizadas (ex.: remoção de anúncios) são processadas pelo Google Play Billing; tokens de compra são validados junto à Google Play Store para garantir a entrega do produto.
+- Métricas básicas de crash e performance: em caso de falhas, dados técnicos anônimos (tipo de erro, modelo do dispositivo, versão do sistema) podem ser coletados exclusivamente para correção e estabilidade.
+- Dados locais: pontuação, XP, moedas, recordes e modos desbloqueados são armazenados apenas no próprio dispositivo (preferências locais), sem envio a servidores do desenvolvedor.
+
+Não coletamos nome, e-mail, telefone, localização precisa nem dados sensíveis.
+
+3. SEUS DIREITOS (LGPD / GDPR)
+
+Conforme a Lei Geral de Proteção de Dados (LGPD) e o Regulamento Geral de Proteção de Dados da UE (GDPR), você pode solicitar a qualquer momento:
+
+- Confirmação de tratamento e acesso aos dados;
+- Correção de dados incompletos ou desatualizados;
+- Exclusão dos dados tratados;
+- Revogação do consentimento (por exemplo, desativando personalização de anúncios no sistema ou removendo a aplicação, o que elimina os dados locais).
+
+Envie um pedido para o email de suporte abaixo; responderemos dentro do prazo legal.
+
+4. PRIVACIDADE INFANTIL
+
+O TEMPOX não direciona marketing a menores e declara conformidade com as diretrizes de proteção à criança (COPPA/GDPR-K e políticas do Google Play Families). Não coletamos intencionalmente dados de crianças menores de 13 anos. Os responsáveis que identifiquem qualquer coleta indevida devem contactar o suporte para eliminação imediata.
+
+5. PERMISSÕES UTILIZADAS
+
+- Vibração: retorno tátil nos acertos e combos do jogo.
+- Sem acesso a câmera, microfone, contatos, arquivos ou localização.
+
+6. ALTERAÇÕES NESTA POLÍTICA
+
+Mudanças relevantes serão refletidas nesta página com nova data de atualização. O uso continuado do app após alterações implica ciência da versão vigente.
+
+7. CANAIS OFICIAIS DE SUPORTE
+
+Pedidos de exclusão de dados, revogação de consentimento ou qualquer dúvida de privacidade podem ser enviados pelos canais oficiais:
+
+- Email: bizflow.cloud@gmail.com
+- WhatsApp: +258 840636794</string>
+    <string name="legal_terms_body">1. ACEITAÇÃO DOS TERMOS
+
+Ao transferir, instalar ou utilizar o TEMPOX: Brain &amp; Reflex, você declara ter lido e concordado com estes Termos de Uso e com a nossa Política de Privacidade. Caso não concorde, não utilize a aplicação.
+
+2. CONDIÇÕES DE USO
+
+- O jogo é destinado ao entretenimento pessoal e não comercial;
+- É vedada a realização de engenharia inversa, modificar, descompilar ou distribuir versões alteradas da aplicação;
+- É vedado usar métodos automatizados para manipular pontuações, moedas ou conquistas;
+- O uso indevido que comprometa a experiência de outros utilizadores ou os serviços da Google Play poderá resultar em suspensão do acesso aos recursos online.
+
+3. PROPRIEDADE INTELECTUAL
+
+Todos os direitos sobre o código-fonte, mecânicas de jogo, arte gráfica, sons, identidade visual e a marca TEMPOX pertencem a Elias Chanisso / Biz-Flow, protegidos pela legislação de propriedade intelectual brasileira e internacional. Estes termos concedem apenas uma licença limitada, revogável e não exclusiva para uso pessoal do aplicativo.
+
+4. COMPRAS DENTRO DO APLICATIVO
+
+- Produtos virtuais (como a remoção permanente de anúncios) são adquiridos exclusivamente pela Google Play Store, que processa o pagamento;
+- A compra de remoção de anúncios é vinculada à sua Conta Google e pode ser restaurada no próprio app através de Restaurar compras;
+- Reembolsos seguem as políticas da Google Play Store; solicitações podem ser registadas também no nosso suporte;
+- Moedas e itens de progressão são fictícios, sem valor monetário real, não conversíveis e intransferíveis entre contas.
+
+5. LIMITAÇÃO DE RESPONSABILIDADE E GARANTIAS
+
+O TEMPOX é fornecido no estado em que se encontra. Não garantimos funcionamento ininterrupto ou livre de erros em todos os dispositivos e versões do Android. Dentro dos limites da lei aplicável, o desenvolvedor não se responsabiliza por:
+
+- Perda de progresso local por reinstalação, mudança de dispositivo ou limpeza de dados do sistema;
+- Indisponibilidade temporária de recursos dependentes de serviços de terceiros (anúncios, pagamentos);
+- Danos indiretos decorrentes do uso do aplicativo.
+
+6. ALTERAÇÕES E ENCERRAMENTO
+
+Estes termos podem ser atualizados para refletir novos recursos ou exigências legais; a versão vigente estará sempre disponível com data atualizada. O desenvolvedor pode descontinuar o serviço, mantendo o direito de uso das versões já instaladas.
+
+Suporte: bizflow.cloud@gmail.com · WhatsApp +258 840636794</string>
+</resources>

@@ -67,7 +67,6 @@ import cloud.bizflow.tempox.game.LangMode
 import cloud.bizflow.tempox.game.PlayerStats
 import cloud.bizflow.tempox.game.Progression
 import cloud.bizflow.tempox.ui.LegalType
-import cloud.bizflow.tempox.data.LegalTexts
 import cloud.bizflow.tempox.ui.components.BottomNavigation
 import cloud.bizflow.tempox.ui.components.BrandedProgress
 import cloud.bizflow.tempox.ui.components.FloatingCard
@@ -167,7 +166,7 @@ fun HomeScreen(
                     // Level chip
                     TopChip(
                         glyph = "👑",
-                        value = "L$level",
+                        value = stringResource(R.string.home_chip_level, level),
                         onClick = { tab = HomeTab.TROPHIES },
                     )
                     Spacer(Modifier.width(8.dp))
@@ -255,8 +254,12 @@ fun HomeScreen(
                 title = stringResource(
                     if (isPrivacy) R.string.legal_privacy_btn else R.string.legal_terms_btn,
                 ),
-                updated = if (isPrivacy) LegalTexts.PRIVACY_UPDATED else LegalTexts.TERMS_UPDATED,
-                body = if (isPrivacy) LegalTexts.PRIVACY_POLICY else LegalTexts.TERMS_AND_CONDITIONS,
+                updated = stringResource(
+                    if (isPrivacy) R.string.legal_privacy_updated else R.string.legal_terms_updated,
+                ),
+                body = stringResource(
+                    if (isPrivacy) R.string.legal_privacy_body else R.string.legal_terms_body,
+                ),
                 onDismiss = { legalDoc = null },
             )
         }
@@ -563,7 +566,11 @@ private fun PlayTab(
         }
         Spacer(Modifier.height(14.dp))
         Text(
-            "v" + BuildConfig.VERSION_NAME + "  ·  " + stringResource(R.string.legal_privacy_btn),
+            stringResource(
+                R.string.home_footer_version,
+                BuildConfig.VERSION_NAME,
+                stringResource(R.string.legal_privacy_btn),
+            ),
             style = TemproxType.micro.copy(color = TemproxColors.Primary),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)

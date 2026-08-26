@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
+import cloud.bizflow.tempox.R
 
 private const val TAG = "LaunchWebUrl"
 
@@ -49,7 +50,7 @@ fun launchWebUrl(context: Context, rawUrl: String) {
             Log.e(TAG, "No browser available: ${fallbackError.message}")
             Toast.makeText(
                 context,
-                "Não foi possível abrir o navegador no dispositivo.",
+                context.getString(R.string.launch_web_unavailable),
                 Toast.LENGTH_SHORT,
             ).show()
         }
