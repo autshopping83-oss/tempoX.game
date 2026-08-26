@@ -194,8 +194,10 @@ fun GameScreen(
         Modifier
             .fillMaxSize(),
     ) {
-        cloud.bizflow.tempox.ui.components.AnimatedBackground(Modifier.fillMaxSize())
-        cloud.bizflow.tempox.ui.components.FormulaLayer(Modifier.fillMaxSize())
+        // AnimatedBackground and FormulaLayer removed — purely decorative layers
+        // that ran infiniteRepeatable animations (17 shapes + text) every frame
+        // while completely hidden behind the opaque game UI. Eliminates ~2 GPU
+        // draw passes and the infinite transition coroutines during gameplay.
         Column(
             Modifier
                 .fillMaxSize()

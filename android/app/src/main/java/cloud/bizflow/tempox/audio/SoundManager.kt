@@ -31,6 +31,11 @@ object SoundManager {
     @Volatile private var enabled: Boolean = true
     @Volatile private var volume: Float = 0.8f
 
+    // Cached ringer state — avoids a Binder IPC call to AudioManager on every play().
+    // Refreshed at most once per second.
+    @Volatile private var cachedRingerSilent: Boolean = false
+    @Volatile private var lastRingerCheckMs: Long = 0L
+
     /** Call once from Application/Activity onCreate. */
     fun init(context: Context) {
         if (soundPool != null) return
@@ -66,9 +71,16 @@ object SoundManager {
         sampleIds[Sfx.FLIP] = pool.load(app, R.raw.flip, 1)
     }
 
-    /** Silent mode (RINGER_MODE_SILENT / VIBRATE) mutes game sounds. */
-    private fun ringerSilent(): Boolean =
-        audioManager?.ringerMode != AudioManager.RINGER_MODE_NORMAL
+    /** Silent mode (RINGER_MODE_SILENT / VIBRATE) mutes game sounds.
+     *  Cached for ≤1 s to avoid repeated Binder IPC calls. */
+    private fun ringerSilent(): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastRingerCheckMs > 1_000L) {
+            cachedRingerSilent = audioManager?.ringerMode != AudioManager.RINGER_MODE_NORMAL
+            lastRingerCheckMs = now
+        }
+        return cachedRingerSilent
+    }
 
     fun play(sfx: Sfx) {
         val id = sampleIds[sfx] ?: return

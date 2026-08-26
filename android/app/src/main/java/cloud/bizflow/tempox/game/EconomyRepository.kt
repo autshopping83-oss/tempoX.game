@@ -16,24 +16,31 @@ data class EconomyState(
  * Persistent progression currency backed by SharedPreferences.
  * Score (per match) and coins (permanent) are deliberately separate:
  * coins buy access to the specialized modes or are earned there faster.
+ *
+ * [coins] and [unlocked] are cached in memory — SharedPreferences is only
+ * read once at construction; writes go through the editor AND update the
+ * in-memory cache so subsequent reads within the same session never touch
+ * disk again.
  */
 class EconomyRepository(context: Context) {
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("temprox_economy", Context.MODE_PRIVATE)
 
-    fun load(): EconomyState = EconomyState(
-        coins = prefs.getInt(K_COINS, 0),
-        unlockedModes = prefs.getStringSet(K_UNLOCKED, emptySet())
-            ?.mapNotNull { runCatching { GameMode.valueOf(it) }.getOrNull() }
-            ?.toSet()
-            ?: emptySet(),
-    )
+    // In-memory cache — avoids repeated disk reads within a single session.
+    private var coins: Int = prefs.getInt(K_COINS, 0)
+    private var unlocked: Set<GameMode> = prefs.getStringSet(K_UNLOCKED, emptySet())
+        ?.mapNotNull { runCatching { GameMode.valueOf(it) }.getOrNull() }
+        ?.toSet()
+        ?: emptySet()
+
+    fun load(): EconomyState = EconomyState(coins = coins, unlockedModes = unlocked)
 
     /** Credit coins earned by a finished match (or any other source). */
     fun addCoins(amount: Int) {
         if (amount <= 0) return
-        prefs.edit().putInt(K_COINS, load().coins + amount).apply()
+        coins += amount
+        prefs.edit().putInt(K_COINS, coins).apply()
     }
 
     /**
@@ -41,19 +48,19 @@ class EconomyRepository(context: Context) {
      * @return true when the balance covered the spend.
      */
     fun trySpendCoins(amount: Int): Boolean {
-        val balance = load().coins
-        if (balance < amount) return false
-        prefs.edit().putInt(K_COINS, balance - amount).apply()
+        if (coins < amount) return false
+        coins -= amount
+        prefs.edit().putInt(K_COINS, coins).apply()
         return true
     }
 
     fun unlockMode(mode: GameMode) {
-        val current = load().unlockedModes
-        prefs.edit().putStringSet(K_UNLOCKED, (current + mode).map { it.name }.toSet()).apply()
+        unlocked = unlocked + mode
+        prefs.edit().putStringSet(K_UNLOCKED, unlocked.map { it.name }.toSet()).apply()
     }
 
     fun isUnlocked(mode: GameMode): Boolean =
-        mode == GameMode.ARCADE || mode in load().unlockedModes
+        mode == GameMode.ARCADE || mode in unlocked
 
     companion object {
         const val UNLOCK_COST = 150
