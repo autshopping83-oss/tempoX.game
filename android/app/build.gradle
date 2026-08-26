@@ -9,8 +9,8 @@ android {
         applicationId 'cloud.bizflow.tempox'
         minSdk 24
         targetSdk 35
-        versionCode 3
-        versionName '1.0.2'
+        versionCode 4
+        versionName '1.0.3'
         resourceConfigurations += ['pt', 'en']
     }
 
@@ -70,8 +70,8 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     implementation 'androidx.browser:browser:1.8.0'
 
-    // Google Play Billing Client KTX (in-app purchases)
-    implementation 'com.android.billingclient:billing-ktx:7.1.1'
+    // Google Play Billing Client KTX (in-app purchases) — v8 for Play Store 2026 compliance
+    implementation 'com.android.billingclient:billing-ktx:8.2.1'
     // Google Mobile Ads SDK (AdMob)
     implementation 'com.google.android.gms:play-services-ads:23.3.0'
     // Coroutines support for Play Services async calls (await())
