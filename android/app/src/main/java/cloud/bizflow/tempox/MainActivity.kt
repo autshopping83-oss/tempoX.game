@@ -31,6 +31,7 @@ import cloud.bizflow.tempox.game.StatsRepository
 import cloud.bizflow.tempox.ui.screens.GameScreen
 import cloud.bizflow.tempox.ui.screens.HomeScreen
 import cloud.bizflow.tempox.ui.screens.ResultScreen
+import cloud.bizflow.tempox.monetization.MonetizationManager
 import cloud.bizflow.tempox.ui.screens.SplashScreen
 import cloud.bizflow.tempox.ui.theme.TemproxTheme
 import kotlinx.coroutines.delay
@@ -40,6 +41,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         SoundManager.init(applicationContext)
+        // Async AdMob bootstrap — never blocks the UI thread.
+        MonetizationManager.initialize(applicationContext)
         setContent {
             TemproxTheme {
                 AppRootHost()

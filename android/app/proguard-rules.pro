@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# ── Monetization (Google Play Billing + AdMob) ─────────────────────────────
+# Billing Client v7 reflection internals
+-keep class com.android.vending.billing.** { *; }
+# AdMob / GMS Ads SDK (kept for future R8/minify enablement)
+-keep class com.google.android.gms.ads.** { *; }
+-dontwarn com.google.android.gms.ads.**
+-dontwarn com.android.billingclient.**
