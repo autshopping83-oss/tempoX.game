@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import cloud.bizflow.tempox.R
 import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.ui.theme.TemproxColors
 import cloud.bizflow.tempox.ui.theme.TemproxShapes
@@ -141,7 +143,7 @@ fun TrophyCard(title: String, description: String, unlocked: Boolean, dark: Bool
         }
         Spacer(Modifier.width(8.dp))
         Text(
-            if (unlocked) "✓ LIBERADO" else "BLOQUEADO",
+            if (unlocked) stringResource(R.string.status_unlocked) else stringResource(R.string.status_locked),
             style = TemproxType.micro.copy(color = if (unlocked) Color(0xFFB45309) else Color(0xFF94A3B8)),
         )
     }
