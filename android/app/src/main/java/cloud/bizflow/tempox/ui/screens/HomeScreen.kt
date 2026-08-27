@@ -318,6 +318,7 @@ private fun PremiumPaywallBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var purchaseError by remember { mutableStateOf(false) }
+    val activity = LocalContext.current as? Activity
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -405,14 +406,17 @@ private fun PremiumPaywallBottomSheet(
                         .clickable(enabled = !isLoading) {
                             SoundManager.play(SoundManager.Sfx.CLICK)
                             SoundManager.vibrate(longArrayOf(0, 18))
-                            billing.purchaseRemoveAds(
-                                onSuccess = {
-                                    SoundManager.play(SoundManager.Sfx.TROPHY)
-                                    SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
-                                    onDismiss()
-                                },
-                                onError = { purchaseError = true },
-                            )
+                            if (activity != null) {
+                                billing.purchaseRemoveAds(
+                                    activity = activity,
+                                    onSuccess = {
+                                        SoundManager.play(SoundManager.Sfx.TROPHY)
+                                        SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
+                                        onDismiss()
+                                    },
+                                    onError = { purchaseError = true },
+                                )
+                            }
                         },
                     contentAlignment = Alignment.Center,
                 ) {

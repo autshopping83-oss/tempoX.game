@@ -174,7 +174,7 @@ class BillingManager(private val context: Context) : BillingRepository,
 
     // ── BillingRepository implementation ──────────────────────────────────────
 
-    override fun purchaseRemoveAds(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    override fun purchaseRemoveAds(activity: Activity, onSuccess: () -> Unit, onError: (String) -> Unit) {
         if (_isAdFreeUser.value) {
             onSuccess()
             return
@@ -193,7 +193,7 @@ class BillingManager(private val context: Context) : BillingRepository,
                 ),
             )
             .build()
-        val billingResult = billingClient.launchBillingFlow(context as Activity, flowParams)
+        val billingResult = billingClient.launchBillingFlow(activity, flowParams)
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
             onError("Could not launch billing: ${billingResult.debugMessage}")
         }

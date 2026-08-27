@@ -1,5 +1,6 @@
 package cloud.bizflow.tempox.game
 
+import android.app.Activity
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -21,7 +22,7 @@ interface BillingRepository {
      * Launches the purchase flow for the Remove Ads product.
      * Exactly one of the callbacks is invoked on completion.
      */
-    fun purchaseRemoveAds(onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun purchaseRemoveAds(activity: Activity, onSuccess: () -> Unit, onError: (String) -> Unit)
 
     /** Re-validates prior purchases (reinstalls / Play Store compliance). */
     fun restorePurchases()
