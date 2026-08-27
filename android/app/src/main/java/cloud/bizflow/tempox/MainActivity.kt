@@ -103,7 +103,6 @@ fun AppRootHost(billing: BillingRepository) {
                 LanguageManager.save(sysContext, next)
                 langMode = next
                 SoundManager.play(SoundManager.Sfx.CLICK)
-                (sysContext as? Activity)?.recreate()
             },
         )
     }
