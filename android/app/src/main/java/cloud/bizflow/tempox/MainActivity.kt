@@ -41,26 +41,37 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
 
     private lateinit var billingManager: BillingManager
+    private var isRecreation = false
 
     override fun attachBaseContext(newBase: Context) {
-        val langMode = LanguageManager.load(newBase)
-        if (langMode != LangMode.SYSTEM) {
-            val locale = when (langMode) {
-                LangMode.PT_BR -> java.util.Locale.forLanguageTag("pt-BR")
-                LangMode.PT_PT -> java.util.Locale.forLanguageTag("pt-PT")
-                LangMode.EN -> java.util.Locale.ENGLISH
-                else -> return super.attachBaseContext(newBase)
-            }
-            val config = Configuration(newBase.resources.configuration)
-            config.setLocale(locale)
-            config.setLocales(android.os.LocaleList(locale))
-            super.attachBaseContext(newBase.createConfigurationContext(config))
-        } else {
-            super.attachBaseContext(newBase)
+        // Belt-and-suspenders for locale: wrap the base context (covers stringResource
+        // on cold start) AND applyOverrideConfiguration in onCreate (covers recreate()).
+        super.attachBaseContext(LanguageManager.wrap(newBase, LanguageManager.load(newBase)))
+    }
+
+    /** Reinforce locale via overrideConfiguration on the Activity entry (works for ALL resources). */
+    private fun applySavedLocale() {
+        val langMode = LanguageManager.load(this)
+        if (langMode == LangMode.SYSTEM) return
+        val locale = when (langMode) {
+            LangMode.PT_BR -> java.util.Locale.forLanguageTag("pt-BR")
+            LangMode.PT_PT -> java.util.Locale.forLanguageTag("pt-PT")
+            LangMode.EN -> java.util.Locale.ENGLISH
+            else -> return
         }
+        val config = try {
+            Configuration(resources.configuration)
+        } catch (_: Throwable) {
+            Configuration()
+        }
+        config.setLocale(locale)
+        config.setLocales(android.os.LocaleList(locale))
+        applyOverrideConfiguration(config)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        isRecreation = savedInstanceState != null
+        applySavedLocale()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         SoundManager.init(applicationContext)
@@ -71,7 +82,7 @@ class MainActivity : ComponentActivity() {
         billingManager.startConnection()
         setContent {
             TemproxTheme {
-                AppRootHost(billing = billingManager)
+                AppRootHost(billing = billingManager, skipSplash = isRecreation)
             }
         }
     }
@@ -90,7 +101,7 @@ private data class FinishedMatch(
 )
 
 @Composable
-fun AppRootHost(billing: BillingRepository) {
+fun AppRootHost(billing: BillingRepository, skipSplash: Boolean = false) {
     val sysContext = LocalContext.current
     var langMode by remember { mutableStateOf(LanguageManager.load(sysContext)) }
     val localized = remember(langMode) { LanguageManager.wrap(sysContext, langMode) }
@@ -99,10 +110,12 @@ fun AppRootHost(billing: BillingRepository) {
         AppRoot(
             billing = billing,
             langMode = langMode,
+            skipSplash = skipSplash,
             onLanguageChange = { next ->
                 LanguageManager.save(sysContext, next)
                 langMode = next
                 SoundManager.play(SoundManager.Sfx.CLICK)
+                (sysContext as? Activity)?.recreate()
             },
         )
     }
@@ -112,6 +125,7 @@ fun AppRootHost(billing: BillingRepository) {
 fun AppRoot(
     billing: BillingRepository,
     langMode: LangMode,
+    skipSplash: Boolean = false,
     onLanguageChange: (LangMode) -> Unit,
 ) {
     val context = LocalContext.current
@@ -122,10 +136,10 @@ fun AppRoot(
     val adFree by billing.isAdFreeUser.collectAsState()
     var economy by remember { mutableStateOf(econRepo.load()) }
 
-    var showSplash by remember { mutableStateOf(true) }
+    var showSplash by remember { mutableStateOf(!skipSplash) }
     LaunchedEffect(Unit) {
         billing.restorePurchases()
-        delay(2400)
+        if (!skipSplash) delay(2400)
         showSplash = false
         // Preload ads once the splash is done and Activity is available.
         if (activity != null && !adFree) MockAdManager.preloadAds(activity)
