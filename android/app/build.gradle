@@ -16,7 +16,8 @@ android {
         // values-pt-rBR / values-pt-rPT dirs from the package, causing fallback /
         // translation conflicts (pt-BR / pt-PT selected but resources absent).
         // NOTE: resourceConfigurations uses Android resource-suffix format (pt-rBR).
-        resourceConfigurations += ['en', 'pt-rBR', 'pt-rPT']
+        // 'pt' is the generic-Portuguese fallback dir (values-pt).
+        resourceConfigurations += ['en', 'pt', 'pt-rBR', 'pt-rPT']
     }
 
     // Release signing — populated in CI from GitHub Secrets:

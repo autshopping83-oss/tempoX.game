@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Official Android 13+ (API 33) per-app language declaration.
+  Lists the languages the app can render, using BCP-47 tags (lowercase language,
+  uppercase region, e.g. pt-BR). This must match:
+    - the resource dirs (values-pt-rBR, values-pt-rPT, values)
+    - the resourceConfigurations in build.gradle (pt-rBR, pt-rPT, en)
+    - the tags applied in applyOverrideConfiguration() (pt-BR, pt-PT, en)
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="pt-BR" />
+    <locale android:name="pt-PT" />
+</locale-config>
