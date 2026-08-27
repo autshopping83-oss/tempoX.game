@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,9 +43,10 @@ class MainActivity : ComponentActivity() {
     private var isRecreation = false
 
     override fun attachBaseContext(newBase: Context) {
-        // Belt-and-suspenders for locale: wrap the base context (covers stringResource
-        // on cold start) AND applyOverrideConfiguration in onCreate (covers recreate()).
-        super.attachBaseContext(LanguageManager.wrap(newBase, LanguageManager.load(newBase)))
+        // Locale is applied once, via applyOverrideConfiguration() in onCreate()
+        // (before super.onCreate). Applying it here too would duplicate/wrap the
+        // base context and conflict with the overrideConfiguration below.
+        super.attachBaseContext(newBase)
     }
 
     /** Reinforce locale via overrideConfiguration on the Activity entry (works for ALL resources). */
@@ -104,21 +104,18 @@ private data class FinishedMatch(
 fun AppRootHost(billing: BillingRepository, skipSplash: Boolean = false) {
     val sysContext = LocalContext.current
     var langMode by remember { mutableStateOf(LanguageManager.load(sysContext)) }
-    val localized = remember(langMode) { LanguageManager.wrap(sysContext, langMode) }
 
-    CompositionLocalProvider(LocalContext provides localized) {
-        AppRoot(
-            billing = billing,
-            langMode = langMode,
-            skipSplash = skipSplash,
-            onLanguageChange = { next ->
-                LanguageManager.save(sysContext, next)
-                langMode = next
-                SoundManager.play(SoundManager.Sfx.CLICK)
-                (sysContext as? Activity)?.recreate()
-            },
-        )
-    }
+    AppRoot(
+        billing = billing,
+        langMode = langMode,
+        skipSplash = skipSplash,
+        onLanguageChange = { next ->
+            LanguageManager.save(sysContext, next)
+            langMode = next
+            SoundManager.play(SoundManager.Sfx.CLICK)
+            (sysContext as? Activity)?.recreate()
+        },
+    )
 }
 
 @Composable
