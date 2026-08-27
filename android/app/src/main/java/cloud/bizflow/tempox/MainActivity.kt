@@ -43,35 +43,32 @@ class MainActivity : ComponentActivity() {
     private var isRecreation = false
 
     override fun attachBaseContext(newBase: Context) {
-        // Locale is applied once, via applyOverrideConfiguration() in onCreate()
-        // (before super.onCreate). Applying it here too would duplicate/wrap the
-        // base context and conflict with the overrideConfiguration below.
+        // Apply the saved locale to the base context. This is the stable, official
+        // approach: it works both on cold start AND after recreate() (both pass
+        // through attachBaseContext with a new instance). It does NOT touch the
+        // Activity itself, so LocalContext.current stays the Activity and the
+        // Compose identifiers/stringResource resolve to the localized context.
+        val langMode = LanguageManager.load(newBase)
+        if (langMode != LangMode.SYSTEM) {
+            val locale = when (langMode) {
+                LangMode.PT_BR -> java.util.Locale.forLanguageTag("pt-BR")
+                LangMode.PT_PT -> java.util.Locale.forLanguageTag("pt-PT")
+                LangMode.EN -> java.util.Locale.ENGLISH
+                else -> null
+            }
+            if (locale != null) {
+                val config = Configuration(newBase.resources.configuration)
+                config.setLocale(locale)
+                config.setLocales(android.os.LocaleList(locale))
+                super.attachBaseContext(newBase.createConfigurationContext(config))
+                return
+            }
+        }
         super.attachBaseContext(newBase)
-    }
-
-    /** Reinforce locale via overrideConfiguration on the Activity entry (works for ALL resources). */
-    private fun applySavedLocale() {
-        val langMode = LanguageManager.load(this)
-        if (langMode == LangMode.SYSTEM) return
-        val locale = when (langMode) {
-            LangMode.PT_BR -> java.util.Locale.forLanguageTag("pt-BR")
-            LangMode.PT_PT -> java.util.Locale.forLanguageTag("pt-PT")
-            LangMode.EN -> java.util.Locale.ENGLISH
-            else -> return
-        }
-        val config = try {
-            Configuration(resources.configuration)
-        } catch (_: Throwable) {
-            Configuration()
-        }
-        config.setLocale(locale)
-        config.setLocales(android.os.LocaleList(locale))
-        applyOverrideConfiguration(config)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         isRecreation = savedInstanceState != null
-        applySavedLocale()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         SoundManager.init(applicationContext)
