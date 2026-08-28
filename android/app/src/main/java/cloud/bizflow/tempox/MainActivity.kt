@@ -152,6 +152,12 @@ fun AppRoot(
                 seedText = seedText,
                 mode = matchMode,
                 vipInstant = adFree,
+                coins = economy.coins,
+                onSpendCoins = { amount ->
+                    val ok = econRepo.trySpendCoins(amount)
+                    if (ok) economy = econRepo.load()
+                    ok
+                },
                 onFinish = { summary, engine ->
                     val before = statsRepo.load()
                     val isRecord = summary.score > before.highScore && summary.score > 0
@@ -176,6 +182,12 @@ fun AppRoot(
                     vipInstant = adFree,
                     onPlayAgain = { finished = null; playing = true },
                     onMenu = { finished = null },
+                    onCoinsDoubled = { bonus ->
+                        if (bonus > 0) {
+                            econRepo.addCoins(bonus)
+                            economy = econRepo.load()
+                        }
+                    },
                 )
             }
 

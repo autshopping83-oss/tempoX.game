@@ -81,6 +81,15 @@ sealed class Challenge(val type: ChallengeType, val limitMillis: Long) {
 object Progression {
     const val MATCH_MILLIS = 60_000L
 
+    /** Coins banked per correct answer — premium modes pay more. */
+    const val COINS_PER_CORRECT = 15
+
+    /** Extra coins per correct answer in the specialized (premium) modes. */
+    const val PREMIUM_COINS_BONUS = 5
+
+    /** Bonus for completing the full 60s run. */
+    const val VICTORY_BONUS = 10
+
     fun xpForLevel(level: Int): Int =
         if (level <= 1) 0 else (150.0 * Math.pow(level - 1.0, 1.6)).roundToInt()
 
@@ -275,6 +284,8 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
     var recoveryUsed: Boolean by mutableStateOf(false)
         private set
 
+    private var victoryBonusApplied: Boolean = false
+
     /** HUD feedback hooks for score penalties (floating red "-N"). */
     var penaltyFlashKey: Int by mutableStateOf(0)
         private set
@@ -336,14 +347,16 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
             if (perfect) perfectReflexCount++
 
             // Asymmetric economy: Arcade pays little but forgives; specialized
-            // modes pay per-combo and cost more to fail.
+            // modes pay per-combo and cost more to fail. Premium modes bank
+            // more coins per correct answer so they are worth farming once
+            // they are unlocked.
             if (isSpecialized()) {
                 val d = 1.0 + min(2.0, combo * 0.1)
                 score += (25.0 * d).roundToInt()
-                sessionCoins += 2
+                sessionCoins += Progression.COINS_PER_CORRECT + Progression.PREMIUM_COINS_BONUS
             } else {
                 score += 10
-                sessionCoins += 1
+                sessionCoins += Progression.COINS_PER_CORRECT
             }
             xpGained += (15.0 * levelScale() * (1.0 + combo * 0.05)).roundToInt()
 
@@ -386,6 +399,11 @@ class GameEngine(private val seed: Long = System.currentTimeMillis(), val mode: 
     }
 
     fun finish() {
+        // Arcade "wins" by surviving the full 60s — bank a small completion bonus.
+        if (!finished && timeLeftMillis == 0L && !victoryBonusApplied) {
+            sessionCoins += Progression.VICTORY_BONUS
+            victoryBonusApplied = true
+        }
         finished = true
         lookahead?.clear() // match over — stop producers, drop stale rounds
     }

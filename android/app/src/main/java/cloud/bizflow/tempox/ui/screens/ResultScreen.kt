@@ -39,6 +39,7 @@ import cloud.bizflow.tempox.R
 import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.game.Achievements
 import cloud.bizflow.tempox.game.MatchSummary
+import cloud.bizflow.tempox.game.rememberIsOnline
 import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.ui.components.FloatingCard
 import cloud.bizflow.tempox.ui.components.PrimaryButton
@@ -59,12 +60,24 @@ fun ResultScreen(
     vipInstant: Boolean = false,
     onPlayAgain: () -> Unit,
     onMenu: () -> Unit,
+    onCoinsDoubled: (Int) -> Unit = {},
 ) {
     val context = LocalContext.current
 
     // Ad reward state machine: idle -> loading(1.6s) -> doubled
     var doubleState by remember { mutableStateOf(if (doubledAlready) 2 else 0) }
     var bonusXp by remember { mutableStateOf(if (doubledAlready) summary.xpGained else 0) }
+
+    // Coin-double state machine (0=available, 1=loading ad, 2=doubled)
+    var coinsDoubleState by remember { mutableStateOf(0) }
+    var bonusCoins by remember { mutableStateOf(0) }
+    val online by rememberIsOnline()
+
+    fun creditCoins() {
+        if (bonusCoins > 0) {
+            onCoinsDoubled(bonusCoins)
+        }
+    }
 
     LaunchedEffect(Unit) {
         SoundManager.play(if (isRecord) SoundManager.Sfx.RECORD else SoundManager.Sfx.GAME_OVER)
@@ -131,10 +144,107 @@ fun ResultScreen(
 
                 Spacer(Modifier.height(8.dp))
                 Row {
-                    MiniStat(stringResource(R.string.result_coins_stat), "🪙 ${summary.coinsEarned}", Modifier.weight(1f))
+                    MiniStat(
+                        stringResource(R.string.result_coins_stat),
+                        "🪙 ${summary.coinsEarned + bonusCoins}",
+                        Modifier.weight(1f),
+                    )
                 }
 
                 Spacer(Modifier.height(16.dp))
+
+                // ---- Coin double (rewarded ad) --------------------------------
+                if (summary.coinsEarned > 0) {
+                    FloatingCard(accent = if (coinsDoubleState == 2) TemproxColors.Success else null) {
+                        Text(stringResource(R.string.result_coins_stat), style = TemproxType.micro.copy(color = TemproxColors.Muted))
+                        when (coinsDoubleState) {
+                            0 -> {
+                                if (!online) {
+                                    Spacer(Modifier.height(6.dp))
+                                    Text(
+                                        stringResource(R.string.result_double_coins_offline),
+                                        style = TemproxType.caption.copy(color = TemproxColors.Muted),
+                                    )
+                                } else {
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(stringResource(R.string.result_double_coins_note), style = TemproxType.caption.copy(color = Color(0xFF475569)))
+                                    Spacer(Modifier.height(10.dp))
+                                    Box(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .height(58.dp)
+                                            .clip(TemproxShapes.Button)
+                                            .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
+                                            .clickable {
+                                                SoundManager.play(SoundManager.Sfx.CLICK)
+                                                if (vipInstant) {
+                                                    bonusCoins = summary.coinsEarned
+                                                    coinsDoubleState = 2
+                                                    creditCoins()
+                                                    SoundManager.play(SoundManager.Sfx.RECORD)
+                                                } else {
+                                                    coinsDoubleState = 1
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.result_double_coins_btn),
+                                            style = TemproxType.title.copy(color = Color(0xFF111827)),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        )
+                                    }
+                                }
+                            }
+                            1 -> {
+                                Spacer(Modifier.height(12.dp))
+                                Box(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(TemproxColors.BorderSofter),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("📺", fontSize = TemproxType.titleLg.fontSize)
+                                        Spacer(Modifier.height(6.dp))
+                                        Text(stringResource(R.string.result_ad_loading), style = TemproxType.bodyBold.copy(color = TemproxColors.Ink))
+                                        Text(stringResource(R.string.result_ad_video), style = TemproxType.micro.copy(color = TemproxColors.Muted))
+                                    }
+                                }
+                                val coinActivity = context as? Activity
+                                LaunchedEffect(Unit) {
+                                    if (vipInstant || coinActivity == null) {
+                                        bonusCoins = summary.coinsEarned
+                                        coinsDoubleState = 2
+                                        creditCoins()
+                                        SoundManager.play(SoundManager.Sfx.RECORD)
+                                    } else {
+                                        AdMobManager.showRewarded(
+                                            activity = coinActivity,
+                                            onRewardEarned = {
+                                                bonusCoins = summary.coinsEarned
+                                                coinsDoubleState = 2
+                                                creditCoins()
+                                                SoundManager.play(SoundManager.Sfx.RECORD)
+                                            },
+                                            onAdDismissed = { coinsDoubleState = 0 },
+                                        )
+                                    }
+                                }
+                            }
+                            else -> {
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    stringResource(R.string.result_double_coins_total, summary.coinsEarned + bonusCoins),
+                                    style = TemproxType.bodyBold.copy(color = TemproxColors.Success),
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                }
 
                 // ---- Reward pool / double -----------------------------------
                 FloatingCard(accent = if (doubleState == 2) TemproxColors.Success else null) {

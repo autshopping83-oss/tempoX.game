@@ -105,10 +105,13 @@
     <string name="purchase_cancel">Cancel</string>
     <string name="purchase_error">Purchase could not be completed. Please try again.</string>
     <string name="recovery_vip_btn">Continue Match · VIP</string>
-    <string name="recovery_body">Watch a video to continue: strikes cleared, clock refreshed and coins doubled.</string>
+    <string name="recovery_body">Continue with coins or a video: strikes cleared, clock refreshed and coins doubled.</string>
     <string name="recovery_watch_btn">Watch and recover</string>
     <string name="recovery_decline">Give up</string>
     <string name="recovery_ad_loading">Loading video…</string>
+    <string name="recovery_pay_coins_btn">🪙 Continue for %1$d coins</string>
+    <string name="recovery_insufficient">Not enough coins — watch an ad instead</string>
+    <string name="recovery_offline">Offline — continue with coins above</string>
     <string name="unlock_title">Unlock %1$s</string>
     <string name="unlock_body">Current balance: %1$d coins. Use 150 coins or watch 1 video to unlock this mode forever.</string>
     <string name="unlock_coins_btn">Use %1$d coins</string>
@@ -117,6 +120,11 @@
     <string name="unlock_ad_fail">Video unavailable right now. Try again or use your coins.</string>
     <string name="unlock_close">Close</string>
     <string name="result_coins_stat">Match coins</string>
+    <string name="result_double_coins_btn">🎬 DOUBLE MATCH COINS</string>
+    <string name="result_double_coins_note">Watch an ad to double the coins you earned this match.</string>
+    <string name="result_double_coins_done">✓ COINS DOUBLED!</string>
+    <string name="result_double_coins_offline">Offline — ad unavailable to double coins.</string>
+    <string name="result_double_coins_total">🪙 %1$d coins total</string>
     <string name="result_double_hint">Double your earnings by watching a short video!</string>
     <string name="result_double_btn">🎬 DOUBLE REWARD</string>
     <string name="result_doubled_ok">✓ DOUBLED SUCCESSFULLY!</string>

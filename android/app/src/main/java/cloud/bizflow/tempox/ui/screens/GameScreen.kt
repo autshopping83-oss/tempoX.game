@@ -75,11 +75,13 @@ import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.audio.SoundManager.Sfx.CLICK
 import cloud.bizflow.tempox.game.Challenge
 import cloud.bizflow.tempox.game.ChallengeType
+import cloud.bizflow.tempox.game.EconomyRepository
 import cloud.bizflow.tempox.game.GameEngine
 import cloud.bizflow.tempox.game.GameMode
 import cloud.bizflow.tempox.game.HapticManager
 import cloud.bizflow.tempox.game.MatchSummary
 import cloud.bizflow.tempox.game.Progression
+import cloud.bizflow.tempox.game.rememberIsOnline
 import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.ui.components.AdMobBanner
 import cloud.bizflow.tempox.ui.components.FloatingCard
@@ -102,6 +104,8 @@ fun GameScreen(
     seedText: String,
     mode: GameMode,
     vipInstant: Boolean = false,
+    coins: Int = 0,
+    onSpendCoins: (Int) -> Boolean = { false },
     onFinish: (summary: MatchSummary, engine: GameEngine) -> Unit,
     onQuit: () -> Unit,
 ) {
@@ -316,6 +320,7 @@ fun GameScreen(
         if (engine.awaitingRecovery) {
             var adWatching by remember { mutableStateOf(false) }
             val activity = LocalContext.current as? Activity
+            val online by rememberIsOnline()
 
             // VIP: instant revive. Non-VIP: show real RewardedAd.
             LaunchedEffect(adWatching) {
@@ -341,7 +346,16 @@ fun GameScreen(
             RecoveryOverlay(
                 watching = adWatching,
                 instant = vipInstant,
+                online = online,
+                coins = coins,
+                recoveryCost = EconomyRepository.RECOVERY_COST,
                 onWatch = { adWatching = true },
+                onPayCoins = {
+                    if (onSpendCoins(EconomyRepository.RECOVERY_COST)) {
+                        SoundManager.play(SoundManager.Sfx.TROPHY)
+                        engine.recoverWithAd()
+                    }
+                },
                 onDecline = { SoundManager.play(CLICK); engine.giveUpRecovery() },
             )
         }
@@ -401,14 +415,20 @@ private fun PenaltyScore(engine: GameEngine) {
 
 /**
  * Full-screen recovery gate shown after 3 strikes (specialized modes) or the
- * first failure in Speed Math. Accepting plays a simulated ad: strikes reset,
- * clocks resume and coins earned so far are doubled (once per match).
+ * first failure in Speed Math. Accepting continues the match: the round clock
+ * refreshes and the coins earned so far are doubled (once per match).
+ * Player may pay with coins (always, even offline) OR watch a rewarded ad
+ * (online only) — VIP continues instantly with no ad.
  */
 @Composable
 private fun RecoveryOverlay(
     watching: Boolean,
     instant: Boolean = false,
+    online: Boolean = true,
+    coins: Int = 0,
+    recoveryCost: Int = EconomyRepository.RECOVERY_COST,
     onWatch: () -> Unit,
+    onPayCoins: () -> Unit,
     onDecline: () -> Unit,
 ) {
     Box(
@@ -440,20 +460,74 @@ private fun RecoveryOverlay(
             )
             Spacer(Modifier.height(18.dp))
             if (!watching) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                        .clip(TemproxShapes.Button)
-                        .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
-                        .clickable { SoundManager.play(SoundManager.Sfx.CONFIRM); onWatch() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        // VIP keeps the continue button — instant, no video wait.
-                        stringResource(if (instant) R.string.recovery_vip_btn else R.string.recovery_watch_btn),
-                        style = TemproxType.bodyBold.copy(color = Color(0xFF111827)),
-                    )
+                if (instant) {
+                    // VIP: single instant continue, no ad and no coin cost.
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .clip(TemproxShapes.Button)
+                            .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
+                            .clickable { SoundManager.play(SoundManager.Sfx.CONFIRM); onWatch() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(R.string.recovery_vip_btn),
+                            style = TemproxType.bodyBold.copy(color = Color(0xFF111827)),
+                        )
+                    }
+                } else {
+                    val hasCoins = coins >= recoveryCost
+                    // Coin option — always available (offline too).
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .clip(TemproxShapes.Button)
+                            .background(if (hasCoins) Brush.verticalGradient(listOf(Color(0xFF2F6BFF), Color(0xFF1E40AF))) else TemproxColors.BorderSofter)
+                            .clickable(enabled = hasCoins) {
+                                SoundManager.play(SoundManager.Sfx.CONFIRM)
+                                onPayCoins()
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(R.string.recovery_pay_coins_btn, recoveryCost),
+                            style = TemproxType.bodyBold.copy(color = if (hasCoins) Color.White else Color(0xFF94A3B8)),
+                        )
+                    }
+                    if (!hasCoins) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            stringResource(R.string.recovery_insufficient),
+                            style = TemproxType.micro.copy(color = Color(0xFFDC2626)),
+                        )
+                    }
+                    // Ad option — online only.
+                    if (online) {
+                        Spacer(Modifier.height(10.dp))
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(54.dp)
+                                .clip(TemproxShapes.Button)
+                                .background(Brush.horizontalGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))))
+                                .clickable { SoundManager.play(SoundManager.Sfx.CONFIRM); onWatch() },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                stringResource(R.string.recovery_watch_btn),
+                                style = TemproxType.bodyBold.copy(color = Color(0xFF111827)),
+                            )
+                        }
+                    } else {
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            stringResource(R.string.recovery_offline),
+                            style = TemproxType.micro.copy(color = TemproxColors.Muted),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        )
+                    }
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
