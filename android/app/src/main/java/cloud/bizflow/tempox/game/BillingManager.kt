@@ -125,7 +125,7 @@ class BillingManager(private val context: Context) : BillingRepository,
         }
     }
 
-    private fun queryProductDetails() {
+    private fun queryProductDetails(onResolved: (() -> Unit)? = null) {
         val product = QueryProductDetailsParams.Product.newBuilder()
             .setProductId(PRODUCT_REMOVE_ADS)
             .setProductType(BillingClient.ProductType.INAPP)
@@ -142,9 +142,14 @@ class BillingManager(private val context: Context) : BillingRepository,
                     productDetails = details.first()
                     _formattedPrice.value = details.first().oneTimePurchaseOfferDetails?.formattedPrice ?: ""
                     Log.d(TAG, "Product resolved: ${details.first().title} — ${_formattedPrice.value}")
+                } else {
+                    Log.w(TAG, "Product details list is empty for $PRODUCT_REMOVE_ADS")
                 }
+            } else {
+                Log.w(TAG, "queryProductDetails failed: ${result.debugMessage}")
             }
             _isLoading.value = false
+            onResolved?.invoke()
         }
     }
 
@@ -192,14 +197,67 @@ class BillingManager(private val context: Context) : BillingRepository,
             onSuccess()
             return
         }
+
+        // Product already resolved — launch directly.
         val details = productDetails
-        if (details == null) {
-            // Product could not be resolved (not found, inactive, or billing not
-            // ready). Surface a friendly message instead of silently hanging.
-            Log.w(TAG, "Remove-ads product not available")
-            onError("product_unavailable")
+        if (details != null) {
+            launchBillingFlow(activity, details, onError)
             return
         }
+
+        // Product not resolved yet (billing reconnected, or the initial query ran
+        // before setup finished). Re-query it before giving up, with a short
+        // timeout so the user is not left hanging.
+        Log.w(TAG, "Remove-ads product not resolved yet — re-querying…")
+        scope.launch { retryFetchProductAndPurchase(activity, onError) }
+    }
+
+    /**
+     * When the product was not available on demand, wait for the billing client
+     * to be ready, re-query the product and launch the flow. Falls back to
+     * [onError] if the product never resolves within a short timeout.
+     */
+    private suspend fun retryFetchProductAndPurchase(activity: Activity, onError: (String) -> Unit) {
+        val deadline = System.currentTimeMillis() + 10_000L
+        while (System.currentTimeMillis() < deadline) {
+            if (billingClient.isReady) {
+                val resolved = productDetails
+                if (resolved != null) {
+                    launchBillingFlow(activity, resolved, onError)
+                    return
+                }
+                // Ready but not resolved — query and check once.
+                var fetched = false
+                queryProductDetails {
+                    fetched = true
+                    val now = productDetails
+                    if (now != null) {
+                        launchBillingFlow(activity, now, onError)
+                    } else {
+                        onError("product_unavailable")
+                    }
+                }
+                // Let the async query complete.
+                var waited = 0
+                while (!fetched && waited < 5000) {
+                    delay(100)
+                    waited += 100
+                }
+                if (fetched) return
+            } else {
+                // Billing dropped or never connected — re-request a connection.
+                Log.w(TAG, "Billing not ready, reconnecting…")
+                if (!billingClient.isReady) {
+                    runCatching { billingClient.startConnection(this) }
+                }
+            }
+            delay(500)
+        }
+        Log.w(TAG, "Remove-ads product never resolved within timeout")
+        onError("product_unavailable")
+    }
+
+    private fun launchBillingFlow(activity: Activity, details: ProductDetails, onError: (String) -> Unit) {
         val flowParams = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(
@@ -211,7 +269,8 @@ class BillingManager(private val context: Context) : BillingRepository,
             .build()
         val billingResult = billingClient.launchBillingFlow(activity, flowParams)
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
-            onError("Could not launch billing: ${billingResult.debugMessage}")
+            Log.w(TAG, "Could not launch billing: ${billingResult.debugMessage}")
+            onError(billingResult.debugMessage ?: "billing_launch_failed")
         }
     }
 
