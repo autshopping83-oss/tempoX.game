@@ -12,7 +12,7 @@ interface BillingRepository {
     /** True once the player owns the "Remove Ads" product. */
     val isAdFreeUser: StateFlow<Boolean>
 
-    /** Dynamically resolved price from Google Play (e.g. "US$ 4.99"). */
+    /** Dynamically resolved price from Google Play (e.g. a localized price string). */
     val formattedPrice: StateFlow<String>
 
     /** True while the billing client is connecting / resolving product details. */

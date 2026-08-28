@@ -97,10 +97,10 @@
     <string name="legal_terms_btn">Terms of Service</string>
     <string name="legal_offline">No internet connection</string>
     <string name="legal_no_browser">Could not open a browser.</string>
-    <string name="premium_remove_btn">⭐ Remove Ads · US$ 4.99</string>
+    <string name="premium_remove_btn">⭐ Remove Ads</string>
     <string name="premium_vip_badge">👑 VIP · ADS REMOVED — ACTIVE</string>
     <string name="purchase_title">Google Play — simulated purchase</string>
-    <string name="purchase_body">Test account · Product: Remove Ads — US$ 4.99. No ads forever and instant match continue.</string>
+    <string name="purchase_body">Test account · Product: Remove Ads. No ads forever and instant match continue.</string>
     <string name="purchase_confirm">CONFIRM PURCHASE</string>
     <string name="purchase_cancel">Cancel</string>
     <string name="purchase_error">Purchase could not be completed. Please try again.</string>
@@ -160,8 +160,8 @@
     <string name="paywallBenefit1">Zero Intrusive Ads</string>
     <string name="paywallBenefit2">Double XP per match</string>
     <string name="paywallBenefit3">Access to all future modes</string>
-    <string name="paywall_cta">REMOVE ADS — US$ 4.99</string>
-    <string name="paywall_cta_dynamic">UNLOCK PREMIUM — %1$s</string>
+    <string name="paywall_cta">REMOVE ADS</string>
+    <string name="paywall_cta_dynamic">REMOVE ADS — %1$s</string>
     <string name="paywall_restore">Already premium? Restore purchase</string>
     <string name="paywall_close">Not now</string>
     <string name="home_chip_level">LEVEL %1$d</string>

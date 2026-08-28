@@ -97,10 +97,10 @@
     <string name="legal_terms_btn">Termos de Uso</string>
     <string name="legal_offline">Sem conexão com a internet</string>
     <string name="legal_no_browser">Não foi possível abrir o navegador.</string>
-    <string name="premium_remove_btn">⭐ Remover Anúncios · US$ 4,99</string>
+    <string name="premium_remove_btn">⭐ Remover Anúncios</string>
     <string name="premium_vip_badge">👑 VIP · REMOVEDOR DE ANÚNCIOS ATIVO</string>
     <string name="purchase_title">Google Play — compra simulada</string>
-    <string name="purchase_body">Conta de teste · Produto: Remover Anúncios (Remove Ads) — US$ 4,99. Sem anúncios para sempre e continuação instantânea de partida.</string>
+    <string name="purchase_body">Conta de teste · Produto: Remover Anúncios (Remove Ads). Sem anúncios para sempre e continuação instantânea de partida.</string>
     <string name="purchase_confirm">CONFIRMAR COMPRA</string>
     <string name="purchase_cancel">Cancelar</string>
     <string name="purchase_error">Não foi possível concluir a compra. Tente novamente.</string>
@@ -160,8 +160,8 @@
     <string name="paywallBenefit1">Zero Anúncios Intermitentes</string>
     <string name="paywallBenefit2">Dobro de XP por partida</string>
     <string name="paywallBenefit3">Acesso a todos os modos futuros</string>
-    <string name="paywall_cta">REMOVER ANÚNCIOS — US$ 4,99</string>
-    <string name="paywall_cta_dynamic">DESBLOQUEAR PREMIUM — %1$s</string>
+    <string name="paywall_cta">REMOVER ANÚNCIOS</string>
+    <string name="paywall_cta_dynamic">REMOVER ANÚNCIOS — %1$s</string>
     <string name="paywall_restore">Já é premium? Restaurar compra</string>
     <string name="paywall_close">Agora não</string>
     <string name="home_chip_level">NÍVEL %1$d</string>
