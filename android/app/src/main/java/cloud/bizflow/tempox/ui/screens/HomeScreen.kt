@@ -725,7 +725,7 @@ private fun UnlockModeDialog(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                stringResource(R.string.unlock_body, coins),
+                stringResource(R.string.unlock_body, coins, EconomyRepository.UNLOCK_COST),
                 style = TemproxType.caption.copy(color = Color(0xFF475569)),
             )
             Spacer(Modifier.height(18.dp))

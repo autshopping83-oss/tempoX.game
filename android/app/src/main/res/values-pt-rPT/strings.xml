@@ -113,7 +113,7 @@
     <string name="recovery_insufficient">Moedas insuficientes — veja um anúncio</string>
     <string name="recovery_offline">Offline — continue com as moedas acima</string>
     <string name="unlock_title">Desbloquear %1$s</string>
-    <string name="unlock_body">Saldo atual: %1$d moedas. Use 150 moedas ou veja 1 vídeo para desbloquear este modo para sempre.</string>
+    <string name="unlock_body">Saldo atual: %1$d moedas. Use %2$d moedas ou veja 1 vídeo para desbloquear este modo para sempre.</string>
     <string name="unlock_coins_btn">Usar %1$d moedas</string>
     <string name="unlock_ad_btn">Ver o vídeo</string>
     <string name="unlock_ad_loading">A carregar vídeo…</string>

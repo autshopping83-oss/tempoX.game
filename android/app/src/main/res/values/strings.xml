@@ -113,7 +113,7 @@
     <string name="recovery_insufficient">Not enough coins — watch an ad instead</string>
     <string name="recovery_offline">Offline — continue with coins above</string>
     <string name="unlock_title">Unlock %1$s</string>
-    <string name="unlock_body">Current balance: %1$d coins. Use 150 coins or watch 1 video to unlock this mode forever.</string>
+    <string name="unlock_body">Current balance: %1$d coins. Use %2$d coins or watch 1 video to unlock this mode forever.</string>
     <string name="unlock_coins_btn">Use %1$d coins</string>
     <string name="unlock_ad_btn">Watch video</string>
     <string name="unlock_ad_loading">Loading video…</string>
