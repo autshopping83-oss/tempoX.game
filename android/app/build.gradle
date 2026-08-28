@@ -10,8 +10,8 @@ android {
         applicationId 'cloud.bizflow.tempox'
         minSdk 24
         targetSdk 36
-        versionCode 5
-        versionName '1.0.4'
+        versionCode 6
+        versionName '1.0.5'
         // Keep ALL provided locales — filtering only to 'pt','en' would strip the
         // values-pt-rBR / values-pt-rPT dirs from the package, causing fallback /
         // translation conflicts (pt-BR / pt-PT selected but resources absent).
