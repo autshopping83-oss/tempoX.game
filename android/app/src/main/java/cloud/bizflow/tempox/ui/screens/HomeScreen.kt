@@ -184,6 +184,13 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.width(8.dp))
 
+                    // Coin balance chip — always visible, informative only.
+                    TopChip(
+                        glyph = "🪙",
+                        value = "${economy.coins}",
+                    )
+                    Spacer(Modifier.width(8.dp))
+
                     // VIP Crown — gold beacon that opens the paywall
                     IconButton(
                         onClick = { showPaywallSheet = true },
@@ -825,7 +832,7 @@ private fun TrophiesTab(stats: PlayerStats) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TopChip(glyph: String, value: String, onClick: () -> Unit) {
+private fun TopChip(glyph: String, value: String, onClick: (() -> Unit)? = null) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -833,7 +840,13 @@ private fun TopChip(glyph: String, value: String, onClick: () -> Unit) {
             .clip(RoundedCornerShape(14.dp))
             .background(CardBg)
             .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
-            .clickable { SoundManager.play(SoundManager.Sfx.CLICK); onClick() }
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable { SoundManager.play(SoundManager.Sfx.CLICK); onClick() }
+                } else {
+                    Modifier
+                },
+            )
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         Text(glyph, fontSize = 15.sp)
