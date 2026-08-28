@@ -63,7 +63,7 @@ class EconomyRepository(context: Context) {
         mode == GameMode.ARCADE || mode in unlocked
 
     companion object {
-        const val UNLOCK_COST = 500
+        const val UNLOCK_COST = 750
         const val RECOVERY_COST = 10
         private const val K_COINS = "coins"
         private const val K_UNLOCKED = "unlockedModes"
