@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
 import cloud.bizflow.tempox.R
 import cloud.bizflow.tempox.audio.SoundManager
 import cloud.bizflow.tempox.game.LangMode
@@ -150,27 +151,42 @@ fun RulesSheet(
                         colors = sheetSwitch(),
                     )
                 }
-                SheetRow(stringResource(R.string.settings_language), "🌐") {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf(
-                            LangMode.SYSTEM to stringResource(R.string.lang_auto),
-                            LangMode.EN to stringResource(R.string.lang_en),
-                            LangMode.PT_PT to stringResource(R.string.lang_ptpt),
-                            LangMode.PT_BR to stringResource(R.string.lang_pt),
-                        ).forEach { (mode, label) ->
-                            val selected = mode == language
-                            Text(
-                                label,
-                                style = TemproxType.micro.copy(
-                                    color = if (selected) Color.White else TemproxColors.Muted,
-                                ),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(999.dp))
-                                    .background(if (selected) TemproxColors.Primary else TemproxColors.BorderSofter)
-                                    .clickable { onLanguageChange(mode) }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                            )
-                        }
+
+                // ---- Language selector (two rows: label on top, chips below) ----
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🌐", fontSize = 15.sp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        stringResource(R.string.settings_language),
+                        style = TemproxType.bodyBold.copy(color = TemproxColors.Ink),
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    listOf(
+                        LangMode.SYSTEM to stringResource(R.string.lang_auto),
+                        LangMode.EN to stringResource(R.string.lang_en),
+                        LangMode.PT_PT to stringResource(R.string.lang_ptpt),
+                        LangMode.PT_BR to stringResource(R.string.lang_pt),
+                    ).forEach { (mode, label) ->
+                        val selected = mode == language
+                        Text(
+                            label,
+                            style = TemproxType.caption.copy(
+                                color = if (selected) Color.White else TemproxColors.Muted,
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(if (selected) TemproxColors.Primary else TemproxColors.BorderSofter)
+                                .clickable { onLanguageChange(mode) }
+                                .padding(horizontal = 6.dp, vertical = 10.dp),
+                        )
                     }
                 }
 
