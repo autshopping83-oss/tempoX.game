@@ -484,7 +484,13 @@ private fun RecoveryOverlay(
                             .fillMaxWidth()
                             .height(54.dp)
                             .clip(TemproxShapes.Button)
-                            .background(if (hasCoins) Brush.verticalGradient(listOf(Color(0xFF2F6BFF), Color(0xFF1E40AF))) else TemproxColors.BorderSofter)
+                            .background(
+                                if (hasCoins) {
+                                    Brush.verticalGradient(listOf(Color(0xFF2F6BFF), Color(0xFF1E40AF)))
+                                } else {
+                                    Brush.verticalGradient(listOf(TemproxColors.BorderSofter, TemproxColors.BorderSofter))
+                                },
+                            )
                             .clickable(enabled = hasCoins) {
                                 SoundManager.play(SoundManager.Sfx.CONFIRM)
                                 onPayCoins()

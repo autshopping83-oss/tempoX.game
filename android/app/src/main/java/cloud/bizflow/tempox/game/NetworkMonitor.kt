@@ -58,12 +58,12 @@ class NetworkMonitor(context: Context) {
     }
 
     fun register() {
-        if (cm == null) return
+        val cm = this.cm ?: return
         runCatching { cm.registerDefaultNetworkCallback(callback) }
     }
 
     fun unregister() {
-        if (cm == null) return
+        val cm = this.cm ?: return
         runCatching { cm.unregisterNetworkCallback(callback) }
     }
 }
