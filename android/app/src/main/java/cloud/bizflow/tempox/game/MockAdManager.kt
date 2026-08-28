@@ -12,7 +12,8 @@ object MockAdManager {
     /** Wired once at app composition root. */
     var billing: BillingRepository? = null
 
-    val isAdFree: Boolean get() = billing?.isAdFreeUser?.value == true
+    /** Single source of truth: ads are removed when the user owns the product. */
+    val isAdFree: Boolean get() = billing?.isAdsRemoved() == true
 
     /** Show a real interstitial ad if the user is not ad-free. */
     fun showInterstitialIfAllowed(activity: Activity, onDismiss: () -> Unit) {
@@ -20,8 +21,9 @@ object MockAdManager {
         AdMobManager.showInterstitial(activity, onDismiss)
     }
 
-    /** Preload both rewarded + interstitial ads (call when Activity is available). */
+    /** Preload ads only for non-premium users — never load ads for ad-free players. */
     fun preloadAds(activity: Activity) {
+        if (isAdFree) return
         AdMobManager.loadRewarded(activity)
         AdMobManager.loadInterstitial(activity)
     }

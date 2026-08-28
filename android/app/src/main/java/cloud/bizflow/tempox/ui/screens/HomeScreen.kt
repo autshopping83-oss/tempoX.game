@@ -67,6 +67,7 @@ import cloud.bizflow.tempox.game.EconomyState
 import cloud.bizflow.tempox.game.GameMode
 import cloud.bizflow.tempox.monetization.AdMobManager
 import cloud.bizflow.tempox.game.LangMode
+import cloud.bizflow.tempox.game.MockAdManager
 import cloud.bizflow.tempox.game.PlayerStats
 import cloud.bizflow.tempox.game.Progression
 import cloud.bizflow.tempox.ui.LegalType
@@ -108,6 +109,7 @@ fun HomeScreen(
     val adFree by billing.isAdFreeUser.collectAsState()
     val billingPrice by billing.formattedPrice.collectAsState()
     val billingLoading by billing.isLoading.collectAsState()
+    val billingPurchasing by billing.isPurchasing.collectAsState()
     var tab by remember { mutableStateOf(HomeTab.PLAY) }
     var showRules by remember {
         val prefs = context.getSharedPreferences("temprox_settings", android.content.Context.MODE_PRIVATE)
@@ -304,6 +306,7 @@ fun HomeScreen(
                 billing = billing,
                 formattedPrice = billingPrice,
                 isLoading = billingLoading,
+                isPurchasing = billingPurchasing,
                 onDismiss = { showPaywallSheet = false },
             )
         }
@@ -321,10 +324,11 @@ private fun PremiumPaywallBottomSheet(
     billing: BillingRepository,
     formattedPrice: String,
     isLoading: Boolean,
+    isPurchasing: Boolean,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var purchaseError by remember { mutableStateOf(false) }
+    var purchaseErrorKey by remember { mutableStateOf<String?>(null) }
     val activity = LocalContext.current as? Activity
 
     ModalBottomSheet(
@@ -382,24 +386,25 @@ private fun PremiumPaywallBottomSheet(
 
             Spacer(Modifier.height(24.dp))
 
-            if (isAdFree) {
-                // Already premium
+            if (isAdFree || billing.isAdsRemoved()) {
+                // Already premium — never show the buy button again.
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Brush.horizontalGradient(listOf(Color(0xFFFFD700), Color(0xFFFF9800))))
+                        .background(Brush.horizontalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))))
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        stringResource(R.string.premium_vip_badge),
-                        style = TemproxType.bodyBold.copy(color = Color(0xFF3E2723)),
+                        stringResource(R.string.remove_ads_purchased_badge),
+                        style = TemproxType.bodyBold.copy(color = Color.White),
                         textAlign = TextAlign.Center,
                     )
                 }
             } else {
-                // CTA button
+                // CTA button — shows a spinner while connecting OR purchasing.
+                val busy = isLoading || isPurchasing
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -410,7 +415,8 @@ private fun PremiumPaywallBottomSheet(
                                 listOf(TemproxColors.Primary, Color(0xFF8B5CF6)),
                             ),
                         )
-                        .clickable(enabled = !isLoading) {
+                        .clickable(enabled = !busy) {
+                            purchaseErrorKey = null
                             SoundManager.play(SoundManager.Sfx.CLICK)
                             SoundManager.vibrate(longArrayOf(0, 18))
                             if (activity != null) {
@@ -421,13 +427,13 @@ private fun PremiumPaywallBottomSheet(
                                         SoundManager.vibrate(longArrayOf(0, 30, 40, 30))
                                         onDismiss()
                                     },
-                                    onError = { purchaseError = true },
+                                    onError = { purchaseErrorKey = it },
                                 )
                             }
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    if (isLoading) {
+                    if (busy) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(22.dp),
                             color = Color.White,
@@ -451,11 +457,18 @@ private fun PremiumPaywallBottomSheet(
                 }
             }
 
-            if (purchaseError) {
+            // Purchase status messages: product unavailable / billing error / other error.
+            purchaseErrorKey?.let { key ->
+                val statusText = when (key) {
+                    "product_unavailable" -> stringResource(R.string.purchase_unavailable)
+                    "billing_unavailable" -> stringResource(R.string.purchase_billing_error)
+                    else -> stringResource(R.string.purchase_error)
+                }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    stringResource(R.string.purchase_error),
+                    statusText,
                     style = TemproxType.micro.copy(color = TemproxColors.Danger),
+                    textAlign = TextAlign.Center,
                 )
             }
 
@@ -468,6 +481,7 @@ private fun PremiumPaywallBottomSheet(
                 modifier = Modifier
                     .clickable {
                         SoundManager.play(SoundManager.Sfx.CLICK)
+                        purchaseErrorKey = null
                         billing.restorePurchases()
                     }
                     .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -685,6 +699,12 @@ private fun UnlockModeDialog(
     )
     LaunchedEffect(adLoading) {
         if (adLoading && activity != null) {
+            if (MockAdManager.isAdFree) {
+                // Premium users get access instantly — never load/show a rewarded ad.
+                adLoading = false
+                onWatchAd()
+                return@LaunchedEffect
+            }
             AdMobManager.showRewarded(
                 activity = activity,
                 onRewardEarned = {

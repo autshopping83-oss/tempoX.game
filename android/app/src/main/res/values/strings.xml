@@ -104,6 +104,9 @@
     <string name="purchase_confirm">CONFIRM PURCHASE</string>
     <string name="purchase_cancel">Cancel</string>
     <string name="purchase_error">Purchase could not be completed. Please try again.</string>
+    <string name="purchase_unavailable">Sorry, this product is not available on your account or device right now.</string>
+    <string name="purchase_billing_error">Google Play Billing is unavailable. Make sure Play Services is up to date and try again.</string>
+    <string name="remove_ads_purchased_badge">✓ ADS REMOVED</string>
     <string name="recovery_vip_btn">Continue Match · VIP</string>
     <string name="recovery_body">Continue with coins or a video: strikes cleared, clock refreshed and coins doubled.</string>
     <string name="recovery_watch_btn">Watch and recover</string>

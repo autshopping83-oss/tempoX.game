@@ -52,6 +52,9 @@ class BillingManager(private val context: Context) : BillingRepository,
     private val _isLoading = MutableStateFlow(true)
     override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _isPurchasing = MutableStateFlow(false)
+    override val isPurchasing: StateFlow<Boolean> = _isPurchasing.asStateFlow()
+
     // ── Internal state ────────────────────────────────────────────────────────
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var productDetails: ProductDetails? = null
@@ -163,6 +166,7 @@ class BillingManager(private val context: Context) : BillingRepository,
         } else {
             Log.w(TAG, "Purchase error: ${result.debugMessage}")
         }
+        _isPurchasing.value = false
     }
 
     // ── Purchase handling ─────────────────────────────────────────────────────
@@ -254,6 +258,7 @@ class BillingManager(private val context: Context) : BillingRepository,
             delay(500)
         }
         Log.w(TAG, "Remove-ads product never resolved within timeout")
+        _isPurchasing.value = false
         onError("product_unavailable")
     }
 
@@ -267,10 +272,16 @@ class BillingManager(private val context: Context) : BillingRepository,
                 ),
             )
             .build()
+        _isPurchasing.value = true
         val billingResult = billingClient.launchBillingFlow(activity, flowParams)
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
             Log.w(TAG, "Could not launch billing: ${billingResult.debugMessage}")
-            onError(billingResult.debugMessage ?: "billing_launch_failed")
+            _isPurchasing.value = false
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE) {
+                onError("billing_unavailable")
+            } else {
+                onError(billingResult.debugMessage ?: "billing_launch_failed")
+            }
         }
     }
 

@@ -104,6 +104,9 @@
     <string name="purchase_confirm">CONFIRMAR COMPRA</string>
     <string name="purchase_cancel">Cancelar</string>
     <string name="purchase_error">Não foi possível concluir a compra. Tente novamente.</string>
+    <string name="purchase_unavailable">Este produto não está disponível na sua conta ou dispositivo no momento.</string>
+    <string name="purchase_billing_error">O Google Play Billing está indisponível. Certifique-se de que o Play Services esteja atualizado e tente novamente.</string>
+    <string name="remove_ads_purchased_badge">✓ ANÚNCIOS REMOVIDOS</string>
     <string name="recovery_vip_btn">Continuar Partida · VIP</string>
     <string name="recovery_body">Continue com moedas ou vídeo: erros anulados, relógio renovado e moedas duplicadas.</string>
     <string name="recovery_watch_btn">Ver e recuperar</string>
