@@ -17,6 +17,7 @@ import com.android.billingclient.api.QueryPurchasesParams
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +38,7 @@ class BillingManager(private val context: Context) : BillingRepository,
     companion object {
         private const val TAG = "BillingManager"
         private const val PRODUCT_REMOVE_ADS = "tempox_no_ads"
+        private const val BillingSetupTimeoutMs = 10_000L
     }
 
     // ── BillingRepository contract ────────────────────────────────────────────
@@ -73,6 +75,12 @@ class BillingManager(private val context: Context) : BillingRepository,
             Log.d(TAG, "Starting billing connection…")
             billingClient.startConnection(this)
         }
+        // Safety timeout: never leave isLoading stuck true if the billing setup
+        // callback never fires or reports OK (keeps the paywall CTA responsive).
+        scope.launch {
+            delay(BillingSetupTimeoutMs)
+            _isLoading.value = false
+        }
     }
 
     fun endConnection() {
@@ -81,6 +89,10 @@ class BillingManager(private val context: Context) : BillingRepository,
     }
 
     override fun onBillingSetupFinished(result: BillingResult) {
+        // ALWAYS clear isLoading here, regardless of outcome. Otherwise, if the
+        // connection never reports OK (e.g. in Closed Testing the product/app may
+        // not be queryable), the CTA button would show an infinite spinner.
+        _isLoading.value = false
         if (result.responseCode == BillingClient.BillingResponseCode.OK) {
             Log.d(TAG, "Billing connected")
             queryPurchases()
@@ -181,7 +193,10 @@ class BillingManager(private val context: Context) : BillingRepository,
         }
         val details = productDetails
         if (details == null) {
-            onError("Product not loaded yet")
+            // Product could not be resolved (not found, inactive, or billing not
+            // ready). Surface a friendly message instead of silently hanging.
+            Log.w(TAG, "Remove-ads product not available")
+            onError("product_unavailable")
             return
         }
         val flowParams = BillingFlowParams.newBuilder()
